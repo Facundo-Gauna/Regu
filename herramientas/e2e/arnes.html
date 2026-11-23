@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8" />
+<title>Regu · pruebas e2e</title>
+<style>
+  body { font: 13px/1.45 ui-monospace, Menlo, Consolas, monospace; margin: 0; padding: 8px; display: grid; grid-template-columns: 412px 1fr; gap: 14px; background: #fff; color: #111; }
+  iframe { width: 400px; height: 860px; border: 2px solid #888; background: #fff; }
+  h3 { margin: 0 0 8px; }
+  #log div { padding: 1px 0; }
+  .ok { color: #137333; }
+  .mal { color: #c5221f; font-weight: 700; }
+  .mal small { display: block; font-weight: 400; color: #7a1d1a; }
+</style>
+<iframe id="app" title="Regu"></iframe>
+<main>
+  <h3 id="titulo">Ejecutando pruebas…</h3>
+  <div id="log"></div>
+</main>
+<!-- Retiene el evento load hasta que el servidor recibe los resultados (ver herramientas/e2e.mjs) -->
+<img src="/__espera.gif" width="1" height="1" alt="" style="position: fixed; left: -9px; top: 0" />
+
+<script type="module">
+  // Dónde está la app (la fija el runner); termina siempre en /
+  const BASE = new URLSearchParams(location.search).get('base') ?? '/';
+  const marco = document.getElementById('app');
+  const registro = document.getElementById('log');
+  const resultados = [];
+  const erroresApp = [];
+
+  const pausa = ms => new Promise(r => setTimeout(r, ms));
+  const doc = () => marco.contentDocument;
+  const ventana = () => marco.contentWindow;
+  const texto = el => (el?.textContent ?? '').replace(/\s+/g, ' ').trim();
+  const afirmar = (cond, mensaje) => { if (!cond) throw new Error(mensaje); };
+
+  /** Reintenta hasta que la condición devuelva algo verdadero (acepta funciones asíncronas). */
+  async function esperar(cond, descripcion, ms = 6000) {
+    const t0 = performance.now();
+    let ultimo;
+    while (performance.now() - t0 < ms) {
+      try { const r = await cond(); if (r) return r; } catch (e) { ultimo = e; }
+      await pausa(40);
+    }
+    throw new Error(`Tiempo agotado esperando: ${descripcion}${ultimo ? ` (${ultimo.message})` : ''}`);
+  }
+
+  function engancharErrores() {
+    const w = ventana();
+    w.addEventListener('error', e => erroresApp.push(`error: ${e.message}`));
+    w.addEventListener('unhandledrejection', e => erroresApp.push(`promesa rechazada: ${e.reason?.message ?? e.reason}`));
+  }
+  /** La carga del iframe tiene tiempo límite: una página que no termina de cargar es un fallo, no un cuelgue. */
+  const navegar = (iniciar, descripcion) => new Promise((resolver, rechazar) => {
+    const t = setTimeout(() => rechazar(new Error(`La página no terminó de cargar (${descripcion})`)), 12000);
+    marco.onload = () => { clearTimeout(t); engancharErrores(); resolver(); };
+    iniciar();
+  });
+  const cargar = async url => {
+    // Si solo cambia el #, el navegador no recarga y no hay evento load: se pasa por una página en blanco para forzar una carga real.
+    await navegar(() => { marco.src = 'about:blank'; }, 'página en blanco');
+    await navegar(() => { marco.src = url; }, url);
+  };
+  const recargar = () => navegar(() => ventana().location.reload(), 'recarga');
+  const irA = hash => { ventana().location.hash = hash; };
+
+  // ---- Ayudas de DOM ----
+  const todos = (sel, raiz = doc()) => [...raiz.querySelectorAll(sel)];
+  const hallar = (sel, t, raiz) => todos(sel, raiz).find(e => texto(e).includes(t));
+  const hallarExacto = (sel, t, raiz) => todos(sel, raiz).find(e => texto(e) === t);
+  const seccion = titulo => todos('section.seccion').find(s => texto(s.querySelector('.seccion__titulo')) === titulo);
+  const hoja = () => doc().querySelector('dialog[open]');
+  // Como una persona: después de cada acción se le da tiempo a la interfaz para actualizarse (Preact renderiza en diferido).
+  const PAUSA_UI = 60;
+  const clic = async (el, descripcion = 'el elemento') => { afirmar(el, `No se encontró ${descripcion}`); el.click(); await pausa(PAUSA_UI); };
+  async function escribir(el, valor, descripcion = 'el campo') {
+    afirmar(el, `No se encontró ${descripcion}`);
+    const W = ventana();
+    const proto = el instanceof W.HTMLSelectElement ? W.HTMLSelectElement.prototype : W.HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, valor);
+    el.dispatchEvent(new W.Event('input', { bubbles: true }));
+    el.dispatchEvent(new W.Event('change', { bubbles: true }));
+    await pausa(PAUSA_UI);
+  }
+  /** Estado de la hoja abierta, para entender por qué no se cierra: mensaje de error y campos inválidos. */
+  function diagnosticoHoja() {
+    const h = hoja();
+    if (!h) return 'la hoja ya está cerrada';
+    const invalidos = todos('input, select', h).filter(e => !e.checkValidity()).map(e => `${e.type}[valor="${e.value}", ${e.validationMessage}]`);
+    const error = texto(h.querySelector('.aviso--error'));
+    return `error en pantalla: «${error}»; campos inválidos: ${invalidos.join(' ; ') || 'ninguno'}`;
+  }
+  async function esperarHojaCerrada() {
+    try { await esperar(() => !hoja(), 'que se cierre la hoja'); }
+    catch (e) { throw new Error(`${e.message} — ${diagnosticoHoja()}`); }
+  }
+  const cifra = indice => texto(todos('.portada__cifras strong')[indice]);
+  async function enviarBackup(json, nombre = 'backup.json') {
+    const W = ventana();
+    const entrada = await esperar(() => doc().querySelector('input[type=file]'), 'el campo de archivo');
+    const dt = new W.DataTransfer();
+    dt.items.add(new W.File([JSON.stringify(json)], nombre, { type: 'application/json' }));
+    entrada.files = dt.files;
+    entrada.dispatchEvent(new W.Event('change', { bubbles: true }));
+  }
+  const backup = (datos, version = 1) => ({ app: 'regu', schemaVersion: version, exportado: new Date().toISOString(), datos });
+  const perfil = { planId: 'utn-frvm-isi-2023', calendarioId: 'utn-frvm-2026-27', anioIngreso: 2026 };
+
+  // ---- Registro ----
+  function pintar(final = false) {
+    registro.replaceChildren(...resultados.map(r => {
+      const d = document.createElement('div');
+      d.className = r.ok ? 'ok' : 'mal';
+      d.textContent = `${r.ok ? '✓' : '✗'} ${r.nombre}`;
+      if (!r.ok) { const s = document.createElement('small'); s.textContent = r.error; d.append(s); }
+      return d;
+    }));
+    const mal = resultados.filter(r => !r.ok).length;
+    document.getElementById('titulo').textContent = final
+      ? (mal ? `${mal} de ${resultados.length} pruebas FALLARON` : `Las ${resultados.length} pruebas pasaron`)
+      : `Ejecutando… (${resultados.length})`;
+  }
+  async function prueba(nombre, fn) {
+    try { await fn(); resultados.push({ nombre, ok: true }); }
+    catch (e) { resultados.push({ nombre, ok: false, error: e.message }); }
+    pintar();
+    // Avance parcial: si algo corta la ejecución, el runner igual muestra lo que se llegó a hacer
+    fetch('/__parcial', { method: 'POST', body: JSON.stringify({ resultados, siguiente: nombre }) }).catch(() => {});
+  }
+
+  // =====================================================================================================
+  // Empiezo desde cero: base de datos y service workers limpios
+  await new Promise(ok => { const r = indexedDB.deleteDatabase('regu'); r.onsuccess = ok; r.onerror = ok; r.onblocked = ok; });
+  await cargar(BASE);
+
+  await prueba('Primer uso: aparece la bienvenida, con el aviso de que no es una app oficial', async () => {
+    await esperar(() => hallar('button', 'Empezar'), 'el botón Empezar');
+    afirmar(hallar('.bienvenida__legal', 'No es una aplicación oficial'), 'falta el aviso legal');
+    afirmar(hallar('.bienvenida', 'Probar con datos de ejemplo'), 'falta el modo ejemplo');
+  });
+
+  await prueba('Empezar lleva al plan con las 36 materias obligatorias', async () => {
+    await escribir(doc().querySelector('input[type=number]'), '2026', 'el año de ingreso');
+    await clic(hallar('button', 'Empezar'));
+    await esperar(() => ventana().location.hash === '#/plan', 'ir al plan');
+    await esperar(() => todos('.chip-materia').length === 36, '36 materias en el plan');
+    afirmar(hallar('.aviso', 'Marcá lo que ya hiciste'), 'falta la ayuda del primer uso');
+  });
+
+  await prueba('Fecha simulada: se fija en 23/11/2026 y se avisa en TODAS las pantallas', async () => {
+    // Fija "hoy" para que las pruebas no dependan del reloj de la máquina (los ciclos y las inscripciones dependen de la fecha)
+    irA('#/ajustes');
+    await escribir(await esperar(() => doc().querySelector('input[type=date]'), 'el campo de fecha simulada'), '2026-11-23');
+    for (const ruta of ['#/ajustes', '#/', '#/materias', '#/plan', '#/finales', '#/calendario', '#/progreso', '#/materia/fisica-1']) {
+      irA(ruta);
+      await esperar(() => hallar('.franja-fecha', 'Fecha simulada: 23/11/2026'), `el aviso de fecha simulada en ${ruta}`);
+      afirmar(hallar('.cabecera__modo--fecha', 'Fecha simulada'), `falta la marca en la cabecera en ${ruta}`);
+    }
+    irA('#/plan');
+    await esperar(() => todos('.chip-materia').length === 36, 'volver al plan');
+  });
+
+  await prueba('Marcar Análisis Matemático I como aprobada (final, nota 8)', async () => {
+    const chip = hallarExacto('.chip-materia__nombre', 'Análisis Matemático I').closest('button');
+    await clic(chip, 'la materia');
+    await clic(await esperar(() => hallar('aside button', 'Editar estado'), 'el panel de la materia'));
+    await esperar(hoja, 'la hoja de edición');
+    await clic(hallar('dialog[open] .acciones-rapidas button', 'Aprobada'), 'el botón Aprobada');
+    await escribir(await esperar(() => hoja().querySelector('input[type=number]'), 'el campo de nota'), '8');
+    await clic(hallar('dialog[open] button[type=submit]', 'Marcar como aprobada'));
+    await esperarHojaCerrada();
+    const chipNuevo = hallarExacto('.chip-materia__nombre', 'Análisis Matemático I').closest('button');
+    afirmar(texto(chipNuevo).includes('Aprobada · 8'), `el chip dice: ${texto(chipNuevo)}`);
+  });
+
+  await prueba('Persistencia: al recargar sigue aprobada y Inicio cuenta 1 aprobada', async () => {
+    await recargar();
+    const chip = await esperar(() => hallarExacto('.chip-materia__nombre', 'Análisis Matemático I')?.closest('button'), 'el plan tras recargar');
+    afirmar(texto(chip).includes('Aprobada · 8'), `tras recargar dice: ${texto(chip)}`);
+    irA('#/');
+    await esperar(() => cifra(0) === '1', 'la cifra de aprobadas');
+  });
+
+  await prueba('Mapa del plan: elegir una materia dibuja un camino por cada materia relacionada, y quitar la selección los borra', async () => {
+    irA('#/plan?sel=analisis-matematico-2'); // el enlace deja la materia seleccionada
+    await esperar(() => doc().querySelector('.chip-materia[aria-pressed=true]'), 'la materia seleccionada por el enlace');
+    const relacionadas = () => todos('.chip-materia--requisito, .chip-materia--desbloquea').length;
+    await esperar(() => relacionadas() >= 3, 'las materias relacionadas resaltadas');
+    await esperar(() => todos('.mapa__conectores .conector').length === relacionadas(), `un camino por cada materia relacionada (${relacionadas()})`);
+    const solidos = todos('.mapa__conectores .conector:not(.conector--desbloquea)').length;
+    afirmar(solidos === todos('.chip-materia--requisito').length, `caminos sólidos ${solidos} ≠ materias que necesita`);
+    afirmar(hallar('.panel-seleccion', 'Análisis Matemático II'), 'falta el panel de la materia');
+    // dos materias de 1.er año son correlativas de Análisis Matemático II
+    afirmar(hallar('.chip-materia--requisito', 'Álgebra y Geometría Analítica'), 'Álgebra debería figurar como necesaria');
+    await clic(doc().querySelector('.panel-seleccion button[aria-label="Cerrar selección"]'));
+    await esperar(() => todos('.mapa__conectores .conector').length === 0, 'que se borren los caminos');
+  });
+
+  await prueba('PWA: el service worker se instala y precachea la app', async () => {
+    const w = ventana();
+    await esperar(async () => (await w.navigator.serviceWorker.getRegistration())?.active, 'service worker activo', 15000);
+    const claves = await esperar(async () => { const k = await w.caches.keys(); return k.length ? k : null; }, 'caché de precarga');
+    const n = (await (await w.caches.open(claves[0])).keys()).length;
+    afirmar(n >= 10, `la precarga tiene solo ${n} entradas`);
+  });
+
+  await prueba('Sin conexión: la app abre desde el caché, sin tocar el servidor, y conserva los datos', async () => {
+    await recargar(); // desde acá la página está controlada por el service worker
+    afirmar(ventana().navigator.serviceWorker.controller, 'la página no está controlada por el service worker');
+    await fetch('/__sinred?on=1');
+    try {
+      await recargar();
+      await esperar(() => doc().querySelector('.cabecera'), 'que la app abra sin conexión', 10000);
+      irA('#/plan');
+      const chip = await esperar(() => hallarExacto('.chip-materia__nombre', 'Análisis Matemático I')?.closest('button'), 'el plan sin conexión');
+      afirmar(texto(chip).includes('Aprobada · 8'), 'sin conexión se perdieron los datos');
+      const pedidos = await (await fetch('/__pedidos')).json();
+      afirmar(pedidos.length === 0, `llegaron ${pedidos.length} pedidos al servidor sin conexión: ${pedidos.join(', ')}`);
+    } finally {
+      await fetch('/__sinred?on=0');
+    }
+  });
+
+  await prueba('Cursada de Álgebra: regular en el 1.er cuatrimestre 2026, con cierre tomado del calendario', async () => {
+    irA('#/materia/algebra-geometria-analitica');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Álgebra y Geometría Analítica', 'la materia');
+    await clic(seccion('Cursadas').querySelector('button'), 'Cargar cursada');
+    await esperar(hoja, 'la hoja');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar cursada'));
+    await esperarHojaCerrada();
+    const t = texto(seccion('Cursadas'));
+    afirmar(t.includes('1.er cuatrimestre 2026') && t.includes('Regular') && t.includes('cierre 03/07/2026'), `Cursadas dice: ${t}`);
+    afirmar(texto(doc().querySelector('.encabezado-materia')).includes('Regular'), 'el estado no cambió a Regular');
+  });
+
+  await prueba('Un aplazo se cuenta: 1 de 4 aplazos', async () => {
+    await clic(seccion('Finales').querySelector('button'), 'Cargar final');
+    await esperar(hoja, 'la hoja');
+    await clic(hallar('dialog[open] label.segmentado__opcion', 'Me aplazaron'));
+    await escribir(await esperar(() => hoja().querySelector('input[type=number]'), 'el campo de nota'), '4');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar final'));
+    await esperarHojaCerrada();
+    afirmar(texto(seccion('Finales')).includes('Aplazo · 4'), `Finales dice: ${texto(seccion('Finales'))}`);
+    const calculo = todos('details.plegable').find(d => texto(d.querySelector('summary')) === 'Cómo se calculó');
+    afirmar(calculo && texto(calculo).includes('1 de 4 aplazos usados'), `Cómo se calculó: ${texto(calculo)}`);
+    afirmar(texto(doc().querySelector('.camino__paso--actual')).includes('Final'), `Camino: el paso actual es «${texto(doc().querySelector('.camino__paso--actual'))}», debería ser el Final`);
+  });
+
+  await prueba('Notas de la cursada: se cargan, se promedian, un recuperatorio reemplaza, y sobreviven a recargar', async () => {
+    const filas = () => todos('.nota');
+    const resumen = () => texto(seccion('Cómo viene la cursada'));
+    const cargarNota = async (nombre, nota, tipo, reemplazaNombre) => {
+      await clic(seccion('Cómo viene la cursada').querySelector('button'), 'Cargar nota');
+      await esperar(hoja, 'la hoja de la nota');
+      await escribir(hoja().querySelector('input[type=text]'), nombre, 'el nombre');
+      if (tipo) await clic(hallar('dialog[open] label.segmentado__opcion', tipo), tipo);
+      await escribir(hoja().querySelector('input[type=number]'), String(nota), 'la nota');
+      if (reemplazaNombre) {
+        const sel = await esperar(() => hoja().querySelector('select'), 'la lista «¿Qué evaluación reemplaza?»');
+        const opcion = [...sel.options].find(o => o.textContent.includes(reemplazaNombre));
+        afirmar(opcion, `no hay una opción para ${reemplazaNombre}`);
+        await escribir(sel, opcion.value, 'la lista de reemplazo');
+      }
+      await clic(hallar('dialog[open] button[type=submit]', 'Cargar nota'));
+      await esperarHojaCerrada();
+    };
+    irA('#/materia/algebra-geometria-analitica');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Álgebra y Geometría Analítica', 'la materia');
+    await esperar(() => seccion('Cómo viene la cursada'), 'la sección de notas');
+    afirmar(resumen().includes('regla general, sin confirmar'), 'las referencias deberían figurar como sin confirmar');
+    await cargarNota('Parcial 1', 8);
+    await cargarNota('Parcial 2', 6);
+    await esperar(() => resumen().includes('Promedio 7 ') && resumen().includes('mínima 6 (Parcial 2)'), `promedio y mínima (${resumen().slice(0, 200)})`);
+    afirmar(!/vas a promocionar|promocionás|regularizás/i.test(resumen()), 'el resumen no debería prometer un resultado');
+    // el recuperatorio reemplaza a «Parcial 2»
+    await cargarNota('Recuperatorio P2', 9, 'Recuperatorio', 'Parcial 2');
+    await esperar(() => resumen().includes('Promedio 8,5'), `el promedio con el recuperatorio (${resumen().slice(0, 200)})`);
+    afirmar(hallar('.nota--reemplazada', 'Parcial 2'), '«Parcial 2» debería figurar como reemplazada');
+    // sobreviven a recargar
+    await recargar();
+    await esperar(() => seccion('Cómo viene la cursada') && filas().length === 3, 'las 3 notas tras recargar');
+    afirmar(resumen().includes('Promedio 8,5'), `tras recargar: ${resumen().slice(0, 200)}`);
+    // referencias propias: ya no dicen «sin confirmar»
+    await clic(hallar('.enlace-boton', 'Ajustar', seccion('Cómo viene la cursada')), 'Ajustar');
+    await esperar(hoja, 'la hoja de referencias');
+    const [promo, regu] = todos('dialog[open] input[type=number]');
+    await escribir(promo, '7'); await escribir(regu, '5');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
+    await esperarHojaCerrada();
+    afirmar(resumen().includes('7 para promocionar · 5 para regularizar') && !resumen().includes('sin confirmar'), `referencias: ${resumen().slice(0, 300)}`);
+    // borrar el recuperatorio: «Parcial 2» vuelve a contar
+    // por el nombre exacto: la fila de «Parcial 2» también dice «reemplazada por Recuperatorio P2»
+    const filaDe = nombre => filas().find(f => texto(f.querySelector('.nota__texto strong')) === nombre);
+    await clic(filaDe('Recuperatorio P2').querySelector('button[aria-label^="Borrar"]'), 'Borrar');
+    await clic(await esperar(() => filaDe('Recuperatorio P2')?.querySelector('button[aria-label^="Confirmar"]'), 'la confirmación'));
+    await esperar(() => filas().length === 2 && resumen().includes('Promedio 7 '), `volver al promedio 7 (${resumen().slice(0, 160)})`);
+    afirmar(!doc().querySelector('.nota--reemplazada'), '«Parcial 2» sigue reemplazada');
+  });
+
+  await prueba('Validación: un final aprobado con nota 3 se rechaza y la hoja sigue abierta', async () => {
+    await clic(seccion('Finales').querySelector('button'), 'Cargar final');
+    await esperar(hoja, 'la hoja');
+    await escribir(await esperar(() => hoja().querySelector('input[type=number]'), 'el campo de nota'), '3');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar final'));
+    await esperar(() => hallar('dialog[open] .aviso--error', 'Un final aprobado va de 6 a 10'), 'el mensaje de error');
+    afirmar(hoja(), 'la hoja se cerró');
+    await clic(hoja().querySelector('button[aria-label=Cerrar]'));
+    await esperarHojaCerrada();
+    afirmar(!texto(seccion('Finales')).includes('Aprobado · 3'), 'se guardó una nota inválida');
+  });
+
+  await prueba('Calendario: cargar el cursado 2027 hace confirmada la inscripción y Inicio la muestra', async () => {
+    irA('#/calendario');
+    await esperar(() => hallar('.botonera button', 'Cursado'), 'los botones del calendario');
+    await clic(hallar('.botonera button', 'Cursado'));
+    await esperar(hoja, 'la hoja');
+    const fechas = todos('dialog[open] input[type=date]');
+    for (const [i, f] of ['2027-03-15', '2027-07-02', '2027-03-01', '2027-03-26'].entries()) await escribir(fechas[i], f, `la fecha ${i + 1}`);
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar'));
+    await esperarHojaCerrada();
+    const item = hallarExacto('.agenda__item strong', 'Inscripción a cursado 1C 2027')?.closest('.agenda__item');
+    afirmar(item, 'no aparece la inscripción a cursado 2027');
+    afirmar(!texto(item).includes('estimado'), 'la inscripción sigue marcada como estimada');
+    afirmar(texto(item).includes('cargado por vos'), 'no dice que lo cargó el usuario');
+    irA('#/');
+    const s = await esperar(() => seccion('Para cursar en el 1C 2027'), 'la sección del próximo cuatrimestre');
+    afirmar(texto(s).includes('01/03 – 26/03/2027') && !texto(s).includes('estimada'), `Inicio dice: ${texto(s).slice(0, 160)}`);
+  });
+
+  await prueba('Tema oscuro: se aplica y se recuerda al recargar', async () => {
+    irA('#/ajustes');
+    await clic(await esperar(() => hallar('label.segmentado__opcion', 'Oscuro'), 'la opción Oscuro'));
+    await esperar(() => doc().documentElement.dataset.tema === 'oscuro', 'aplicar el tema');
+    await pausa(200); // deja terminar el guardado
+    await recargar();
+    await esperar(() => doc().documentElement.dataset.tema === 'oscuro', 'recordar el tema tras recargar');
+    await clic(hallar('label.segmentado__opcion', 'Automático'));
+    await esperar(() => !doc().documentElement.dataset.tema, 'volver al tema automático');
+  });
+
+  await prueba('Importar un backup válido reemplaza los datos', async () => {
+    irA('#/ajustes');
+    await enviarBackup(backup({ perfil, materias: [{ materiaId: 'fisica-1', cursadas: [{ id: '2026-2C', ciclo: 2026, cuatrimestre: '2C', resultado: 'regular', fechaResultado: '2026-11-27', evaluaciones: [{ id: 'imp1', nombre: 'Parcial importado', tipo: 'parcial', nota: 9 }] }], finales: [{ fecha: '2026-11-20', resultado: 'aprobado', nota: 7 }] }] }));
+    await esperar(() => hallar('.aviso--ok', 'es válido'), 'el aviso de backup válido');
+    await clic(hallar('button', 'Reemplazar mis datos'));
+    irA('#/materia/fisica-1');
+    await esperar(() => texto(doc().querySelector('.encabezado-materia')).includes('Aprobada · 7'), 'Física I aprobada con 7');
+    afirmar(hallar('.notas', 'Parcial importado'), 'la nota del backup no llegó a la pantalla');
+    irA('#/materia/analisis-matematico-1');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Análisis Matemático I', 'cambiar de materia');
+    afirmar(!texto(doc().querySelector('.encabezado-materia')).includes('Aprobada'), 'sobrevivieron datos del usuario anterior');
+  });
+
+  await prueba('Un backup de una versión desconocida se rechaza y no toca los datos', async () => {
+    irA('#/ajustes');
+    await enviarBackup(backup({}, 99), 'futuro.json');
+    const aviso = await esperar(() => hallar('.aviso--error', 'No se pudo importar'), 'el error de importación');
+    afirmar(texto(aviso).includes('más nueva'), `el error dice: ${texto(aviso)}`);
+    afirmar(!hallar('button', 'Reemplazar mis datos'), 'ofrece reemplazar con un backup inválido');
+    irA('#/materia/fisica-1');
+    await esperar(() => texto(doc().querySelector('.encabezado-materia')).includes('Aprobada · 7'), 'los datos siguen intactos');
+  });
+
+  await prueba('Exportar backup: el recordatorio desaparece, el archivo es válido y se llama con la fecha', async () => {
+    irA('#/');
+    await esperar(() => hallar('.aviso', 'Hacé un backup'), 'el recordatorio de backup (nunca exportó)');
+    irA('#/ajustes');
+    const W = ventana();
+    let blob = null;
+    let nombre = null;
+    W.URL.createObjectURL = b => { blob = b; return 'blob:prueba'; }; // se intercepta la descarga para poder leer el archivo
+    W.HTMLAnchorElement.prototype.click = function () { nombre = this.download; };
+    await clic(await esperar(() => hallar('button', 'Exportar backup'), 'el botón Exportar backup'));
+    await esperar(() => blob, 'que se genere el archivo');
+    const json = JSON.parse(await blob.text());
+    afirmar(json.app === 'regu' && json.schemaVersion === 1, `cabecera del backup: ${json.app} v${json.schemaVersion}`);
+    afirmar(json.datos.materias.some(m => m.materiaId === 'fisica-1'), 'el backup no incluye los datos cargados');
+    afirmar(nombre === 'regu-backup-2026-11-23.json', `nombre de la descarga: ${nombre}`);
+    window.backupExportado = json;
+    await esperar(() => hallar('.aviso--ok', 'regu-backup-2026-11-23.json'), 'el aviso de descarga');
+    irA('#/');
+    await esperar(() => doc().querySelector('.portada') && !hallar('.aviso', 'Hacé un backup'), 'que ya no pida el backup');
+  });
+
+  await prueba('Cierre de cursada (ejemplo, 1/12/2026): "¿Cómo te fue?" → Regular saca la materia de la lista', async () => {
+    await cargar(`${BASE}?ejemplo=1#/ajustes`);
+    await escribir(await esperar(() => doc().querySelector('input[type=date]'), 'el campo de fecha simulada'), '2026-12-01');
+    irA('#/');
+    const filas = () => todos('li.tarjeta--cierre');
+    await esperar(() => filas().length === 4, 'las 4 cursadas por cerrar');
+    afirmar(filas().some(f => texto(f).includes('Física II')), 'falta Física II');
+    await clic(hallar('button', 'Regular', filas().find(f => texto(f).includes('Física II'))), 'el botón Regular de Física II');
+    await esperar(() => filas().length === 3 && !filas().some(f => texto(f).includes('Física II')), 'que Física II salga de la lista');
+    irA('#/materia/fisica-2');
+    await esperar(() => texto(doc().querySelector('.encabezado-materia')).includes('Regular'), 'Física II regular');
+  });
+
+  await prueba('Cierre de cursada: "Promocioné" abre la hoja con la aprobación directa precargada', async () => {
+    irA('#/');
+    const fila = await esperar(() => todos('li.tarjeta--cierre').find(f => texto(f).includes('Probabilidad y Estadística')), 'la fila de Probabilidad');
+    await clic(hallar('button', 'Promocioné', fila));
+    await esperar(hoja, 'la hoja');
+    afirmar(hallar('dialog[open] label.segmentado__opcion--activa', 'Promoción'), 'no viene precargada la promoción');
+    afirmar(hoja().querySelector('input[type=date]').value === '2026-11-27', `fecha de cierre precargada: ${hoja().querySelector('input[type=date]').value}`);
+    const nota = todos('input[type=number]', hoja()).find(i => i.min === '6');
+    await escribir(nota, '8', 'la nota');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar cursada'));
+    await esperarHojaCerrada();
+    irA('#/materia/probabilidad-estadistica');
+    await esperar(() => texto(doc().querySelector('.encabezado-materia')).includes('Aprobada'), 'Probabilidad aprobada');
+    afirmar(texto(seccion('Aprobación')).includes('Aprobación directa · 8'), `Aprobación dice: ${texto(seccion('Aprobación'))}`);
+  });
+
+  await prueba('Finales: "Cargar resultado" abre directo el formulario y un aplazo suma al contador', async () => {
+    irA('#/finales');
+    const tarjeta = await esperar(() => todos('.tarjeta--materia').find(t => texto(t).includes('Análisis Matemático II')), 'la tarjeta de Análisis Matemático II');
+    afirmar(texto(tarjeta).includes('2 aplazos de 4'), `antes: ${texto(tarjeta)}`);
+    await clic(hallar('button', 'Cargar resultado', tarjeta));
+    await esperar(hoja, 'la hoja');
+    afirmar(!hoja().querySelector('.acciones-rapidas'), 'la hoja abrió en el menú en lugar de en el formulario del final');
+    await clic(await esperar(() => hallar('dialog[open] label.segmentado__opcion', 'Me aplazaron'), 'la opción Me aplazaron'));
+    await escribir(await esperar(() => hoja().querySelector('input[type=number]'), 'el campo de nota'), '3');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar final'));
+    await esperarHojaCerrada();
+    await esperar(() => texto(todos('.tarjeta--materia').find(t => texto(t).includes('Análisis Matemático II'))).includes('3 aplazos de 4'), 'el contador en 3');
+  });
+
+  await prueba('Camino (ejemplo, 15/10/2026, a mitad de cuatrimestre): el resultado de la cursada se ve en el momento', async () => {
+    await cargar(`${BASE}?ejemplo=1#/ajustes`);
+    await escribir(await esperar(() => doc().querySelector('input[type=date]'), 'el campo de fecha simulada'), '2026-10-15');
+    const entrar = async (id, nombre) => {
+      irA(`#/materia/${id}`);
+      await esperar(() => texto(doc().querySelector('h1')) === nombre, nombre);
+    };
+    const pasoActual = () => texto(doc().querySelector('.camino__paso--actual'));
+    const cabecera = () => texto(doc().querySelector('.encabezado-materia'));
+    const confirmar = async texto_ => { await clic(await esperar(() => hallar('dialog[open] button[type=submit]', texto_), `el botón «${texto_}»`)); await esperarHojaCerrada(); };
+
+    // Cursando → Regularicé: pasa a Final enseguida, aunque el cuatrimestre termine el 27/11
+    await entrar('fisica-2', 'Física II');
+    afirmar(pasoActual().includes('Cursada'), `el paso actual es «${pasoActual()}»`);
+    await clic(hallar('.siguiente button', 'Regularicé'), 'Regularicé');
+    await esperar(hoja, 'la hoja');
+    await confirmar('Confirmar: regularicé');
+    await esperar(() => pasoActual().includes('Final') && cabecera().includes('Regular'), 'que pase a Regular / Final en el momento');
+    afirmar(hallar('.notas', 'Parcial 1') && hallar('.notas', 'TP de laboratorio'), 'al declarar el resultado se perdieron las notas de la cursada');
+
+    // Cursando → Promocioné con nota: aprobada, y el final "no hizo falta"
+    await entrar('comunicacion-datos', 'Comunicaciones de Datos');
+    await clic(hallar('.siguiente button', 'Promocioné'), 'Promocioné');
+    await esperar(hoja, 'la hoja');
+    await escribir(await esperar(() => hoja().querySelector('input[type=number]'), 'el campo de nota'), '8');
+    await confirmar('Confirmar promoción');
+    await esperar(() => cabecera().includes('Aprobada'), 'que figure aprobada en el momento');
+    afirmar(texto(doc().querySelector('.camino__paso--omitido')).includes('Final'), 'el paso Final debería figurar como "no hizo falta"');
+    afirmar(texto(seccion('Aprobación')).includes('Aprobación directa · 8'), `Aprobación: ${texto(seccion('Aprobación'))}`);
+
+    // Cursando → Quedé libre: hay que volver a cursarla
+    await entrar('probabilidad-estadistica', 'Probabilidad y Estadística');
+    await clic(hallar('.siguiente button', 'Quedé libre'), 'Quedé libre');
+    await esperar(hoja, 'la hoja');
+    await confirmar('Confirmar: quedé libre');
+    await esperar(() => cabecera().includes('Recursar') && hallar('.siguiente button', 'Volver a cursarla'), 'Recursar y la acción «Volver a cursarla»');
+
+    // Habilitada → Empezar a cursarla: el 1C 2026 ya terminó, así que propone el 1C 2027
+    await entrar('analisis-numerico', 'Análisis Numérico');
+    await clic(hallar('.siguiente button', 'Empezar a cursarla'), 'Empezar a cursarla');
+    await esperar(hoja, 'la hoja');
+    afirmar(hallar('dialog[open] .aviso--info', 'se anota para el 1.er cuatrimestre 2027'), 'no avisa que se anota para el año siguiente');
+    afirmar(!hallar('dialog[open] legend', '¿Cómo te fue?'), 'el formulario simple no debería pedir el resultado');
+    await confirmar('Empezar a cursarla');
+    await esperar(() => hallar('.siguiente', 'Anotada para el 1.er cuatrimestre 2027'), 'la tarjeta «Anotada para…»');
+    afirmar(texto(seccion('Cursadas')).includes('1.er cuatrimestre 2027'), `Cursadas: ${texto(seccion('Cursadas'))}`);
+  });
+
+  await prueba('Modo ejemplo (?ejemplo=1): muestra al estudiante de ejemplo; Salir vuelve a los datos reales', async () => {
+    await cargar(`${BASE}?ejemplo=1#/`);
+    await esperar(() => hallarExacto('.cabecera__modo', 'Ejemplo'), 'la marca de modo ejemplo');
+    await esperar(() => cifra(0) === '12', 'las 12 aprobadas del ejemplo');
+    await clic(doc().querySelector('.franja-ejemplo button'), 'Salir del ejemplo');
+    await esperar(() => !hallarExacto('.cabecera__modo', 'Ejemplo') && cifra(0) === '1', 'volver a los datos reales (1 aprobada)');
+    afirmar(!ventana().location.search.includes('ejemplo'), 'la URL conserva ?ejemplo=1');
+  });
+
+  await prueba('Borrar todos los datos vuelve a la bienvenida, también tras recargar', async () => {
+    irA('#/ajustes');
+    await clic(await esperar(() => hallar('button', 'Borrar todos mis datos'), 'el botón de borrado'));
+    await clic(await esperar(() => hallar('button', 'Sí, borrar'), 'la confirmación'));
+    await esperar(() => hallar('button', 'Empezar'), 'la bienvenida');
+    await recargar();
+    await esperar(() => hallar('button', 'Empezar'), 'la bienvenida tras recargar');
+  });
+
+  await prueba('Restaurar: el backup exportado se importa desde la bienvenida y deja todo igual', async () => {
+    afirmar(window.backupExportado, 'no hay un backup exportado en una prueba anterior');
+    await enviarBackup(window.backupExportado, 'regu-backup-2026-11-23.json');
+    await esperar(() => hallar('.aviso--ok', 'es válido'), 'el aviso de backup válido');
+    await clic(hallar('button', 'Importar'));
+    await esperar(() => doc().querySelector('.cabecera'), 'que abra la app con los datos');
+    irA('#/materia/fisica-1');
+    await esperar(() => texto(doc().querySelector('.encabezado-materia')).includes('Aprobada · 7'), 'Física I aprobada con 7, como antes de borrar');
+    afirmar(hallar('.notas', 'Parcial importado'), 'la nota no sobrevivió al exportar y restaurar el backup');
+  });
+
+  await prueba('Volver a hoy: quita la fecha simulada de todas las pantallas', async () => {
+    await clic(await esperar(() => hallar('.franja-fecha button', 'Volver a hoy'), 'el botón Volver a hoy'));
+    await esperar(() => !doc().querySelector('.franja-fecha') && !doc().querySelector('.cabecera__modo--fecha'), 'que desaparezca el aviso');
+    await recargar();
+    await esperar(() => doc().querySelector('.cabecera'), 'recargar');
+    afirmar(!doc().querySelector('.franja-fecha'), 'la fecha simulada volvió tras recargar');
+  });
+
+  await prueba('Escritorio (≥900 px): la barra lateral acompaña el scroll en una página larga', async () => {
+    // El marco normal mide 400 px y nunca activa el diseño de escritorio: se lo ensancha para esta prueba
+    marco.style.width = '1100px';
+    marco.style.height = '700px';
+    try {
+      await pausa(300);
+      irA('#/materias');
+      await esperar(() => todos('.fila--materia').length > 30, 'la lista larga de materias');
+      const w = ventana();
+      const barra = doc().querySelector('.nav');
+      afirmar(w.getComputedStyle(barra).position === 'sticky', `la barra no es sticky: ${w.getComputedStyle(barra).position} (¿diseño de escritorio?)`);
+      afirmar(doc().documentElement.scrollHeight > w.innerHeight + 900, 'la página no es lo bastante larga para probar el scroll');
+      w.scrollTo(0, 900);
+      await pausa(300);
+      const r = barra.getBoundingClientRect();
+      afirmar(Math.abs(r.top) <= 1, `con la página scrolleada 900 px la barra quedó en top=${Math.round(r.top)} (se fue con el scroll)`);
+      afirmar(r.bottom >= w.innerHeight - 1, `la barra termina en ${Math.round(r.bottom)} y la ventana mide ${w.innerHeight}: queda un hueco blanco debajo`);
+    } finally {
+      marco.style.width = '';
+      marco.style.height = '';
+      ventana().scrollTo(0, 0);
+    }
+  });
+
+  await prueba('Sin errores de JavaScript durante todos los flujos', async () => {
+    afirmar(erroresApp.length === 0, erroresApp.join(' | '));
+  });
+
+  pintar(true);
+  // Sin esta señal el servidor no libera el evento load y Firefox no termina
+  await fetch('/__resultado', { method: 'POST', body: JSON.stringify(resultados) });
+</script>
