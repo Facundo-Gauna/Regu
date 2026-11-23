@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Valida los archivos de datos de referencia (planes y calendarios).
+// Valida los archivos de datos de referencia (planes, calendarios y reglas).
 // Uso: node herramientas/validar-datos.mjs [archivo.json ...]
-// Sin argumentos valida todo lo que hay en datos/planes y datos/calendarios.
+// Sin argumentos valida todo lo que hay en datos/planes, datos/calendarios y datos/reglas.
 // Sale con código 1 si hay errores. Las advertencias no hacen fallar.
 // La lógica vive en src/datos/validar.ts (la comparte con la app).
 
@@ -14,7 +14,7 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 function archivosPorDefecto() {
   const out = [];
-  for (const dir of ['datos/planes', 'datos/calendarios']) {
+  for (const dir of ['datos/planes', 'datos/calendarios', 'datos/reglas']) {
     try {
       for (const f of readdirSync(join(raiz, dir))) if (f.endsWith('.json')) out.push(join(raiz, dir, f));
     } catch { /* carpeta inexistente */ }

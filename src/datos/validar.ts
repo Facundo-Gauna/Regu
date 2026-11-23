@@ -2,7 +2,7 @@
 // Lo usan el CLI (herramientas/validar-datos.mjs) y la app al arrancar (PLAN-3: un plan inválido no se carga).
 // Los errores impiden usar el archivo; las advertencias se muestran pero no lo impiden.
 
-import type { Calendario, Plan } from '../motor/tipos.ts';
+import type { Calendario, Plan, ReglaCursada } from '../motor/tipos.ts';
 import { esFechaValida } from '../motor/fechas.ts';
 
 export interface Validacion {
@@ -208,9 +208,55 @@ function validarCalendarioTipado(c: Calendario, errores: string[], avisos: strin
   for (const v of (c as unknown as { verificar?: string[] }).verificar ?? []) avisos.push(`verificar → ${v}`);
 }
 
-export function validar(entrada: unknown): Validacion & { tipo: 'plan' | 'calendario' | null } {
+/** Valida el archivo de reglas de cátedra. Con el plan, además comprueba que cada materia exista en él. */
+export function validarReglas(entrada: unknown, plan?: Plan): Validacion {
+  const errores: string[] = [];
+  const avisos: string[] = [];
+  if (!esObjeto(entrada)) return { errores: ['reglas: el archivo no es un objeto'], avisos };
+  errores.push(...faltantes(entrada, ['schemaVersion', 'tipo', 'id', 'planId', 'versionDatos', 'reglas'], 'reglas'));
+  if (entrada['schemaVersion'] !== 1) errores.push(`schemaVersion ${String(entrada['schemaVersion'])} no soportada`);
+  if (!Array.isArray(entrada['reglas'])) return { errores: [...errores, "reglas: 'reglas' debe ser una lista"], avisos };
+
+  const ids = new Set(plan?.materias.map(m => m.id));
+  const vistas = new Set<string>();
+  for (const [i, raw] of (entrada['reglas'] as unknown[]).entries()) {
+    if (!esObjeto(raw)) { errores.push(`reglas[${i}]: no es un objeto`); continue; }
+    const r = raw as unknown as ReglaCursada;
+    const donde = `regla ${String(r.materiaId ?? i)}`;
+    errores.push(...faltantes(raw, ['materiaId', 'ciclo', 'tipo', 'instancias', 'recuperatorios', 'tambien', 'resumen', 'fuente', 'verificar'], donde));
+    if (typeof r.materiaId !== 'string' || !ID.test(r.materiaId)) { errores.push(`${donde}: materiaId inválido`); continue; }
+    const clave = `${r.materiaId}/${String(r.ciclo)}`;
+    if (vistas.has(clave)) errores.push(`${donde}: duplicada para el ciclo ${String(r.ciclo)}`);
+    vistas.add(clave);
+    if (plan && !ids.has(r.materiaId)) errores.push(`${donde}: la materia no está en el plan`);
+    if (!Number.isInteger(r.ciclo)) errores.push(`${donde}: ciclo inválido`);
+    if (r.tipo !== 'notas' && r.tipo !== 'texto') errores.push(`${donde}: tipo '${String(r.tipo)}' desconocido`);
+    if (r.instancias !== null && !(Number.isInteger(r.instancias) && r.instancias > 0)) errores.push(`${donde}: instancias debe ser un entero positivo o null`);
+    if (!Array.isArray(r.tambien) || !Array.isArray(r.verificar)) errores.push(`${donde}: 'tambien' y 'verificar' deben ser listas`);
+    if (esObjeto(r.fuente)) {
+      for (const c of ['archivo', 'seccion', 'cita'] as const) if (typeof r.fuente[c] !== 'string' || !r.fuente[c]) errores.push(`${donde}: fuente.${c} vacío`);
+    }
+    for (const nivel of ['promocion', 'regular'] as const) {
+      const c = r[nivel];
+      if (c === undefined) continue;
+      if (!esObjeto(c)) { errores.push(`${donde}: ${nivel} inválida`); continue; }
+      for (const k of ['cadaInstanciaMin', 'promedioMin'] as const) {
+        const v = c[k];
+        if (v !== undefined && !(typeof v === 'number' && v >= 1 && v <= 10)) errores.push(`${donde}: ${nivel}.${k} debe estar entre 1 y 10`);
+      }
+      if (c.cadaInstanciaMin === undefined && c.promedioMin === undefined) errores.push(`${donde}: ${nivel} no define ningún mínimo`);
+    }
+    if (r.tipo === 'notas' && !r.promocion && !r.regular) errores.push(`${donde}: una regla de notas necesita promocion o regular`);
+    if (r.tipo === 'texto' && (r.promocion || r.regular)) avisos.push(`${donde}: una regla de texto no se calcula; se ignoran sus mínimos`);
+    for (const v of Array.isArray(r.verificar) ? r.verificar : []) avisos.push(`${donde}: verificar → ${v}`);
+  }
+  return { errores, avisos };
+}
+
+export function validar(entrada: unknown): Validacion & { tipo: 'plan' | 'calendario' | 'reglas' | null } {
   const tipo = esObjeto(entrada) ? entrada['tipo'] : undefined;
   if (tipo === 'plan') return { ...validarPlan(entrada), tipo };
   if (tipo === 'calendario') return { ...validarCalendario(entrada), tipo };
+  if (tipo === 'reglas') return { ...validarReglas(entrada), tipo };
   return { errores: [`tipo desconocido '${String(tipo)}'`], avisos: [], tipo: null };
 }

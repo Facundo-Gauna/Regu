@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "tipo": "reglas",
+  "id": "utn-frvm-isi-reglas-2026",
+  "planId": "utn-frvm-isi-2023",
+  "versionDatos": 1,
+  "nota": "Reglas de 1.er año transcriptas de las planificaciones de cátedra 2026. Las planificaciones cambian cada año y varias tienen redacción ambigua: cada regla trae su fuente, su cita y sus dudas.",
+  "reglas": [
+    {
+      "materiaId": "ingles-1",
+      "ciclo": 2026,
+      "tipo": "notas",
+      "instancias": 3,
+      "promocion": { "cadaInstanciaMin": 8 },
+      "regular": { "cadaInstanciaMin": 6 },
+      "recuperatorios": "1 recuperatorio para la aprobación directa y 2 para la no directa; sirven si una instancia da menos que el mínimo o por inasistencia.",
+      "tambien": [
+        "Tener aprobados los trabajos prácticos de cada módulo antes de cada instancia",
+        "Asistencia de 75 % o más"
+      ],
+      "resumen": "Tres instancias: con 8 o más en todas aprobás directo; con 6 o más en todas regularizás y rendís final.",
+      "fuente": {
+        "archivo": "ingles_I.pdf",
+        "seccion": "13. Metodología de evaluación",
+        "cita": "El alumno que apruebe las tres instancias de evaluación con un 80% (lo que equivale a 8) está en condiciones de aprobar la materia de manera directa. [...] El alumno tiene derecho a un (1) recuperatorio para lograr la aprobación directa. [...] Los estudiantes se encontrarán bajo dicha condición si aprueban las tres instancias de evaluación con el 60% (lo que equivale al 6). [...] dos (2) recuperatorios para lograr la aprobación no directa."
+      },
+      "verificar": []
+    },
+    {
+      "materiaId": "fisica-1",
+      "ciclo": 2026,
+      "tipo": "notas",
+      "instancias": 2,
+      "promocion": { "cadaInstanciaMin": 6, "promedioMin": 7 },
+      "regular": { "cadaInstanciaMin": 6, "promedioMin": 6 },
+      "recuperatorios": "Sin ningún parcial aprobado: una integradora (6) que da regularidad pero no aprobación directa. Con un parcial desaprobado: recuperás ese parcial y podés llegar a aprobación directa si sacás 7 o más. Con ambos aprobados pero sin llegar a aprobación directa: recuperás un parcial a elección y accedés con 7 o más.",
+      "tambien": [
+        "Asistencia de 80 % o más",
+        "Presentar y asistir al 100 % de los trabajos de laboratorio, y aprobarlos"
+      ],
+      "resumen": "Dos parciales: con cada uno en 6 o más y promedio de 7 o más aprobás directo; con promedio de 6 o más regularizás.",
+      "fuente": {
+        "archivo": "fisica_I.pdf",
+        "seccion": "13. Metodología de evaluación",
+        "cita": "El estudiante obtendrá la condición de regular cuando apruebe los resultados de aprendizaje con el promedio de estos dando nota mínima de 6 (seis). En estos casos, la instancia evaluativa correspondiente deberá estar aprobada con nota mínima de 6 (seis). [...] Aprobación Directa: [...] con el promedio de estos dando nota mínima de 7 (siete)."
+      },
+      "verificar": [
+        "La planificación habla del promedio de los resultados de aprendizaje (RA); acá se usa el promedio de los dos parciales, que integran los tres RA. Confirmar con la cátedra."
+      ]
+    },
+    {
+      "materiaId": "logica-estructuras-discretas",
+      "ciclo": 2026,
+      "tipo": "notas",
+      "instancias": 2,
+      "promocion": { "cadaInstanciaMin": 8 },
+      "regular": { "cadaInstanciaMin": 6 },
+      "recuperatorios": "Cada una de las dos instancias tiene su recuperatorio, que se toma en el aula.",
+      "tambien": [
+        "Asistencia de 75 % o más",
+        "Haber hecho todos los cuestionarios y actividades prácticas adicionales"
+      ],
+      "resumen": "Dos instancias: con 8 o más en todas aprobás directo; con 6 o más en todas regularizás y rendís final.",
+      "fuente": {
+        "archivo": "logicas_y_estructuras_discretas.pdf",
+        "seccion": "13. Metodología de evaluación",
+        "cita": "Regularidad: [...] aprobadas las instancias evaluativas programadas con una calificación de 6 (seis) o más. [...] Aprobación directa: Si el estudiante en todas las instancias evaluativas logra su aprobación con la calificación igual a 8 (ocho) o superior."
+      },
+      "verificar": [
+        "Menciona un «Coloquio Final» para quienes están en condiciones de aprobación directa: no queda claro si es obligatorio ni si cuenta para la nota."
+      ]
+    },
+    {
+      "materiaId": "sistemas-procesos-negocio",
+      "ciclo": 2026,
+      "tipo": "notas",
+      "instancias": 4,
+      "promocion": { "cadaInstanciaMin": 8 },
+      "regular": { "cadaInstanciaMin": 6 },
+      "recuperatorios": "Los recuperatorios reemplazan la nota anterior sin penalización. Hasta 3 recuperatorios de instancias individuales (para mejorar, con la directa; o uno por cada trabajo no aprobado, con la regular).",
+      "tambien": [
+        "Cumplir con el 80 % de los desafíos virtuales para la aprobación directa (60 % para regularizar)",
+        "Asistencia de 75 % o más"
+      ],
+      "resumen": "Tres instancias individuales y el Trabajo Práctico Integrador: con 8 o más en todo aprobás directo; con 6 o más en todo regularizás.",
+      "fuente": {
+        "archivo": "sistemas_y_procesos_de_negocio.pdf",
+        "seccion": "13. Metodología de evaluación · Condiciones de Regularidad, Recuperatorios y Promoción",
+        "cita": "Aprobar el Trabajo Práctico Integrador con nota promedio mayor o igual a 8 (ocho) [...] rendir y aprobar tres (3) Instancias Evaluativas Individuales con nota mayor o igual a ocho. [...] Aprobación no directa: [...] TPI con nota promedio igual o mayor 6 (seis) [...] tres (3) Instancias Evaluativas con nota igual o superior a seis."
+      },
+      "verificar": [
+        "El TPI es anual y su nota es un promedio; acá se cuenta como una cuarta nota. Si cargás las notas de las instancias y el TPI, el cálculo coincide."
+      ]
+    },
+    {
+      "materiaId": "arquitectura-computadoras",
+      "ciclo": 2026,
+      "tipo": "notas",
+      "instancias": null,
+      "promocion": { "promedioMin": 8, "estricto": true },
+      "regular": { "promedioMin": 6, "estricto": true },
+      "recuperatorios": "No se describen recuperatorios por instancia; la planificación prevé una evaluación integradora final.",
+      "tambien": [
+        "Asistencia de 75 %",
+        "Desarrollar las actividades propuestas dentro y fuera del aula",
+        "Realizar al menos el 80 % de los cuestionarios de evaluación",
+        "Participar en las actividades en tiempo real y grupales"
+      ],
+      "resumen": "Una nota obtenida de cuestionarios y trabajos grupales: más de 6 regulariza y más de 8 aprueba directo.",
+      "fuente": {
+        "archivo": "arquitectura_de_computadoras.pdf",
+        "seccion": "13. Metodología de evaluación · Condiciones de aprobación",
+        "cita": "Obtener nota mayor a seis. Se considera en condición de ALUMNO REGULAR a quien cumpla las condiciones del punto anterior, u obtenga nota mayor a seis en la evaluación integradora final. Se considera en condición de APROBACIÓN DIRECTA a quienes obtengan una nota mayor a ocho y cumplan además las condiciones de ALUMNO REGULAR."
+      },
+      "verificar": [
+        "Dice «mayor a seis» y «mayor a ocho»: tomado al pie de la letra, un 6 no regulariza ni un 8 promociona. Parece una redacción floja; confirmar con la cátedra si es mayor o mayor o igual.",
+        "No dice cuántas notas componen la nota final."
+      ]
+    },
+    {
+      "materiaId": "algoritmos-estructuras-datos",
+      "ciclo": 2026,
+      "tipo": "texto",
+      "instancias": null,
+      "recuperatorios": "Un parcial recuperatorio para cualquiera de los cuatro parciales.",
+      "tambien": [
+        "Asistencia de 75 % o más"
+      ],
+      "resumen": "Con el 80 % o más de los puntos obtenés la aprobación directa; si no, rendís examen final. La planificación no fija un mínimo numérico para regularizar.",
+      "fuente": {
+        "archivo": "algoritmos_y_estructuras_de_datos.pdf",
+        "seccion": "13. Metodología de evaluación",
+        "cita": "Condiciones de aprobación: Si el alumno logra el 80% o más de los puntos, obtiene la aprobación directa (A.D) de la asignatura. En caso contrario, el alumno deberá presentar un Examen Final (Aprobación No Directa)."
+      },
+      "verificar": [
+        "Se mide en puntos, no en notas de 1 a 10: no se calcula con las notas cargadas.",
+        "No dice cuántos puntos hacen falta para regularizar."
+      ]
+    },
+    {
+      "materiaId": "analisis-matematico-1",
+      "ciclo": 2026,
+      "tipo": "texto",
+      "instancias": null,
+      "recuperatorios": "Los cuestionarios se recuperan con un Cuestionario Integrador; las evaluaciones escritas, con otra instancia escrita. La Actividad Colaborativa no se recupera.",
+      "tambien": [],
+      "resumen": "Cuestionarios, una Actividad Colaborativa (mínimo 6, no se recupera) y evaluaciones escritas; la aprobación directa pide además una Evaluación Escrita Integradora.",
+      "fuente": {
+        "archivo": "analisis_matematico_I.pdf",
+        "seccion": "13. Metodología de evaluación",
+        "cita": "Aprobación directa: [...] Todas estas Instancia evaluativas el promedio debe ser 6(siete). [...] Los estudiantes tenga todas las instancias de evaluación aprobada con nota 6 o mayor, debe hacer una Evaluación Escrita Integradora para acceder la Aprobación Directa, que nota mínima es 6 (seis)."
+      },
+      "verificar": [
+        "Contradicción en el texto: «el promedio debe ser 6(siete)». No se sabe si es 6 o 7: confirmar con la cátedra o en el aula virtual.",
+        "Ofrece también una tabla de ponderaciones (cuestionarios 5/5/5/15 %, escritas 16 y 30 %, colaborativa 24 %) como «otra forma de evaluación»: no queda claro cuándo aplica."
+      ]
+    },
+    {
+      "materiaId": "algebra-geometria-analitica",
+      "ciclo": 2026,
+      "tipo": "texto",
+      "instancias": null,
+      "recuperatorios": "Se pueden recuperar las actividades integradoras (no los cuestionarios); hay una segunda instancia de recuperación y un examen integrador si hay dos o tres resultados de aprendizaje desaprobados.",
+      "tambien": [],
+      "resumen": "Tres resultados de aprendizaje (RA) con nota ponderada: con todos aprobados y promedio de 7 o más, aprobación directa; con todos aprobados y promedio de 6, regular.",
+      "fuente": {
+        "archivo": "algebra_y_geometria_analitica.pdf",
+        "seccion": "13. Metodología de evaluación · Condiciones de aprobación",
+        "cita": "Aprobación Directa: Si todos los RA están aprobados y el promedio es de 7 puntos o más. [...] Condición Regular: Si todos los RA están aprobados y el promedio es de 6 puntos, el estudiante adquiere la condición regular y debe rendir examen final."
+      },
+      "verificar": [
+        "La nota de cada RA es un promedio ponderado (RA1: 80 % integradora + 20 % cuestionario; RA2: 70 % + 30 %; RA3: 100 % exposición) y los recuperatorios se ponderan de nuevo: no se calcula todavía.",
+        "Dice que con dos RA aprobados se alcanza la regularidad con promedio 6, pero no define cuándo un RA está aprobado."
+      ]
+    }
+  ]
+}

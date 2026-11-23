@@ -145,6 +145,43 @@ export interface Umbrales {
   regular: number;
 }
 
+/**
+ * Condición de notas para promocionar o regularizar, según la planificación de una cátedra.
+ * Solo expresa lo que se puede calcular con notas; lo demás (asistencia, laboratorios) va en `ReglaCursada.tambien`.
+ */
+export interface CondicionNotas {
+  /** Cada instancia con nota debe llegar a este valor. */
+  cadaInstanciaMin?: number;
+  /** El promedio de las instancias debe llegar a este valor. */
+  promedioMin?: number;
+  /** true si la planificación dice "mayor a" y no "mayor o igual a" (hoy solo se muestra: la comparación es ≥). */
+  estricto?: boolean;
+}
+
+/**
+ * Regla de una cátedra para un ciclo, transcripta de su planificación. Es un dato de referencia, no del usuario.
+ * `tipo: 'texto'` es para reglas que no se pueden expresar sin interpretar (ponderaciones, puntos, redacción ambigua):
+ * se muestran tal cual y no se calculan.
+ */
+export interface ReglaCursada {
+  materiaId: Id;
+  ciclo: number;
+  tipo: 'notas' | 'texto';
+  /** Cuántas notas componen la cursada; null = la planificación no lo dice. */
+  instancias: number | null;
+  promocion?: CondicionNotas;
+  regular?: CondicionNotas;
+  /** Lo que dice la planificación sobre recuperatorios, en una frase. */
+  recuperatorios: string;
+  /** Condiciones que las notas no pueden decidir (asistencia, laboratorios, actividades): dependen del usuario. */
+  tambien: string[];
+  /** La regla explicada en una frase, para mostrar. */
+  resumen: string;
+  fuente: { archivo: string; seccion: string; cita: string };
+  /** Dudas de la transcripción. Con alguna, la regla se muestra como "a confirmar". */
+  verificar: string[];
+}
+
 export interface Cursada {
   id: Id;
   /** Ciclo lectivo en que se cursó, ej. 2026. */
