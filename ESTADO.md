@@ -4,7 +4,7 @@
 
 ## En una línea
 
-Regu es una PWA personal, local y sin cuentas que le dice a un estudiante de Ingeniería en Sistemas de Información de la UTN FRVM qué puede cursar, qué puede rendir y cómo viene en cada materia. El MVP está completo y probado. **No está publicada** y **no tiene todavía el "qué te falta para promocionar"**.
+Regu es una PWA personal, local y sin cuentas que le dice a un estudiante de Ingeniería en Sistemas de Información de la UTN FRVM qué puede cursar, qué puede rendir y cómo viene en cada materia. El MVP está completo y probado, y está desplegada en Vercel. El **"qué te falta"** existe solo para las 8 materias de 1.er año y con las reglas sin confirmar.
 
 ## Qué está hecho
 
@@ -16,14 +16,15 @@ Regu es una PWA personal, local y sin cuentas que le dice a un estudiante de Ing
 | Camino de la materia | Cursada → Final → Aprobada, con promoción / regular / libre que se ven al instante | Tests y e2e |
 | Mapa del plan | Tira horizontal por año con caminos entre materias (sólido = necesita, punteado = desbloquea) | Tests y e2e |
 | PWA | Instalable, abre sin conexión, funciona servida desde una subcarpeta | Prueba e2e en **Firefox** |
+| Reglas de cátedra de 1.er año | Las 8 materias transcriptas de sus planificaciones 2026, con fuente, cita y dudas. Cinco se calculan («qué te falta», con asistencia y laboratorios aparte) y tres se muestran como texto | Tests y e2e |
 | Backup | Exportar e importar validado, que conserva las notas | Tests y e2e |
 
-Verificación al 23/11/2026: 102 tests, 27 pruebas e2e, contrastes AA calculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
+Verificación al 23/11/2026: 118 tests, 28 pruebas e2e, contrastes AA calculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
 
 ## Qué falta, en orden de prioridad
 
-1. **Reglas de aprobación de las 8 materias de 1.er año**, transcriptas de sus planificaciones de cátedra, y recién ahí mostrar el **"qué te falta"**. Las planificaciones tienen unas 20 variantes de regla (mínimo por instancia, promedios, porcentajes, recuperatorios que mantienen o hacen perder la promoción). Hoy solo se muestra un resumen de las notas y la regla general 8 / 6 marcada "sin confirmar".
-2. **Publicarla y probarla en un celular.** La instalación como app y el uso sin conexión necesitan HTTPS. Pasos en el [README](README.md#deploy-en-vercel).
+1. **Confirmar las reglas de 1.er año con quien cursa** (están transcriptas pero ninguna está confirmada: cada una trae su lista de dudas) y completar lo que falta. Física I, Arquitectura y Sistemas y Procesos tienen interpretaciones a verificar; Análisis Matemático I tiene una contradicción en el texto («promedio 6(siete)»). Quedan **como texto, sin calcular**: Algoritmos (se mide en puntos), Análisis Matemático I y Álgebra (ponderaciones por resultado de aprendizaje). Después, las reglas de 2.º año en adelante.
+2. **Probarla en un celular real.** Ya está desplegada en Vercel (HTTPS), pero no se verificó la instalación como app ni el uso sin conexión en Android ni iOS.
 3. **Importar pegando** las notas de autogestión o del campus. Para armarlo hace falta una captura de cada pantalla con los datos personales tapados. No hay conexión directa y no se resolvió: ver [`docs/idea.md`](docs/idea.md) §18.
 4. **Sin verificar** (se probó solo en Firefox con Node 26): Chrome y Safari, dispositivos Android e iOS reales, el aviso de "hay una versión nueva" del service worker, y la instalación como app.
 5. **Datos que la facultad no publica** y se dejan configurables: horas de electivas por nivel, correlativas de las electivas del plan 2023, requisitos del título intermedio, fechas de inscripción a cursado, mesas por materia.
@@ -34,7 +35,7 @@ Verificación al 23/11/2026: 102 tests, 27 pruebas e2e, contrastes AA calculados
 ## Decisiones que no hay que revertir sin avisar
 
 - **El ámbar `#F5A800` es solo para la marca y la acción principal.** Los estados, avisos y selecciones usan otros colores. "Cursando" es violeta.
-- **Las notas nunca prometen una promoción.** Es un resumen de lo cargado, no el resultado oficial.
+- **Nunca se promete un resultado.** «Qué te falta» dice si por las **notas** se cumple, no se cumple o todavía no se sabe, siempre «según la planificación 2026»; la asistencia, los laboratorios y demás se listan como «depende de vos» porque la app no los conoce. Una regla con dudas se muestra «A confirmar», y una que no se puede expresar sin interpretar se muestra como texto y no se calcula.
 - **Las electivas con datos sin confirmar no figuran como habilitadas.**
 - **El estado de una materia se calcula, no se guarda.** Lo único que se guarda son los hechos (cursadas, finales, notas, correcciones).
 - **Todo es local:** sin cuentas, sin servidor, nada sale del dispositivo.

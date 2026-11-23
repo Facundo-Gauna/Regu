@@ -15,7 +15,7 @@ Es **local y sin cuentas**: todos los datos quedan en tu dispositivo.
 
 ## Estado
 
-El MVP está **completo y probado**, pero todavía **no está publicado** y no incluye el "qué te falta para promocionar". El detalle de lo hecho, lo que falta y las decisiones tomadas está en [`ESTADO.md`](ESTADO.md).
+El MVP está **completo y probado**. Las reglas de aprobación están cargadas solo para las 8 materias de **1.er año**, todavía sin confirmar con la cátedra. El detalle de lo hecho, lo que falta y las decisiones tomadas está en [`ESTADO.md`](ESTADO.md).
 
 ## Capturas
 
@@ -33,7 +33,7 @@ El MVP está **completo y probado**, pero todavía **no está publicado** y no i
 
 - **Disponibilidad:** qué podés cursar y qué podés rendir, con el porqué de cada respuesta. Aplica las reglas de la Ord. 1549: correlativas al inscribirse, excepción de las últimas materias, correlativas que no se exigen al rendir dentro del ciclo lectivo siguiente al cursado, límite de 4 aplazos (los ausentes no cuentan) y condición de estudiante regular.
 - **Camino de cada materia:** Cursada → Final → Aprobada, con una sola acción por estado. Cuando cursás, contás cómo te fue (promoción, regular o libre) y se ve en el momento.
-- **Notas de la cursada:** cargás parciales, trabajos prácticos y recuperatorios; ves el promedio, la mínima y las referencias que ajustás por materia. Es un resumen, no una promesa: no dice "vas a promocionar".
+- **Notas de la cursada y qué te falta:** cargás parciales, trabajos prácticos y recuperatorios; ves el promedio y la mínima. Para las materias de 1.er año, la app compara tus notas con la regla de la planificación 2026 de la cátedra (con la fuente y las dudas a la vista) y te dice si por las notas cumplís, no cumplís o todavía no se sabe. La asistencia y los laboratorios los listás aparte porque la app no los conoce. No promete resultados.
 - **Mapa del plan:** el plan por año, con los caminos entre materias al elegir una (qué necesita, qué desbloquea).
 - **Finales y calendario:** turnos de final, mesas móviles, inscripciones con el cierre a 48 h hábiles, y el calendario académico, que podés completar cuando la facultad publica fechas nuevas.
 - **Progreso:** promedios con y sin aplazos, electivas, requisitos y avance hacia el título intermedio y el final.

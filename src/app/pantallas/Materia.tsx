@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Cursada, Evaluacion, Falta, ResultadoCursada } from '../../motor/index.ts';
+import type { ReglaCursada } from '../../motor/tipos.ts';
 import * as A from '../../datos/acciones.ts';
 import { detalleCorto, etiquetaRegimen, presentarMateria } from '../../vista/estados.ts';
 import { fechaCorta, nombreCuatrimestre } from '../../vista/formato.ts';
-import { formatearNota, seguimientoCursada, type NivelNota } from '../../vista/seguimiento.ts';
+import { formatearNota, queFalta, seguimientoCursada, type EstadoCondicion, type NivelNota, type ResultadoNivel } from '../../vista/seguimiento.ts';
 import { relaciones } from '../../vista/mapa.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { caminoMateria, GLOSA, type Camino } from '../../vista/camino.ts';
 import { veredictoCursar, veredictoRendir, type Veredicto } from '../../vista/veredicto.ts';
 import { AvisoDatos, Boton, Hoja, Icono, Insignia, Seccion, Vacio } from '../componentes.tsx';
 import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado, FormUmbrales } from '../formularios.tsx';
-import type { Modelo } from '../modelo.ts';
+import { referencia, type Modelo } from '../modelo.ts';
 import { actualizar } from '../store.ts';
 
 const RESULTADO_CURSADA: Record<ResultadoCursada, string> = {
@@ -97,14 +98,78 @@ function FilaVeredicto({ etiqueta, v, faltan, m }: { etiqueta: string; v: Veredi
 }
 
 const TONO_NIVEL: Record<NivelNota, string> = { promocion: 'aprobada', regular: 'regular', debajo: 'recursar', pendiente: 'bloqueada' };
+/** La regla de la cátedra para esa materia y ciclo, si la tenemos transcripta. */
+const reglaDe = (materiaId: string, ciclo: number): ReglaCursada | undefined => (referencia.ok ? referencia.reglas.find(r => r.materiaId === materiaId && r.ciclo === ciclo) : undefined);
+
 const TEXTO_TIPO = { parcial: 'Parcial', tp: 'Trabajo práctico', recuperatorio: 'Recuperatorio', otra: 'Otra' } as const;
+
+const TONO_CONDICION: Record<EstadoCondicion, string> = { cumple: 'aprobada', 'no-cumple': 'recursar', pendiente: 'cursando' };
+const TEXTO_CONDICION: Record<EstadoCondicion, string> = { cumple: 'Por tus notas, cumplís', 'no-cumple': 'Por tus notas, no alcanza', pendiente: 'Todavía no se puede saber' };
+
+function Condicion({ titulo, r }: { titulo: string; r: ResultadoNivel }) {
+  return (
+    <div class="condicion">
+      <strong>{titulo}</strong>
+      <span class={`etiqueta t-${TONO_CONDICION[r.estado]}`}>{TEXTO_CONDICION[r.estado]}</span>
+      <ul class="razones">{r.detalles.map(t => <li key={t}>{t}</li>)}</ul>
+    </div>
+  );
+}
+
+/**
+ * La regla de la cátedra para esta cursada, transcripta de su planificación, y qué te falta según tus notas.
+ * Habla solo de notas: la asistencia y lo demás se listan aparte porque la app no lo sabe. No promete resultados.
+ */
+function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursada }) {
+  const q = queFalta(seguimientoCursada(cursada, regla), regla);
+  const aConfirmar = regla.verificar.length > 0;
+  return (
+    <div class="tarjeta regla">
+      <div class="regla__cab">
+        <strong>Regla de tu cátedra · planificación {regla.ciclo}</strong>
+        {aConfirmar && <span class="etiqueta t-habilitada">A confirmar</span>}
+      </div>
+      <p class="seccion__texto">{regla.resumen}</p>
+      {q.calculable ? (
+        <>
+          {q.promocion && <Condicion titulo="Para promocionar" r={q.promocion} />}
+          {q.regular && <Condicion titulo="Para regularizar" r={q.regular} />}
+        </>
+      ) : (
+        <p class="fila__detalle">Esta regla no se puede calcular con tus notas, así que no te digo cuánto te falta. Se muestra tal cual la escribió la cátedra.</p>
+      )}
+      {q.dependeDeVos.length > 0 && (
+        <div>
+          <strong class="fila__detalle">Esto depende de vos (la app no lo sabe)</strong>
+          <ul class="razones">{q.dependeDeVos.map(t => <li key={t}>{t}</li>)}</ul>
+        </div>
+      )}
+      <details class="plegable">
+        <summary>Recuperatorios, dudas y fuente</summary>
+        <div class="plegable__cuerpo">
+          <h3>Recuperatorios</h3>
+          <p class="seccion__texto">{regla.recuperatorios}</p>
+          {aConfirmar && (
+            <>
+              <h3>Dudas de la transcripción</h3>
+              <ul class="razones">{regla.verificar.map(t => <li key={t}>{t}</li>)}</ul>
+            </>
+          )}
+          <h3>Fuente</h3>
+          <p class="fila__detalle">{regla.fuente.archivo} · {regla.fuente.seccion}</p>
+          <blockquote class="cita">{regla.fuente.cita}</blockquote>
+        </div>
+      </details>
+    </div>
+  );
+}
 
 /**
  * Cómo viene la cursada: las notas que fue cargando, con el promedio y la mínima. Es un resumen de lo cargado:
  * no afirma que vaya a promocionar ni a regularizar, porque eso lo define la planificación de cada cátedra.
  */
-function SeguimientoCursada({ cursada, materiaId, abrirNota, editarNota, abrirUmbrales }: { cursada: Cursada; materiaId: string; abrirNota: () => void; editarNota: (e: Evaluacion) => void; abrirUmbrales: () => void }) {
-  const s = seguimientoCursada(cursada);
+function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, abrirUmbrales }: { cursada: Cursada; regla?: ReglaCursada; materiaId: string; abrirNota: () => void; editarNota: (e: Evaluacion) => void; abrirUmbrales: () => void }) {
+  const s = seguimientoCursada(cursada, regla);
   const hay = s.filas.length > 0;
   const { promocion, regular } = s.umbrales;
   const nivelTexto: Record<NivelNota, string> = { promocion: `${formatearNota(promocion)} o más`, regular: `${formatearNota(regular)} o más`, debajo: `menos de ${formatearNota(regular)}`, pendiente: 'sin nota' };
@@ -161,12 +226,13 @@ function SeguimientoCursada({ cursada, materiaId, abrirNota, editarNota, abrirUm
           </div>
         </>
       )}
+      {regla && <ReglaCatedra regla={regla} cursada={cursada} />}
       <p class="fila__detalle">
-        Referencias: {formatearNota(promocion)} para promocionar · {formatearNota(regular)} para regularizar
-        {s.umbralesPropios ? '' : ' (regla general, sin confirmar)'}.{' '}
+        Referencias para colorear las notas: {formatearNota(promocion)} para promocionar · {formatearNota(regular)} para regularizar
+        {s.origenUmbrales === 'general' ? ' (regla general, sin confirmar)' : s.origenUmbrales === 'planificacion' ? ' (de la planificación de tu cátedra)' : ' (las que fijaste vos)'}.{' '}
         <button type="button" class="enlace-boton" onClick={abrirUmbrales}>Ajustar</button>
       </p>
-      <p class="fila__detalle">Es un resumen de tus notas, no el resultado oficial: las condiciones las define la planificación de tu cátedra.</p>
+      <p class="fila__detalle">Es un resumen según la planificación y tus notas, no el resultado oficial: lo confirma la cátedra y autogestión.</p>
     </Seccion>
   );
 }
@@ -290,6 +356,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
       {cursadaVigente && (
         <SeguimientoCursada
           cursada={cursadaVigente}
+          regla={reglaDe(id, cursadaVigente.ciclo)}
           materiaId={id}
           abrirNota={() => { setEvaluacionEditada(undefined); setPanel('nota'); }}
           editarNota={e => { setEvaluacionEditada(e); setPanel('nota'); }}
@@ -441,7 +508,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
           <FormEvaluacion m={m} materiaId={id} cursadaId={cursadaVigente.id} existentes={cursadaVigente.evaluaciones ?? []} inicial={evaluacionEditada} onListo={cerrar} />
         )}
         {panel === 'umbrales' && cursadaVigente && (
-          <FormUmbrales materiaId={id} cursadaId={cursadaVigente.id} actual={seguimientoCursada(cursadaVigente).umbrales} propios={cursadaVigente.umbrales !== undefined} onListo={cerrar} />
+          <FormUmbrales materiaId={id} cursadaId={cursadaVigente.id} actual={seguimientoCursada(cursadaVigente, reglaDe(id, cursadaVigente.ciclo)).umbrales} propios={cursadaVigente.umbrales !== undefined} onListo={cerrar} />
         )}
         {panel === 'promocion' && <FormResultado m={m} materiaId={id} resultado="aprobada-directa" onListo={cerrar} />}
         {panel === 'regularidad' && <FormResultado m={m} materiaId={id} resultado="regular" onListo={cerrar} />}

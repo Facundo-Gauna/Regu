@@ -78,9 +78,18 @@ export function Plan({ m, inicial }: { m: Modelo; inicial?: string }) {
   useEffect(() => {
     const cont = mapa.current;
     if (!cont || typeof ResizeObserver === 'undefined') return;
-    const observador = new ResizeObserver(() => medir());
+    // Se mide en el cuadro siguiente: medir dentro del aviso del observador cambia el layout y el navegador
+    // responde «ResizeObserver loop completed with undelivered notifications».
+    let cuadro = 0;
+    const observador = new ResizeObserver(() => {
+      cancelAnimationFrame(cuadro);
+      cuadro = requestAnimationFrame(medir);
+    });
     observador.observe(cont);
-    return () => observador.disconnect();
+    return () => {
+      cancelAnimationFrame(cuadro);
+      observador.disconnect();
+    };
   }, [medir]);
 
   // La materia elegida se centra en la tira para ver lo que necesita y lo que desbloquea

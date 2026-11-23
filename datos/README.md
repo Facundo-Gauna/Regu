@@ -14,7 +14,8 @@ datos/
 │   └── utn-frvm-isi-2023.json    Plan ISI 2023 (transcripto 23/11/2026)
 ├── calendarios/
 │   └── utn-frvm-2026-27.json     Calendario académico 2026/27
-└── reglas/                       (v0.2) reglas de aprobación por materia y año
+└── reglas/
+    └── utn-frvm-isi-2026.json    Reglas de aprobación de las cátedras de 1.er año (planificaciones 2026)
 ```
 
 Validar todo: `node herramientas/validar-datos.mjs` (sin dependencias). Sale con código 1 si hay errores.
@@ -131,6 +132,17 @@ La fuente de verdad de la forma de los datos es el código: `DatosUsuario` en `s
 - **El estado de una materia no se guarda: se calcula** a partir de las cursadas, finales, aprobación, corrección manual y la fecha. Lo único que se guarda son los hechos. Así no hay estados inconsistentes.
 - **Aplazos** = cantidad de `finales` con `insuficiente` posteriores al cierre de la última cursada regular. Por eso toda cursada con resultado lleva `fechaResultado`: sin ella se contarían mal los aplazos. Recursar los reinicia.
 - **Correcciones** sobre los datos de referencia se guardan aparte para que una actualización del plan no las pise.
+
+## 4 bis. Reglas de cátedra
+
+`datos/reglas/*.json` (tipo `reglas`) trae una regla por materia y ciclo, transcripta de la planificación de la cátedra. Forma: `ReglaCursada` en `src/motor/tipos.ts`, validada por `validarReglas`.
+
+- `tipo: "notas"`: se calcula con las notas. `promocion` y `regular` combinan `cadaInstanciaMin` (mínimo en cada nota), `promedioMin` y `estricto` (la planificación dice «mayor a»). `instancias` es cuántas notas la componen (`null` si no se sabe).
+- `tipo: "texto"`: no se puede expresar sin interpretar (puntos, ponderaciones por resultado de aprendizaje, redacción contradictoria). Se muestra tal cual y no se calcula.
+- `tambien`: lo que las notas no deciden (asistencia, laboratorios). La app lo muestra como «depende de vos».
+- `fuente` (archivo, sección, cita literal) y `verificar` (dudas): una regla con dudas se muestra «A confirmar».
+- Las referencias de color de una cursada salen, en este orden, de lo que fijó el usuario, de la regla de la cátedra o de la regla general 8 / 6 sin confirmar.
+- Las notas no se vinculan a una instancia concreta: cuentan todas las notas vigentes (un recuperatorio con nota reemplaza a la que indica).
 
 ## 5. Agregar o actualizar un plan
 

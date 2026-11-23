@@ -296,6 +296,44 @@
     afirmar(!doc().querySelector('.nota--reemplazada'), '«Parcial 2» sigue reemplazada');
   });
 
+  await prueba('Regla de la cátedra: Inglés I muestra la regla 2026, qué te falta según las notas, y no decide la asistencia', async () => {
+    const regla = () => doc().querySelector('.regla');
+    const cargarNota = async (nombre, nota) => {
+      await clic(seccion('Cómo viene la cursada').querySelector('button'), 'Cargar nota');
+      await esperar(hoja, 'la hoja de la nota');
+      await escribir(hoja().querySelector('input[type=text]'), nombre, 'el nombre');
+      await escribir(hoja().querySelector('input[type=number]'), String(nota), 'la nota');
+      await clic(hallar('dialog[open] button[type=submit]', 'Cargar nota'));
+      await esperarHojaCerrada();
+    };
+    irA('#/materia/ingles-1');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Inglés I', 'la materia');
+    await clic(seccion('Cursadas').querySelector('button'), 'Cargar cursada');
+    await esperar(hoja, 'la hoja');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar cursada'));
+    await esperarHojaCerrada();
+    await esperar(() => regla(), 'la regla de la cátedra');
+    afirmar(texto(regla()).includes('planificación 2026'), `la regla: ${texto(regla()).slice(0, 200)}`);
+    afirmar(texto(regla()).includes('Todavía no cargaste notas'), 'sin notas debería decir que todavía no cargó');
+    await cargarNota('Instancia 1', 8);
+    await cargarNota('Instancia 2', 7);
+    await esperar(() => texto(regla()).includes('Instancia 2 (7)'), `el 7 debería marcar que no llega a 8 (${texto(regla()).slice(0, 300)})`);
+    afirmar(texto(regla()).includes('Por tus notas, no alcanza'), 'para promocionar con un 7 debería decir que no alcanza');
+    afirmar(texto(regla()).includes('Asistencia de 75 %'), 'la asistencia debe figurar como algo que depende del usuario');
+    afirmar(texto(regla()).includes('Esto depende de vos'), 'falta el bloque «depende de vos»');
+    afirmar(!/vas a promocionar|vas a regularizar/i.test(texto(regla())), 'no debería prometer un resultado');
+    afirmar(texto(seccion('Cómo viene la cursada')).includes('de la planificación de tu cátedra'), 'las referencias deberían decir que salen de la planificación');
+    // una materia con regla de texto no se calcula
+    irA('#/materia/analisis-matematico-1');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Análisis Matemático I', 'otra materia');
+    await clic(seccion('Cursadas').querySelector('button'), 'Cargar cursada');
+    await esperar(hoja, 'la hoja');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar cursada'));
+    await esperarHojaCerrada();
+    await esperar(() => regla(), 'la regla de Análisis Matemático I');
+    afirmar(texto(regla()).includes('no se puede calcular') && texto(regla()).includes('A confirmar'), `AM I: ${texto(regla()).slice(0, 250)}`);
+  });
+
   await prueba('Validación: un final aprobado con nota 3 se rechaza y la hoja sigue abierta', async () => {
     await clic(seccion('Finales').querySelector('button'), 'Cargar final');
     await esperar(hoja, 'la hoja');
