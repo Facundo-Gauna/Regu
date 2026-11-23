@@ -28,7 +28,8 @@ Verificación al 23/11/2026: 102 tests, 27 pruebas e2e, contrastes AA calculados
 4. **Sin verificar** (se probó solo en Firefox con Node 26): Chrome y Safari, dispositivos Android e iOS reales, el aviso de "hay una versión nueva" del service worker, y la instalación como app.
 5. **Datos que la facultad no publica** y se dejan configurables: horas de electivas por nivel, correlativas de las electivas del plan 2023, requisitos del título intermedio, fechas de inscripción a cursado, mesas por materia.
 6. **Diseño pendiente:** formatos de fecha mezclados, dos tarjetas de título casi iguales en Progreso, y el detector de diseño sigue marcando 10 hallazgos (franjas laterales de estado, barra ámbar bajo las portadas, la tipografía) que se dejaron a propósito. No se pudo registrar la excepción en el hook.
-7. **Más adelante:** simulación "qué pasa si", planificador de carrera, otras carreras, horarios con superposición, exportar a `.ics`.
+7. **Dependencias:** `npm audit` marca 1 aviso moderado en las herramientas de compilación (`glob` dentro de `workbox-build`, que trae `vite-plugin-pwa`) y **0 en producción**. El arreglo que propone npm (`--force`) baja `workbox-build` a una versión anterior con cambios incompatibles: no se aplicó. Revisar cuando `workbox-build` publique una versión corregida.
+8. **Más adelante:** simulación "qué pasa si", planificador de carrera, otras carreras, horarios con superposición, exportar a `.ics`.
 
 ## Decisiones que no hay que revertir sin avisar
 
