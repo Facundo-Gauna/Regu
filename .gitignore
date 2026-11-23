@@ -1,0 +1,14 @@
+# Dependencias y compilación
+node_modules/
+dist/
+
+# Resultados locales de pruebas y herramientas
+.e2e/
+.impeccable/
+.vercel/
+*.log
+.DS_Store
+
+# Documentos de la facultad: son de la UTN FRVM y no se redistribuyen desde acá (ver planes/README.md)
+planes/*
+!planes/README.md
