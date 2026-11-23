@@ -705,4 +705,4 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 .regla__cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .condicion { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .condicion .razones { margin: 0; }
-.cita { margin: 0; padding: 8px 12px; border-left: 3px solid var(--borde); color: var(--texto-suave, inherit); font-size: 0.8125rem; line-height: 1.5; }
+.cita { margin: 0; padding: 10px 12px; background: var(--fondo); border-radius: 8px; color: var(--texto-suave); font-size: 0.8125rem; line-height: 1.5; font-style: italic; }
