@@ -1,0 +1,391 @@
+{
+  "$schema": "../esquemas/plan.schema.json",
+  "schemaVersion": 1,
+  "tipo": "plan",
+  "id": "utn-frvm-isi-2023",
+  "institucion": { "universidad": "Universidad Tecnológica Nacional", "facultad": "Facultad Regional Villa María" },
+  "carrera": {
+    "id": "isi",
+    "nombre": "Ingeniería en Sistemas de Información",
+    "titulo": "Ingeniero/a en Sistemas de Información",
+    "tipo": "grado"
+  },
+  "anioPlan": 2023,
+  "versionDatos": "2026.1",
+  "fuentes": [
+    { "descripcion": "Plan de estudios ISI 2023 (resumen FRVM, imagen)", "url": "https://frvm.utn.edu.ar/static/assets/resources/plan_sistemas_2023.pdf", "consultado": "2026-11-23" },
+    { "descripcion": "Horarios ISI 2.º cuatrimestre 2026 (régimen de 4.º y 5.º nivel, electivas ofrecidas)", "url": "https://frvm.utn.edu.ar/media/horarios/sistemas.pdf", "consultado": "2026-11-23" },
+    { "descripcion": "Plan ISI 2008 (correlativas de electivas)", "url": "https://frvm.utn.edu.ar/static/assets/resources/plan_sistemas_2008.pdf", "consultado": "2026-11-23" }
+  ],
+  "niveles": 5,
+  "cargaHorariaUltimoNivel": null,
+  "materias": [
+    {
+      "id": "analisis-matematico-1", "numero": 1, "nombre": "Análisis Matemático I", "nivel": 1, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "algebra-geometria-analitica", "numero": 2, "nombre": "Álgebra y Geometría Analítica", "nivel": 1, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "fisica-1", "numero": 3, "nombre": "Física I", "nivel": 1, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "ingles-1", "numero": 4, "nombre": "Inglés I", "nivel": 1, "regimen": "anual", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "logica-estructuras-discretas", "numero": 5, "nombre": "Lógica y Estructuras Discretas", "nivel": 1, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "algoritmos-estructuras-datos", "numero": 6, "nombre": "Algoritmos y Estructuras de Datos", "nivel": 1, "regimen": "anual", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "arquitectura-computadoras", "numero": 7, "nombre": "Arquitectura de Computadoras", "nivel": 1, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "sistemas-procesos-negocio", "numero": 8, "nombre": "Sistemas y Procesos de Negocios", "nivel": 1, "regimen": "anual", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+
+    {
+      "id": "analisis-matematico-2", "numero": 9, "nombre": "Análisis Matemático II", "nivel": 2, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["analisis-matematico-1", "algebra-geometria-analitica"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["analisis-matematico-1", "algebra-geometria-analitica"] }
+      }
+    },
+    {
+      "id": "fisica-2", "numero": 10, "nombre": "Física II", "nivel": 2, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["analisis-matematico-1", "fisica-1"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["analisis-matematico-1", "fisica-1"] }
+      }
+    },
+    {
+      "id": "ingenieria-sociedad", "numero": 11, "nombre": "Ingeniería y Sociedad", "nivel": 2, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } }
+    },
+    {
+      "id": "ingles-2", "numero": 12, "nombre": "Inglés II", "nivel": 2, "regimen": "anual", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["ingles-1"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["ingles-1"] }
+      }
+    },
+    {
+      "id": "sintaxis-semantica-lenguajes", "numero": 13, "nombre": "Sintaxis y Semántica de los Lenguajes", "nivel": 2, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["logica-estructuras-discretas", "algoritmos-estructuras-datos"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["logica-estructuras-discretas", "algoritmos-estructuras-datos"] }
+      }
+    },
+    {
+      "id": "paradigmas-programacion", "numero": 14, "nombre": "Paradigmas de Programación", "nivel": 2, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["logica-estructuras-discretas", "algoritmos-estructuras-datos"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["logica-estructuras-discretas", "algoritmos-estructuras-datos"] }
+      }
+    },
+    {
+      "id": "sistemas-operativos", "numero": 15, "nombre": "Sistemas Operativos", "nivel": 2, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["arquitectura-computadoras"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["arquitectura-computadoras"] }
+      }
+    },
+    {
+      "id": "analisis-sistemas-informacion", "numero": 16, "nombre": "Análisis de Sistemas de Información", "nivel": 2, "regimen": "anual", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["algoritmos-estructuras-datos", "sistemas-procesos-negocio"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["algoritmos-estructuras-datos", "sistemas-procesos-negocio"] }
+      }
+    },
+
+    {
+      "id": "probabilidad-estadistica", "numero": 17, "nombre": "Probabilidad y Estadística", "nivel": 3, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["analisis-matematico-1", "algebra-geometria-analitica"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["analisis-matematico-1", "algebra-geometria-analitica"] }
+      }
+    },
+    {
+      "id": "economia", "numero": 18, "nombre": "Economía", "nivel": 3, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": [], "aprobadas": ["analisis-matematico-1", "algebra-geometria-analitica"] },
+        "rendir": { "aprobadas": [] }
+      }
+    },
+    {
+      "id": "bases-datos", "numero": 19, "nombre": "Bases de Datos", "nivel": 3, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["sintaxis-semantica-lenguajes", "analisis-sistemas-informacion"], "aprobadas": ["logica-estructuras-discretas", "algoritmos-estructuras-datos"] },
+        "rendir": { "aprobadas": ["sintaxis-semantica-lenguajes", "analisis-sistemas-informacion"] }
+      }
+    },
+    {
+      "id": "desarrollo-software", "numero": 20, "nombre": "Desarrollo de Software", "nivel": 3, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["paradigmas-programacion", "analisis-sistemas-informacion"], "aprobadas": ["logica-estructuras-discretas", "algoritmos-estructuras-datos"] },
+        "rendir": { "aprobadas": ["paradigmas-programacion", "analisis-sistemas-informacion"] }
+      }
+    },
+    {
+      "id": "comunicacion-datos", "numero": 21, "nombre": "Comunicaciones de Datos", "nivel": 3, "regimen": "2C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": [], "aprobadas": ["fisica-1", "arquitectura-computadoras"] },
+        "rendir": { "aprobadas": [] }
+      },
+      "verificar": ["En el PDF la celda 'Para cursar – Cursadas' está en blanco (no '-'). Se interpreta como sin requisito."]
+    },
+    {
+      "id": "analisis-numerico", "numero": 22, "nombre": "Análisis Numérico", "nivel": 3, "regimen": "1C", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["analisis-matematico-2"], "aprobadas": ["analisis-matematico-1", "algebra-geometria-analitica"] },
+        "rendir": { "aprobadas": ["analisis-matematico-2"] }
+      }
+    },
+    {
+      "id": "diseno-sistemas-informacion", "numero": 23, "nombre": "Diseño de Sistemas de Información", "nivel": 3, "regimen": "anual", "regimenOrigen": "plan", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["paradigmas-programacion", "analisis-sistemas-informacion"], "aprobadas": ["ingles-1", "algoritmos-estructuras-datos", "sistemas-procesos-negocio"] },
+        "rendir": { "aprobadas": ["paradigmas-programacion", "analisis-sistemas-informacion"] }
+      }
+    },
+
+    {
+      "id": "legislacion", "numero": 24, "nombre": "Legislación", "nivel": 4, "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["ingenieria-sociedad"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["ingenieria-sociedad"] }
+      },
+      "verificar": ["Régimen vacío en el plan; no figura en los horarios del 2C 2026, se asume 1C."]
+    },
+    {
+      "id": "ingenieria-calidad-software", "numero": 25, "nombre": "Ingeniería y Calidad de Software", "nivel": 4, "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["bases-datos", "desarrollo-software", "diseno-sistemas-informacion"], "aprobadas": ["sintaxis-semantica-lenguajes", "paradigmas-programacion"] },
+        "rendir": { "aprobadas": ["bases-datos", "desarrollo-software", "diseno-sistemas-informacion"] }
+      }
+    },
+    {
+      "id": "redes-datos", "numero": 26, "nombre": "Redes de Datos", "nivel": 4, "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["sistemas-operativos", "comunicacion-datos"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["sistemas-operativos", "comunicacion-datos"] }
+      },
+      "verificar": ["Régimen vacío en el plan; no figura en los horarios del 2C 2026, se asume 1C."]
+    },
+    {
+      "id": "investigacion-operativa", "numero": 27, "nombre": "Investigación Operativa", "nivel": 4, "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["probabilidad-estadistica", "analisis-numerico"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["probabilidad-estadistica", "analisis-numerico"] }
+      },
+      "verificar": ["Régimen vacío en el plan; no figura en los horarios del 2C 2026, se asume 1C."]
+    },
+    {
+      "id": "simulacion", "numero": 28, "nombre": "Simulación", "nivel": 4, "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["probabilidad-estadistica"], "aprobadas": ["analisis-matematico-2"] },
+        "rendir": { "aprobadas": ["probabilidad-estadistica"] }
+      }
+    },
+    {
+      "id": "tecnologias-automatizacion", "numero": 29, "nombre": "Tecnologías para la Automatización", "nivel": 4, "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["fisica-2", "analisis-numerico"], "aprobadas": ["analisis-matematico-2"] },
+        "rendir": { "aprobadas": ["fisica-2", "analisis-numerico"] }
+      }
+    },
+    {
+      "id": "administracion-sistemas-informacion", "numero": 30, "nombre": "Administración de Sistemas de Información", "nivel": 4, "regimen": "anual", "regimenOrigen": "horario", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["economia", "diseno-sistemas-informacion"], "aprobadas": ["analisis-sistemas-informacion"] },
+        "rendir": { "aprobadas": ["economia", "diseno-sistemas-informacion"] }
+      }
+    },
+
+    {
+      "id": "inteligencia-artificial", "numero": 31, "nombre": "Inteligencia Artificial", "nivel": 5, "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["simulacion"], "aprobadas": ["probabilidad-estadistica", "analisis-numerico"] },
+        "rendir": { "aprobadas": ["simulacion"] }
+      },
+      "verificar": ["Régimen vacío en el plan; no figura en los horarios del 2C 2026, se asume 1C."]
+    },
+    {
+      "id": "ciencia-datos", "numero": 32, "nombre": "Ciencia de Datos", "nivel": 5, "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["simulacion"], "aprobadas": ["probabilidad-estadistica", "bases-datos"] },
+        "rendir": { "aprobadas": ["simulacion"] }
+      }
+    },
+    {
+      "id": "sistemas-gestion", "numero": 33, "nombre": "Sistemas de Gestión", "nivel": 5, "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["economia", "investigacion-operativa"], "aprobadas": ["diseno-sistemas-informacion"] },
+        "rendir": { "aprobadas": ["economia", "investigacion-operativa"] }
+      }
+    },
+    {
+      "id": "gestion-gerencial", "numero": 34, "nombre": "Gestión Gerencial", "nivel": 5, "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["legislacion", "administracion-sistemas-informacion"], "aprobadas": ["economia"] },
+        "rendir": { "aprobadas": ["legislacion", "administracion-sistemas-informacion"] }
+      },
+      "verificar": ["Régimen vacío en el plan; no figura en los horarios del 2C 2026, se asume 1C."]
+    },
+    {
+      "id": "seguridad-sistemas-informacion", "numero": 35, "nombre": "Seguridad en los Sistemas de Información", "nivel": 5, "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["redes-datos", "administracion-sistemas-informacion"], "aprobadas": ["desarrollo-software", "comunicacion-datos"] },
+        "rendir": { "aprobadas": ["redes-datos", "administracion-sistemas-informacion"] }
+      },
+      "verificar": ["Régimen vacío en el plan; no figura en los horarios del 2C 2026, se asume 1C."]
+    },
+    {
+      "id": "proyecto-final", "numero": 36, "nombre": "Proyecto Final", "nivel": 5, "regimen": "anual", "regimenOrigen": "horario", "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["ingenieria-calidad-software", "redes-datos", "administracion-sistemas-informacion"], "aprobadas": ["ingles-2", "desarrollo-software", "diseno-sistemas-informacion"] },
+        "rendir": { "aprobadas": "todas" }
+      }
+    }
+  ],
+  "paquetesElectivas": [
+    {
+      "id": "electivas-nivel-3", "nombre": "Paquete de Materias Electivas 3.er nivel", "nivel": 3, "cuatrimestre": "2C", "horasExigidas": null,
+      "verificar": ["Horas exigidas no especificadas en el resumen de FRVM; figuran en el plan oficial."]
+    },
+    {
+      "id": "electivas-nivel-4", "nombre": "Paquete de Materias Electivas 4.º nivel", "nivel": 4, "cuatrimestre": null, "horasExigidas": null,
+      "verificar": ["Horas exigidas no especificadas en el resumen de FRVM; figuran en el plan oficial."]
+    },
+    {
+      "id": "electivas-nivel-5", "nombre": "Paquete de Materias Electivas 5.º nivel", "nivel": 5, "cuatrimestre": null, "horasExigidas": null,
+      "verificar": ["Horas exigidas no especificadas en el resumen de FRVM; figuran en el plan oficial."]
+    }
+  ],
+  "electivas": [
+    {
+      "id": "testing-software", "nombre": "Testing de Software", "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-3"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["ingenieria-calidad-software"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["ingenieria-calidad-software"] }
+      },
+      "ofrecida": ["2026-2C"],
+      "verificar": ["Correlativas tomadas del plan 2008 (Ingeniería de Software + Programación Avanzada) y adaptadas a materias del 2023. En 2026 se ofreció en la franja de 3.er año, lo que no encaja con correlativas de 4.º."]
+    },
+    {
+      "id": "reingenieria-procesos-negocio", "nombre": "Reingeniería de Procesos de Negocio", "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-3"],
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } },
+      "ofrecida": ["2026-2C"],
+      "verificar": ["No figura en el plan 2008; correlativas desconocidas."]
+    },
+    {
+      "id": "programacion-avanzada", "nombre": "Programación Avanzada", "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-4"],
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } },
+      "ofrecida": ["2026-2C"],
+      "verificar": ["En el plan 2008 sus correlativas son '36-37', números que no existen en ese plan; desconocidas."]
+    },
+    {
+      "id": "sistemas-soporte-decisiones", "nombre": "Sistemas de Soporte a las Decisiones", "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-4"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["diseno-sistemas-informacion", "bases-datos"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["diseno-sistemas-informacion", "bases-datos"] }
+      },
+      "ofrecida": ["2026-2C"],
+      "verificar": ["Correlativas adaptadas del plan 2008 (Diseño de Sistemas, Gestión de Datos)."],
+      "notas": "La aprobación directa se registra inscribiéndose a una mesa de examen (planificación 2026)."
+    },
+    {
+      "id": "enfoque-lean-agil", "nombre": "Enfoque Lean-Ágil en la Ingeniería de Software", "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-4"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["diseno-sistemas-informacion"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["diseno-sistemas-informacion"] }
+      },
+      "verificar": ["Régimen y correlativas tomados del plan 2008 (1C, Diseño de Sistemas)."]
+    },
+    {
+      "id": "seguridad-informatica", "nombre": "Seguridad Informática", "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-5"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["redes-datos"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["redes-datos"] }
+      },
+      "ofrecida": ["2026-2C"],
+      "verificar": ["Correlativas adaptadas del plan 2008 (Redes de Información). Posible solapamiento con la obligatoria 'Seguridad en los Sistemas de Información' del 2023."]
+    },
+    {
+      "id": "calidad-desarrollo-software", "nombre": "Calidad en el Desarrollo de Software", "regimen": "2C", "regimenOrigen": "horario", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-5"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["ingenieria-calidad-software"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["ingenieria-calidad-software"] }
+      },
+      "ofrecida": ["2026-2C"],
+      "verificar": ["Correlativas adaptadas del plan 2008 (Ingeniería de Software + Programación Avanzada)."]
+    },
+    {
+      "id": "tecnologias-dlt-blockchain", "nombre": "Tecnologías DLT, Contratos Inteligentes y Blockchain", "regimen": "1C", "regimenOrigen": "inferido", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-5"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["redes-datos"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["redes-datos"] }
+      },
+      "verificar": ["Régimen y correlativas adaptados del plan 2008 (1C, Redes de Información)."]
+    },
+    {
+      "id": "bases-datos-avanzadas", "nombre": "Sistemas de Bases de Datos Avanzadas", "regimen": "2C", "regimenOrigen": "inferido", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-5"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["bases-datos", "sistemas-soporte-decisiones"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["bases-datos", "sistemas-soporte-decisiones"] }
+      },
+      "verificar": ["Régimen y correlativas adaptados del plan 2008 (2C, Gestión de Datos + SSD)."]
+    },
+    {
+      "id": "desarrollo-aplicaciones-web", "nombre": "Desarrollo de Aplicaciones Web", "regimen": "2C", "regimenOrigen": "inferido", "horas": null,
+      "paquetesSugeridos": ["electivas-nivel-5"],
+      "correlativas": {
+        "cursar": { "regularizadas": ["programacion-avanzada"], "aprobadas": [] },
+        "rendir": { "aprobadas": ["programacion-avanzada"] }
+      },
+      "verificar": ["Régimen y correlativas tomados del plan 2008 (2C, Programación Avanzada)."]
+    }
+  ],
+  "requisitos": [
+    {
+      "id": "habilitacion-profesional", "numero": null, "nombre": "Habilitación Profesional (Título Intermedio)", "tipo": "habilitacion", "nivel": 4, "horas": null,
+      "correlativas": { "cursar": { "regularizadas": [], "aprobadas": [] }, "rendir": { "aprobadas": [] } },
+      "verificar": ["El plan no indica correlativas ni contenido. En los horarios 2026 aparece 'Seminario Integrador – Tit. Intermedio' (3.er año, 2C): confirmar si es este ítem."]
+    },
+    {
+      "id": "practica-profesional-supervisada", "numero": 50, "nombre": "Práctica Profesional Supervisada", "tipo": "pps", "nivel": 5, "horas": null,
+      "correlativas": {
+        "cursar": { "regularizadas": ["ingenieria-calidad-software", "redes-datos", "administracion-sistemas-informacion"], "aprobadas": ["ingles-2", "desarrollo-software", "diseno-sistemas-informacion"] },
+        "rendir": { "aprobadas": "todas" }
+      },
+      "verificar": ["Horas no especificadas en el resumen de FRVM."]
+    }
+  ],
+  "titulos": [
+    {
+      "id": "analista-desarrollador-universitario", "nombre": "Analista Desarrollador/a Universitario/a de Sistemas de Información", "tipo": "intermedio", "hastaNivel": 4,
+      "notas": "Se otorga al completar todo hasta 4.º nivel inclusive: obligatorias, paquetes de electivas de 3.º y 4.º, y la Habilitación Profesional."
+    },
+    {
+      "id": "ingeniero-sistemas-informacion", "nombre": "Ingeniero/a en Sistemas de Información", "tipo": "final", "hastaNivel": null
+    }
+  ]
+}

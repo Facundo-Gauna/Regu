@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://app-academica.local/esquemas/plan.schema.json",
+  "title": "Plan de estudios",
+  "description": "Plan de estudios de una carrera: materias, correlativas, electivas, requisitos no-materia y títulos. Las referencias entre ítems usan el campo `id`, nunca el número del PDF.",
+  "type": "object",
+  "required": ["schemaVersion", "tipo", "id", "institucion", "carrera", "anioPlan", "versionDatos", "niveles", "materias", "paquetesElectivas", "electivas", "requisitos", "titulos"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "tipo": { "const": "plan" },
+    "id": { "$ref": "#/$defs/id", "description": "Ej. utn-frvm-isi-2023" },
+    "institucion": {
+      "type": "object",
+      "required": ["universidad", "facultad"],
+      "additionalProperties": false,
+      "properties": {
+        "universidad": { "type": "string" },
+        "facultad": { "type": "string" }
+      }
+    },
+    "carrera": {
+      "type": "object",
+      "required": ["id", "nombre", "titulo"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "nombre": { "type": "string" },
+        "titulo": { "type": "string", "description": "Título final que otorga" },
+        "tipo": { "enum": ["grado", "pregrado", "ciclo-complementario"] }
+      }
+    },
+    "anioPlan": { "type": "integer", "minimum": 1950 },
+    "versionDatos": { "type": "string", "description": "Versión de esta transcripción, ej. 2026.1" },
+    "fuentes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["descripcion"],
+        "additionalProperties": false,
+        "properties": {
+          "descripcion": { "type": "string" },
+          "url": { "type": "string" },
+          "consultado": { "$ref": "#/$defs/fecha" }
+        }
+      }
+    },
+    "niveles": { "type": "integer", "minimum": 1, "maximum": 8 },
+    "cargaHorariaUltimoNivel": { "type": ["number", "null"], "description": "Horas del último nivel, para la excepción de últimas materias (Ord. 1549 5.3.1). null = no especificado" },
+    "materias": { "type": "array", "items": { "$ref": "#/$defs/materia" } },
+    "paquetesElectivas": { "type": "array", "items": { "$ref": "#/$defs/paqueteElectivas" } },
+    "electivas": { "type": "array", "items": { "$ref": "#/$defs/electiva" } },
+    "requisitos": { "type": "array", "items": { "$ref": "#/$defs/requisito" } },
+    "titulos": { "type": "array", "items": { "$ref": "#/$defs/titulo" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "fecha": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "regimen": { "enum": ["anual", "1C", "2C", null], "description": "null = no especificado" },
+    "origen": { "enum": ["plan", "horario", "inferido", "usuario"], "description": "De dónde sale el dato cuando no figura en el plan" },
+    "listaIds": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+    "verificar": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Dudas de la transcripción. La app las muestra como advertencia"
+    },
+    "correlativas": {
+      "type": "object",
+      "required": ["cursar", "rendir"],
+      "additionalProperties": false,
+      "properties": {
+        "cursar": {
+          "type": "object",
+          "required": ["regularizadas", "aprobadas"],
+          "additionalProperties": false,
+          "properties": {
+            "regularizadas": { "$ref": "#/$defs/listaIds", "description": "Columna 'Cursadas': hace falta tenerlas regulares o aprobadas" },
+            "aprobadas": { "$ref": "#/$defs/listaIds", "description": "Columna 'Aprobadas' para cursar" }
+          }
+        },
+        "rendir": {
+          "type": "object",
+          "required": ["aprobadas"],
+          "additionalProperties": false,
+          "properties": {
+            "aprobadas": {
+              "oneOf": [
+                { "$ref": "#/$defs/listaIds" },
+                { "const": "todas", "description": "Todas las materias obligatorias, paquetes de electivas y requisitos del plan, salvo este ítem y los demás que también digan 'todas'" }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "materia": {
+      "type": "object",
+      "required": ["id", "numero", "nombre", "nivel", "regimen", "correlativas"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "numero": { "type": ["integer", "null"], "description": "Número en el PDF del plan (solo referencia)" },
+        "nombre": { "type": "string" },
+        "nivel": { "type": "integer", "minimum": 1 },
+        "regimen": { "$ref": "#/$defs/regimen" },
+        "regimenOrigen": { "$ref": "#/$defs/origen" },
+        "horas": { "type": ["number", "null"], "description": "Carga horaria total. null = no especificado" },
+        "correlativas": { "$ref": "#/$defs/correlativas" },
+        "examenLibre": { "type": "boolean", "default": false, "description": "Autorizada por el Consejo Superior para rendir libre (Ord. 1549 7.3)" },
+        "notas": { "type": "string" },
+        "verificar": { "$ref": "#/$defs/verificar" }
+      }
+    },
+    "paqueteElectivas": {
+      "type": "object",
+      "required": ["id", "nombre", "nivel", "horasExigidas"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "nombre": { "type": "string" },
+        "nivel": { "type": "integer", "minimum": 1 },
+        "cuatrimestre": { "enum": ["1C", "2C", null] },
+        "horasExigidas": { "type": ["number", "null"], "description": "null = no especificado (el usuario puede cargarlo)" },
+        "notas": { "type": "string" },
+        "verificar": { "$ref": "#/$defs/verificar" }
+      }
+    },
+    "electiva": {
+      "type": "object",
+      "required": ["id", "nombre", "regimen", "horas", "paquetesSugeridos", "correlativas"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "nombre": { "type": "string" },
+        "regimen": { "$ref": "#/$defs/regimen" },
+        "regimenOrigen": { "$ref": "#/$defs/origen" },
+        "horas": { "type": ["number", "null"], "description": "Horas que suma al paquete. null = no especificado" },
+        "paquetesSugeridos": { "$ref": "#/$defs/listaIds", "description": "Paquetes a los que normalmente se imputa. El usuario elige" },
+        "correlativas": { "$ref": "#/$defs/correlativas" },
+        "ofrecida": {
+          "type": "array",
+          "description": "Cuándo se dictó (según horarios publicados)",
+          "items": { "type": "string", "pattern": "^\\d{4}-(1C|2C|anual)$" }
+        },
+        "notas": { "type": "string" },
+        "verificar": { "$ref": "#/$defs/verificar" }
+      }
+    },
+    "requisito": {
+      "type": "object",
+      "required": ["id", "nombre", "tipo", "nivel", "correlativas"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "numero": { "type": ["integer", "null"] },
+        "nombre": { "type": "string" },
+        "tipo": { "enum": ["pps", "habilitacion", "pasantia", "seminario", "otro"] },
+        "nivel": { "type": "integer", "minimum": 1 },
+        "horas": { "type": ["number", "null"] },
+        "correlativas": { "$ref": "#/$defs/correlativas", "description": "'cursar' = para iniciarlo; 'rendir' = para acreditarlo" },
+        "notas": { "type": "string" },
+        "verificar": { "$ref": "#/$defs/verificar" }
+      }
+    },
+    "titulo": {
+      "type": "object",
+      "required": ["id", "nombre", "tipo", "hastaNivel"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "nombre": { "type": "string" },
+        "tipo": { "enum": ["intermedio", "final"] },
+        "hastaNivel": {
+          "type": ["integer", "null"],
+          "description": "Se obtiene completando todas las materias obligatorias, paquetes de electivas y requisitos con nivel <= hastaNivel. null = todo el plan"
+        },
+        "requisitosExtra": { "$ref": "#/$defs/listaIds", "description": "Ítems adicionales de otros niveles" },
+        "notas": { "type": "string" },
+        "verificar": { "$ref": "#/$defs/verificar" }
+      }
+    }
+  }
+}
