@@ -819,7 +819,7 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 .parte--suelta { box-shadow: none; }
 .item__nota, .nota__valor { min-height: 48px; }
 .cifra strong { font-size: 2rem; letter-spacing: -0.02em; }
-.fila--menu > .icono:first-child, .acceso > .icono { box-sizing: content-box; max-width: none; padding: 10px; border-radius: 14px; background: var(--ambar); color: var(--negro); }
+.fila--menu > .icono:first-child, .acceso > .icono { box-sizing: content-box; max-width: none; padding: 10px; border-radius: 14px; background: var(--superficie-2); color: var(--texto); }
 .acceso > .icono { align-self: flex-start; margin-bottom: 4px; }
 .acceso { box-shadow: var(--sombra); border: 1px solid var(--borde); }
 a.fila:hover, .acceso:hover, .plantilla:hover { border-color: var(--borde-campo); }
@@ -840,3 +840,15 @@ a.fila:hover, .acceso:hover, .plantilla:hover { border-color: var(--borde-campo)
 .pasos-ayuda strong { display: block; line-height: 1.4; }
 .pasos-ayuda p { color: var(--texto-suave); font-size: 0.92rem; }
 .cabecera { gap: 8px; }
+
+/* Encabezado angosto: el título se recorta antes de empujar el «?» fuera de la pantalla */
+.cabecera__titulo { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cabecera__modo { flex: none; white-space: nowrap; }
+@media (max-width: 380px) {
+  .cabecera { gap: 6px; padding-inline: 12px; }
+  .cabecera__modo { font-size: 0.68rem; letter-spacing: 0.02em; padding-inline: 6px; }
+  .cifra { padding: 12px 8px; }
+  .cifra strong { font-size: 1.6rem; }
+}
+/* Con las dos etiquetas a la vez no queda lugar para el título: mejor nada que una letra suelta */
+@media (max-width: 420px) { .cabecera:has(.cabecera__modo + .cabecera__modo) .cabecera__titulo { visibility: hidden; } }

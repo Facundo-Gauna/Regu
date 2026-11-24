@@ -280,6 +280,12 @@
     await recargar();
     await esperar(() => seccion('Cómo viene la cursada') && filas().length === 3, 'las 3 notas tras recargar');
     afirmar(resumen().includes('Promedio 8,5'), `tras recargar: ${resumen().slice(0, 200)}`);
+    // guardar sin tocar nada no las da por confirmadas
+    await clic(hallar('.referencias button', 'Ajustar', seccion('Cómo viene la cursada')), 'Ajustar');
+    await esperar(hoja, 'la hoja de referencias');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
+    await esperarHojaCerrada();
+    afirmar(texto(doc().querySelector('.referencias')).includes('sin confirmar'), `guardar sin cambios confirmó las referencias: ${texto(doc().querySelector('.referencias'))}`);
     // referencias propias: ya no dicen «sin confirmar»
     await clic(hallar('.referencias button', 'Ajustar', seccion('Cómo viene la cursada')), 'Ajustar');
     await esperar(hoja, 'la hoja de referencias');
@@ -614,8 +620,24 @@
     await esperar(() => todos('.nota').length === 4, 'las 4 notas en la lista simple');
   });
 
+  await prueba('Ajustar: la nota para aprobar cada parte se cambia desde «Notas que se piden»', async () => {
+    await cargar(`${BASE}?ejemplo=1#/materia/fisica-2`);
+    await clic(await esperar(() => hallar('button', 'Organizar mis notas'), 'Organizar'));
+    await clic(await esperar(() => hallar('dialog[open] .plantilla', 'Tres partes'), 'Tres partes'));
+    await clic(await esperar(() => hallar('dialog[open] button[type=submit]', 'Guardar estructura'), 'guardar'));
+    await esperarHojaCerrada();
+    const dd = () => todos('.referencias__valores dd').map(texto).join(' / ');
+    await esperar(() => dd() === '8 / 6 / 6', `valores iniciales (${dd()})`);
+    await clic(hallar('.referencias button', 'Ajustar'), 'Ajustar');
+    await clic(await esperar(() => doc().querySelector('dialog[open] button[aria-label="Subir: Para aprobar cada parte"]'), 'el botón +'));
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
+    await esperarHojaCerrada();
+    await esperar(() => dd() === '8 / 6 / 7', `tras subir (${dd()})`);
+    afirmar(texto(doc().querySelector('.referencias')).includes('Regla general, sin confirmar'), 'las otras notas siguen sin confirmar');
+  });
+
   await prueba('Carga rápida: fijar un acceso en Inicio y cargar una nota desde ahí', async () => {
-    irA('#/cargar');
+    await cargar(`${BASE}?ejemplo=1#/cargar`); // ejemplo limpio: no depende de la prueba anterior
     await esperar(() => hallar('a.fila', 'Física II'), 'la materia en curso');
     afirmar(todos('a.fila').length === 4, `deberían ser las 4 que se cursan, hay ${todos('a.fila').length}`);
     await clic(hallar('a.fila', 'Física II'), 'la materia en curso');

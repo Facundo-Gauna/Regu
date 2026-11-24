@@ -298,8 +298,10 @@ export function FormUmbrales({ materiaId, cursadaId, actual, propios, minimoPart
     const c = Number(parte.replace(',', '.'));
     if (![p, r, ...(conPartes ? [c] : [])].every(x => Number.isFinite(x) && x >= 1 && x <= 10)) return setError('Las notas van de 1 a 10');
     if (r > p) return setError('La nota para regularizar no puede ser mayor que la de promocionar');
+    // Guardar sin tocar nada no puede convertir una referencia «sin confirmar» en una propia
+    const cambiaron = propios || p !== actual.promocion || r !== actual.regular;
     actualizar(d => {
-      const con = A.fijarUmbrales(d, materiaId, cursadaId, { promocion: p, regular: r });
+      const con = cambiaron ? A.fijarUmbrales(d, materiaId, cursadaId, { promocion: p, regular: r }) : d;
       // El mínimo por parte solo se marca como propio si lo cambiaron
       return conPartes && tocoParte ? A.fijarMinimoParte(con, materiaId, cursadaId, c) : con;
     });
