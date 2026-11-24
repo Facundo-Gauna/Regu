@@ -43,6 +43,9 @@ export function TecladoNota({ actual, onElegir }: { actual: number | null; onEle
 
 // ---------- Vista por partes ----------
 
+/** A qué evaluación va la nota al tocar un ítem: al recuperatorio si hay uno. */
+export const notaVigente = (i: ItemParte) => i.reemplazo ?? i.pendiente ?? i.evaluacion;
+
 const ESTADO_PARTE: Record<ParteCalculada['estado'], { tono: string; texto: string }> = {
   aprobada: { tono: 'aprobada', texto: 'Parte aprobada' },
   desaprobada: { tono: 'recursar', texto: 'No llega' },
@@ -61,10 +64,11 @@ function Nivel({ titulo, r }: { titulo: string; r: ResultadoNivel }) {
   );
 }
 
-export function FilaItem({ item, minimo, onNota, onEditar }: { item: ItemParte; minimo: number; onNota: () => void; onEditar?: () => void }) {
+export function FilaItem({ item, minimo, onNota, onEditar, onEditarRecu }: { item: ItemParte; minimo: number; onNota: () => void; onEditar?: () => void; onEditarRecu?: (e: Evaluacion) => void }) {
   const e = item.evaluacion;
   const tono = item.nota === null ? 'bloqueada' : item.nota >= minimo ? 'aprobada' : 'recursar';
-  const detalle = [e.peso !== undefined ? `${formatearNota(e.peso)} %` : '', item.reemplazo ? `con «${item.reemplazo.nombre}»` : ''].filter(Boolean).join(' · ');
+  const recu = item.reemplazo ?? item.pendiente;
+  const detalle = [e.peso !== undefined ? `${formatearNota(e.peso)} %` : '', item.reemplazo ? `con «${item.reemplazo.nombre}»` : '', item.pendiente ? `«${item.pendiente.nombre}» sin nota` : ''].filter(Boolean).join(' · ');
   const texto = (
     <>
       <strong>{e.nombre}</strong>
@@ -76,6 +80,7 @@ export function FilaItem({ item, minimo, onNota, onEditar }: { item: ItemParte; 
       {onEditar
         ? <button type="button" class="item__texto" aria-label={`Editar ${e.nombre}`} onClick={onEditar}>{texto}</button>
         : <span class="item__texto">{texto}</span>}
+      {onEditar && recu && onEditarRecu && <Boton chico variante="texto" aria-label={`Editar ${recu.nombre}`} onClick={() => onEditarRecu(recu)}><Icono nombre="repetir" tam={16} /></Boton>}
       <button type="button" class={`item__nota t-${tono}${item.nota === null ? ' item__nota--vacia' : ''}`} aria-label={`Nota de ${e.nombre}: ${item.nota === null ? 'sin cargar' : formatearNota(item.nota)}`} onClick={onNota}>
         {item.nota === null ? 'Cargar' : formatearNota(item.nota)}
       </button>
@@ -98,7 +103,7 @@ export function TarjetaParte({ p, minimo, unica, onNota, onEditar, accion }: { p
       {p.aviso && <Aviso tipo="alerta">{p.aviso}</Aviso>}
       {p.items.length ? (
         <ul class="items">
-          {p.items.map(i => <FilaItem key={i.evaluacion.id} item={i} minimo={minimo} onNota={() => onNota(i)} {...(onEditar ? { onEditar: () => onEditar(i.evaluacion) } : {})} />)}
+          {p.items.map(i => <FilaItem key={i.evaluacion.id} item={i} minimo={minimo} onNota={() => onNota(i)} {...(onEditar ? { onEditar: () => onEditar(i.evaluacion), onEditarRecu: onEditar } : {})} />)}
         </ul>
       ) : (
         <p class="fila__detalle">Todavía no tiene evaluaciones.</p>
@@ -110,7 +115,7 @@ export function TarjetaParte({ p, minimo, unica, onNota, onEditar, accion }: { p
 
 export function VistaEstructura({ calculo, umbrales, onNota, onEditar, onAsignar }: { calculo: CalculoEstructura; umbrales: Umbrales; onNota: (e: Evaluacion) => void; onEditar: (e: Evaluacion) => void; onAsignar: (e: Evaluacion, parte: string) => void }) {
   const unica = calculo.partes.length === 1;
-  const notaDe = (i: ItemParte) => onNota(i.reemplazo ?? i.evaluacion);
+  const notaDe = (i: ItemParte) => onNota(notaVigente(i));
   return (
     <>
       <div class="tarjeta regla">
@@ -151,6 +156,7 @@ export function EditorEstructura({ materiaId, cursada, onListo }: { materiaId: s
   const inicial = cursada.estructura;
   const [partes, setPartes] = useState<ParteBorrador[] | null>(inicial ? inicial.partes.map(p => ({ id: p.id, nombre: p.nombre, peso: String(p.peso) })) : null);
   const [items, setItems] = useState<EvaluacionBorrador[]>((cursada.evaluaciones ?? []).map(aBorrador));
+  const [referencias, setReferencias] = useState(inicial?.referencias);
   const [minimo, setMinimo] = useState(inicial?.minimoParte !== undefined ? String(inicial.minimoParte) : '');
   const [error, setError] = useState('');
   const [quitando, setQuitando] = useState(false);
@@ -159,6 +165,7 @@ export function EditorEstructura({ materiaId, cursada, onListo }: { materiaId: s
     const r = aplicarPlantilla(clave, cursada.evaluaciones ?? [], idNuevo);
     setPartes(r.estructura.partes.map(p => ({ id: p.id, nombre: p.nombre, peso: String(p.peso) })));
     setItems(r.evaluaciones.map(aBorrador));
+    setReferencias(r.estructura.referencias);
   };
 
   if (!partes) {
@@ -211,7 +218,7 @@ export function EditorEstructura({ materiaId, cursada, onListo }: { materiaId: s
       if (e.reemplazaA && !ids.has(e.reemplazaA)) delete e.reemplazaA;
       return e;
     });
-    const estructura = { partes: partes.map(p => ({ id: p.id, nombre: p.nombre.trim(), peso: numero(p.peso) })), ...(min !== undefined ? { minimoParte: min } : {}) };
+    const estructura = { partes: partes.map(p => ({ id: p.id, nombre: p.nombre.trim(), peso: numero(p.peso) })), ...(min !== undefined ? { minimoParte: min } : {}), ...(referencias ? { referencias } : {}) };
     actualizar(d => A.guardarEstructura(d, materiaId, cursada.id, estructura, evaluaciones));
     onListo();
   };

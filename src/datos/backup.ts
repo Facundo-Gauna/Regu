@@ -187,7 +187,13 @@ function leerEstructura(x: unknown): EstructuraCursada | undefined {
   });
   if (!partes.length) return undefined;
   const min = x['minimoParte'];
-  return { partes, ...(typeof min === 'number' && min >= 1 && min <= 10 ? { minimoParte: min } : {}) };
+  const ref = x['referencias'];
+  const nota = (n: unknown): n is number => typeof n === 'number' && n >= 1 && n <= 10;
+  return {
+    partes,
+    ...(nota(min) ? { minimoParte: min } : {}),
+    ...(esObj(ref) && nota(ref['promocion']) && nota(ref['regular']) ? { referencias: { promocion: ref['promocion'], regular: ref['regular'] } } : {}),
+  };
 }
 
 function leerEvaluacion(l: Lector, x: unknown, ruta: string): Evaluacion | undefined {

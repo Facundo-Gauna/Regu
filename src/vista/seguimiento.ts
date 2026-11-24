@@ -33,7 +33,7 @@ export interface Seguimiento {
   /** true si el usuario fijó los umbrales; si no, son los de la planificación o la regla general sin confirmar. */
   umbralesPropios: boolean;
   /** De dónde salen las referencias: el usuario, la planificación de la cátedra o la regla general (sin confirmar). */
-  origenUmbrales: 'usuario' | 'planificacion' | 'general';
+  origenUmbrales: 'usuario' | 'plantilla' | 'planificacion' | 'general';
   enPromocion: number;
   enRegular: number;
   debajo: Evaluacion[];
@@ -52,10 +52,11 @@ export function umbralesDeRegla(regla: ReglaCursada | undefined): Umbrales | nul
   return promocion !== undefined && regular !== undefined ? { promocion, regular } : null;
 }
 
-export function seguimientoCursada(c: Pick<Cursada, 'evaluaciones' | 'umbrales'>, regla?: ReglaCursada): Seguimiento {
+export function seguimientoCursada(c: Pick<Cursada, 'evaluaciones' | 'umbrales' | 'estructura'>, regla?: ReglaCursada): Seguimiento {
   const evaluaciones = c.evaluaciones ?? [];
   const deRegla = umbralesDeRegla(regla);
-  const umbrales = c.umbrales ?? deRegla ?? UMBRALES_GENERALES;
+  const dePlantilla = c.estructura?.referencias;
+  const umbrales = c.umbrales ?? dePlantilla ?? deRegla ?? UMBRALES_GENERALES;
 
   // Un recuperatorio con nota reemplaza a la evaluación que el usuario indicó
   const reemplazo = new Map<string, Evaluacion>();
@@ -86,7 +87,7 @@ export function seguimientoCursada(c: Pick<Cursada, 'evaluaciones' | 'umbrales'>
     minima: peor ? { nota: peor.nota!, nombre: peor.nombre } : null,
     umbrales,
     umbralesPropios: c.umbrales !== undefined,
-    origenUmbrales: c.umbrales !== undefined ? 'usuario' : deRegla ? 'planificacion' : 'general',
+    origenUmbrales: c.umbrales !== undefined ? 'usuario' : dePlantilla ? 'plantilla' : deRegla ? 'planificacion' : 'general',
     enPromocion: conNota.filter(e => e.nota! >= umbrales.promocion).length,
     enRegular: conNota.filter(e => e.nota! >= umbrales.regular).length,
     debajo: conNota.filter(e => e.nota! < umbrales.regular),
@@ -103,7 +104,7 @@ export function resumenCorto(c: Pick<Cursada, 'evaluaciones' | 'umbrales' | 'est
   if (!c?.evaluaciones?.length) return null;
   // Con estructura propia vale su promedio ponderado: no se muestra además el simple
   if (c.estructura) {
-    const umbrales = c.umbrales ?? UMBRALES_GENERALES;
+    const { umbrales } = seguimientoCursada(c);
     const { total } = calcular(c, umbrales);
     return total === null ? null : `Con lo cargado ${formatearTotal(total, umbrales)}`;
   }

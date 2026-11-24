@@ -7,6 +7,7 @@ import { AlmacenMemoria } from '../src/datos/almacen.ts';
 import type { Cursada, DatosUsuario, Evaluacion } from '../src/motor/tipos.ts';
 import { calcular, formatearContra, formatearTotal } from '../src/vista/estructura.ts';
 import { aplicarPlantilla } from '../src/vista/plantillas.ts';
+import { seguimientoCursada } from '../src/vista/seguimiento.ts';
 
 const M = 'fisica-2';
 const C = '2026-2C';
@@ -141,4 +142,24 @@ test('el total se redondea normal, salvo que el redondeo haga parecer que llega 
   assert.equal(formatearTotal(23 / 3, U), '7,67');
   assert.equal(formatearTotal(6.999, U), '6,99');
   assert.equal(formatearTotal(5.999, U), '5,99');
+});
+
+test('un recuperatorio sin nota no desaparece: queda pendiente junto a la que reemplaza', () => {
+  const c = algebra([4, 6, 7, 7, 9]);
+  c.evaluaciones.push({ id: 'r', nombre: 'Recu', tipo: 'recuperatorio', nota: null, reemplazaA: 'i1' });
+  const i = calcular(c, U).partes[0]!.items[0]!;
+  assert.equal(i.pendiente?.id, 'r');
+  assert.equal(i.nota, 4); // hasta que tenga nota, cuenta la original
+});
+
+test('la plantilla de Álgebra compara contra 7 y 6, como su planificación, y sobrevive al backup', () => {
+  const t = aplicarPlantilla('algebra', [], (() => { let n = 0; return () => `x${n++}`; })());
+  const d = A.guardarEstructura(datosEjemplo(), M, C, t.estructura, t.evaluaciones.map(e => ({ ...e, nota: 7 })));
+  const leido = leerBackup(crearBackup(d));
+  assert.ok(leido.ok);
+  const c = cursada(leido.datos);
+  const s = seguimientoCursada(c); // como la lee la pantalla de la materia
+  assert.deepEqual([s.umbrales.promocion, s.umbrales.regular, s.origenUmbrales], [7, 6, 'plantilla']);
+  assert.equal(calcular(c, s.umbrales).promocion.estado, 'cumple');
+  assert.equal(aplicarPlantilla('analisis-1', [], () => 'z').estructura.referencias, undefined);
 });

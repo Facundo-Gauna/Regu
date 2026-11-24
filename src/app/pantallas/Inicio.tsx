@@ -23,7 +23,7 @@ export function Inicio({ m }: { m: Modelo }) {
 
   return (
     <div class="pagina">
-      {v.proxima && (
+      {v.proxima && !(v.proxima.tipo === 'cargar-notas' && s.prefs.accesos?.length) && (
         <section class="proxima" aria-label="Lo próximo">
           <h1 class="proxima__titulo">{v.proxima.titulo}</h1>
           <p class="proxima__texto">{v.proxima.texto}</p>
@@ -31,9 +31,9 @@ export function Inicio({ m }: { m: Modelo }) {
         </section>
       )}
 
-      <AccesosRapidos m={m} />
+      <AccesosRapidos m={m} ocultarVacio={v.proxima?.tipo === 'cargar-notas'} />
 
-      <header class="portada">
+      <header class={`portada${v.proxima ? ' portada--baja' : ''}`}>
         <p class="portada__fecha">{fechaLarga(m.hoy)} <span class="portada__ciclo">· ciclo {v.ciclo}</span></p>
         <div class="portada__cifras" aria-label="Resumen de la carrera">
           <div><strong>{v.cantidades.aprobadas}</strong><span>aprobadas</span></div>

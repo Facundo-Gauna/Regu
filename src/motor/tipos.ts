@@ -155,6 +155,8 @@ export interface EstructuraCursada {
   partes: ParteCursada[];
   /** Nota mínima para dar una parte por aprobada. Si falta, 6 «sin confirmar». */
   minimoParte?: number;
+  /** Notas de promoción y regularidad que trae la plantilla usada. Las que fije el alumno pesan más. */
+  referencias?: Umbrales;
 }
 
 /** Notas de referencia para ver cómo viene la cursada. Las fija el usuario según la planificación de su cátedra. */

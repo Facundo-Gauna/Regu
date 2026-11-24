@@ -733,8 +733,8 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 .proxima__titulo { font-size: 1.35rem; font-weight: 800; line-height: 1.2; text-wrap: balance; }
 .proxima__texto { color: var(--texto-suave); font-size: 0.92rem; }
 .proxima .boton { margin-top: 4px; }
-.proxima + .portada { padding-block: 16px 14px; gap: 8px; }
-.proxima + .portada .portada__cifras strong { font-size: 1.8rem; }
+.portada--baja { padding-block: 16px 14px; gap: 8px; }
+.portada--baja .portada__cifras strong { font-size: 1.8rem; }
 
 /* Materias: años plegables */
 .anio > summary { list-style: none; font-size: inherit; }

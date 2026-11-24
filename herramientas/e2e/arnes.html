@@ -626,7 +626,10 @@
   });
 
   await prueba('La estructura y el acceso sobreviven a recargar con datos reales', async () => {
-    await cargar(`${BASE}#/materia/ingles-1`);
+    await cargar(`${BASE}#/ajustes`);
+    await escribir(await esperar(() => doc().querySelector('input[type=date]'), 'el campo de fecha simulada'), '2026-10-15');
+    await pausa(300);
+    irA('#/materia/ingles-1');
     await esperar(() => texto(doc().querySelector('h1')) === 'Inglés I', 'la materia');
     await clic(seccion('Cursadas').querySelector('button'), 'Cargar cursada');
     await esperar(hoja, 'la hoja');

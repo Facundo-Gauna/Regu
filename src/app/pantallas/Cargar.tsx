@@ -8,7 +8,7 @@ import { formatearNota, seguimientoCursada } from '../../vista/seguimiento.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { enCurso } from '../../vista/materias.ts';
 import { Boton, Campo, Hoja, Icono, Vacio } from '../componentes.tsx';
-import { TarjetaParte, TecladoNota, FilaItem } from '../estructura.tsx';
+import { TarjetaParte, TecladoNota, FilaItem, notaVigente } from '../estructura.tsx';
 import { idNuevo } from '../formularios.tsx';
 import type { Modelo } from '../modelo.ts';
 import { actualizar, guardarPrefs, useStore } from '../store.ts';
@@ -79,7 +79,7 @@ export function Cargar({ m, materiaId, parte }: { m: Modelo; materiaId?: string;
       {calculo ? (
         <>
           {visibles.map(p => (
-            <TarjetaParte key={p.parte.id} p={p} minimo={calculo.minimoParte} unica={calculo.partes.length === 1} onNota={i => setElegida(i.reemplazo ?? i.evaluacion)} accion={agregar(p.parte.id)} />
+            <TarjetaParte key={p.parte.id} p={p} minimo={calculo.minimoParte} unica={calculo.partes.length === 1} onNota={i => setElegida(notaVigente(i))} accion={agregar(p.parte.id)} />
           ))}
           {clave && calculo.partes.length > 1 && <a class="enlace-seccion" href={enlaces.cargar(item.id)}>Ver todas las partes</a>}
           {!clave && calculo.partes.length > 1 && (
@@ -120,7 +120,7 @@ export function Cargar({ m, materiaId, parte }: { m: Modelo; materiaId?: string;
 }
 
 /** Los accesos fijados, en Inicio. Los que quedaron sin materia en curso no se muestran. */
-export function AccesosRapidos({ m }: { m: Modelo }) {
+export function AccesosRapidos({ m, ocultarVacio = false }: { m: Modelo; ocultarVacio?: boolean }) {
   const { prefs } = useStore();
   const materias = enCurso(m.items);
   if (!materias.length) return null;
@@ -131,6 +131,8 @@ export function AccesosRapidos({ m }: { m: Modelo }) {
     if (a.parte && !parte) return [];
     return [{ href: enlaces.cargar(a.materiaId, a.parte), nombre: x.item.nombre, parte: parte?.nombre }];
   });
+  // Si la tarjeta de «lo próximo» ya ofrece cargar notas y no hay accesos fijados, no se repite
+  if (!accesos.length && ocultarVacio) return null;
   return (
     <section class="seccion">
       <div class="seccion__cab">

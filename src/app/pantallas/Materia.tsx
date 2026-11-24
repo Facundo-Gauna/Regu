@@ -241,7 +241,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
         {' · '}
         <span class="leyenda__item t-regular"><span class="leyenda__punto" aria-hidden="true" /> {formatearNota(regular)} para regularizar</span>
         {cursada.estructura && cursada.estructura.partes.length > 1 ? `· cada parte con ${formatearNota(cursada.estructura.minimoParte ?? 6)}${cursada.estructura.minimoParte === undefined ? ' (sin confirmar)' : ''} ` : ''}
-        {s.origenUmbrales === 'general' ? ' (regla general, sin confirmar)' : s.origenUmbrales === 'planificacion' ? ' (de la planificación de tu cátedra)' : ' (las que fijaste vos)'}.{' '}
+        {s.origenUmbrales === 'general' ? ' (regla general, sin confirmar)' : s.origenUmbrales === 'planificacion' ? ' (de la planificación de tu cátedra)' : s.origenUmbrales === 'plantilla' ? ' (de la plantilla, sin confirmar)' : ' (las que fijaste vos)'}.{' '}
         <button type="button" class="enlace-boton" onClick={abrirUmbrales}>Ajustar</button>
       </p>
       <p class="fila__detalle">No es el resultado oficial: lo confirman la cátedra y autogestión.</p>

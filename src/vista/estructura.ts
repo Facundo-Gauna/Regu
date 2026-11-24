@@ -13,6 +13,8 @@ export interface ItemParte {
   evaluacion: Evaluacion;
   /** El recuperatorio que la reemplaza, si lo hay. */
   reemplazo?: Evaluacion;
+  /** Un recuperatorio cargado todavía sin nota. */
+  pendiente?: Evaluacion;
   /** La nota que cuenta (la del recuperatorio si la reemplazó). */
   nota: number | null;
   /** Fracción dentro de la parte, de 0 a 1. */
@@ -72,10 +74,12 @@ export function calcular(c: Pick<Cursada, 'evaluaciones' | 'estructura'>, umbral
   // Un recuperatorio que apunta a otra evaluación existente no es un ítem aparte: ocupa su lugar
   const reemplazos = new Map<string, Evaluacion>();
   const sonReemplazo = new Set<string>();
+  const pendientes = new Map<string, Evaluacion>();
   for (const e of evaluaciones) {
     if (e.tipo !== 'recuperatorio' || !e.reemplazaA || !evaluaciones.some(o => o.id === e.reemplazaA && o.id !== e.id)) continue;
     sonReemplazo.add(e.id);
     if (e.nota !== null) reemplazos.set(e.reemplazaA, e);
+    else pendientes.set(e.reemplazaA, e);
   }
   const propias = evaluaciones.filter(e => !sonReemplazo.has(e.id));
   const idsPartes = new Set(partes.map(p => p.id));
@@ -86,7 +90,8 @@ export function calcular(c: Pick<Cursada, 'evaluaciones' | 'estructura'>, umbral
     const { f, aviso } = fracciones(suyas, parte.nombre);
     const items: ItemParte[] = suyas.map((e, i) => {
       const r = reemplazos.get(e.id);
-      return { evaluacion: e, ...(r ? { reemplazo: r } : {}), nota: r ? r.nota : e.nota, fraccion: f[i]! };
+      const sinNota = r ? undefined : pendientes.get(e.id);
+      return { evaluacion: e, ...(r ? { reemplazo: r } : {}), ...(sinNota ? { pendiente: sinNota } : {}), nota: r ? r.nota : e.nota, fraccion: f[i]! };
     });
     const cargado = items.filter(i => i.nota !== null);
     const peso = cargado.reduce((s, i) => s + i.fraccion, 0);
