@@ -4,7 +4,7 @@ import { evaluar, ConsultaCalendario, aplicarCalendarioUsuario } from '../src/mo
 import { datosEjemplo } from '../src/datos/ejemplo.ts';
 import * as A from '../src/datos/acciones.ts';
 import { presentarMateria } from '../src/vista/estados.ts';
-import { agrupar, contarPorFiltro, cumpleFiltro, listarItems } from '../src/vista/materias.ts';
+import { agrupar, contarPorFiltro, cumpleFiltro, listarItems, nivelActual } from '../src/vista/materias.ts';
 import { construirCursada, cursadasPorCerrar, finDeCursada } from '../src/vista/cierres.ts';
 import { modeloInicio, proximoCuatrimestre } from '../src/vista/inicio.ts';
 import { columnasPlan, relaciones, relacionadas } from '../src/vista/mapa.ts';
@@ -462,4 +462,37 @@ test('lista de materias: una cursada en curso con notas muestra el promedio', as
   const de = (id: string) => r.materias.find(m => m.id === id)!;
   assert.equal(detalleCorto(de('fisica-2')), 'Ciclo 2026 · Promedio 7,67 (3 notas)'); // 8, 6 y 9; el TP 2 no tiene nota
   assert.equal(detalleCorto(de('probabilidad-estadistica')), 'Ciclo 2026'); // sin notas: igual que antes
+});
+
+// ---------- Próxima acción de Inicio y año actual en Materias ----------
+
+const inicioDe = (datos: ReturnType<typeof datosEjemplo>, hoy: string) => modeloInicio(evaluar(plan, calendario, datos, hoy), datos, plan, cal, hoy);
+
+test('próxima acción: avisa que la inscripción a finales abre pronto', () => {
+  const p = inicioDe(datosEjemplo(), '2026-11-24').proxima;
+  assert.equal(p?.tipo, 'finales-pronto');
+  assert.match(p!.titulo, /15 días/);
+});
+
+test('próxima acción: con la inscripción a finales abierta, es inscribirse', () => {
+  const d = datosEjemplo();
+  for (const m of d.materias) m.cursadas = m.cursadas.filter(c => c.resultado !== 'cursando'); // sin cursadas por cerrar
+  assert.equal(inicioDe(d, '2026-12-09').proxima?.tipo, 'finales-abierta');
+});
+
+test('próxima acción: a mitad de cuatrimestre es cargar las notas', () => {
+  assert.equal(inicioDe(datosEjemplo(), '2026-10-15').proxima?.tipo, 'cargar-notas');
+});
+
+test('próxima acción: no compite con «¿Cómo te fue?» ni aparece sin datos', () => {
+  const cerrando = inicioDe(datosEjemplo(), '2026-12-01');
+  assert.ok(cerrando.porCerrar.length > 0);
+  assert.equal(cerrando.proxima, null);
+  assert.equal(inicioDe(usuario([]), '2026-10-15').proxima, null);
+});
+
+test('año actual: el que tiene más materias cursando; sin ninguna, el primero con algo pendiente', () => {
+  const items = (datos: ReturnType<typeof datosEjemplo>) => listarItems(evaluar(plan, calendario, datos, '2026-10-15'), plan);
+  assert.equal(nivelActual(items(datosEjemplo())), 3);
+  assert.equal(nivelActual(items(usuario([]))), 1);
 });

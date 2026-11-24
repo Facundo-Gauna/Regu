@@ -22,9 +22,16 @@ export function Inicio({ m }: { m: Modelo }) {
 
   return (
     <div class="pagina">
+      {v.proxima && (
+        <section class="proxima" aria-label="Lo próximo">
+          <h1 class="proxima__titulo">{v.proxima.titulo}</h1>
+          <p class="proxima__texto">{v.proxima.texto}</p>
+          <a class="boton boton--primario" href={v.proxima.destino === 'finales' ? enlaces.finales() : enlaces.materias(v.proxima.destino)}>{v.proxima.boton}</a>
+        </section>
+      )}
+
       <header class="portada">
-        <p class="portada__fecha">{fechaLarga(m.hoy)}</p>
-        <p class="portada__ciclo">Ciclo lectivo {v.ciclo}</p>
+        <p class="portada__fecha">{fechaLarga(m.hoy)} <span class="portada__ciclo">· ciclo {v.ciclo}</span></p>
         <div class="portada__cifras" aria-label="Resumen de la carrera">
           <div><strong>{v.cantidades.aprobadas}</strong><span>aprobadas</span></div>
           <div><strong>{v.cantidades.cursando}</strong><span>cursando</span></div>
@@ -97,7 +104,7 @@ export function Inicio({ m }: { m: Modelo }) {
               </li>
             ))}
           </ul>
-        ) : v.proximoPeriodo ? (
+        ) : v.proxima?.tipo === 'finales-pronto' ? null : v.proximoPeriodo ? (
           <div class="tarjeta">
             <strong>Próximo turno: {rango(v.proximoPeriodo.desde, v.proximoPeriodo.hasta)}</strong>
             <span class="fila__detalle">

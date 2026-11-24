@@ -17,6 +17,22 @@ export function Finales({ m }: { m: Modelo }) {
   const periodos = m.cal.cal.periodosExamen.filter(p => p.hasta >= m.hoy).slice(0, 3);
   const abiertas = new Set(m.resumen.calendario.inscripcionesFinalAbiertas.map(p => p.id));
 
+  // A la vista: el próximo turno y los que tengan la inscripción abierta
+  const esPrincipal = (p: (typeof periodos)[number]) => p.id === periodos[0]?.id || abiertas.has(p.id);
+  const turno = (p: (typeof periodos)[number]) => (
+    <li key={p.id} class={`tarjeta${abiertas.has(p.id) ? ' tarjeta--destacada' : ''}`}>
+      <strong>{p.tipo === 'mesas-moviles' ? 'Mesas móviles' : 'Turno de finales'} · {rango(p.desde, p.hasta)}</strong>
+      <span class="fila__detalle">
+        {abiertas.has(p.id)
+          ? 'Inscripción abierta: hasta 48 h hábiles antes de cada examen'
+          : p.inscripcionDesde
+            ? `Inscripción desde el ${fechaCorta(p.inscripcionDesde)} (${relativo(p.inscripcionDesde, m.hoy)})`
+            : 'Inscripción sin fecha'}
+      </span>
+      {p.tipo === 'mesas-moviles' && <span class="fila__detalle">Mesas de final que se toman durante el cursado</span>}
+    </li>
+  );
+
   const historial = m.datos.materias
     .flatMap(x => x.finales.map(f => ({ ...f, materiaId: x.materiaId })))
     .sort((a, b) => b.fecha.localeCompare(a.fecha));
@@ -27,21 +43,15 @@ export function Finales({ m }: { m: Modelo }) {
 
       <Seccion titulo="Turnos" acciones={<a class="enlace-seccion" href={enlaces.calendario()}>Calendario <Icono nombre="der" tam={14} /></a>}>
         {periodos.length ? (
-          <ul class="lista">
-            {periodos.map(p => (
-              <li key={p.id} class={`tarjeta${abiertas.has(p.id) ? ' tarjeta--destacada' : ''}`}>
-                <strong>{p.tipo === 'mesas-moviles' ? 'Mesas móviles' : 'Turno de finales'} · {rango(p.desde, p.hasta)}</strong>
-                <span class="fila__detalle">
-                  {abiertas.has(p.id)
-                    ? 'Inscripción abierta: hasta 48 h hábiles antes de cada examen'
-                    : p.inscripcionDesde
-                      ? `Inscripción desde el ${fechaCorta(p.inscripcionDesde)} (${relativo(p.inscripcionDesde, m.hoy)})`
-                      : 'Inscripción sin fecha'}
-                </span>
-                {p.tipo === 'mesas-moviles' && <span class="fila__detalle">Mesas de final que se toman durante el cursado</span>}
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul class="lista">{periodos.filter(esPrincipal).map(turno)}</ul>
+            {periodos.some(p => !esPrincipal(p)) && (
+              <details class="plegable">
+                <summary>Turnos siguientes ({periodos.filter(p => !esPrincipal(p)).length})</summary>
+                <div class="plegable__cuerpo"><ul class="lista">{periodos.filter(p => !esPrincipal(p)).map(turno)}</ul></div>
+              </details>
+            )}
+          </>
         ) : (
           <p class="seccion__texto">No hay turnos próximos en el calendario. Podés cargarlos desde Calendario.</p>
         )}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { FILTROS, agrupar, contarPorFiltro, type Filtro } from '../../vista/materias.ts';
+import { FILTROS, agrupar, contarPorFiltro, nivelActual, type Filtro } from '../../vista/materias.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { FilaMateria, Vacio } from '../componentes.tsx';
 import type { Modelo } from '../modelo.ts';
@@ -8,6 +8,9 @@ export function Materias({ m, filtro }: { m: Modelo; filtro: Filtro }) {
   const [busqueda, setBusqueda] = useState('');
   const conteo = contarPorFiltro(m.items);
   const grupos = agrupar(m.items, filtro, busqueda);
+  // Sin filtro ni búsqueda la lista es larga: en el celular se abre solo el año en curso
+  const todoAbierto = filtro !== 'todas' || !!busqueda || window.matchMedia('(min-width: 900px)').matches;
+  const actual = nivelActual(m.items);
   // En el celular los filtros se deslizan: el elegido tiene que quedar a la vista
   const filtros = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -34,20 +37,22 @@ export function Materias({ m, filtro }: { m: Modelo; filtro: Filtro }) {
 
       {grupos.map(g => (
         <section key={g.clave} class="seccion">
-          <div class="seccion__cab">
-            <h2 class="seccion__titulo">{g.titulo}</h2>
-            <span class="seccion__n">{g.items.length}</span>
-          </div>
-          {g.clave === 'electivas' && (
-            <p class="seccion__texto">Correlativas y horas sin confirmar: no figuran como habilitadas.</p>
-          )}
-          <ul class="lista">
-            {g.items.map(i => (
-              <li key={i.id}>
-                <FilaMateria item={i} />
-              </li>
-            ))}
-          </ul>
+          <details key={`${filtro}-${!!busqueda}`} class="anio" open={todoAbierto || g.nivel === actual}>
+            <summary class="seccion__cab">
+              <h2 class="seccion__titulo">{g.titulo}</h2>
+              <span class="seccion__n">{g.items.length}</span>
+            </summary>
+            {g.clave === 'electivas' && (
+              <p class="seccion__texto">Correlativas y horas sin confirmar: no figuran como habilitadas.</p>
+            )}
+            <ul class="lista">
+              {g.items.map(i => (
+                <li key={i.id}>
+                  <FilaMateria item={i} />
+                </li>
+              ))}
+            </ul>
+          </details>
         </section>
       ))}
     </div>

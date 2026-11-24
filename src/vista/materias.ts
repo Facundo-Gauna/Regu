@@ -97,6 +97,17 @@ export function agrupar(items: ItemLista[], filtro: Filtro, busqueda = ''): Grup
   return grupos;
 }
 
+/** El año que conviene abrir: el que tiene más materias en curso; si no hay ninguna, el primero con algo pendiente. */
+export function nivelActual(items: ItemLista[]): number | null {
+  const obligatorias = items.filter(i => i.clase === 'materia');
+  const cursando = new Map<number, number>();
+  for (const i of obligatorias) if (i.resumen.estado.estado === 'cursando') cursando.set(i.nivel!, (cursando.get(i.nivel!) ?? 0) + 1);
+  const conMas = [...cursando].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
+  if (conMas) return conMas[0];
+  const pendientes = obligatorias.filter(i => i.resumen.estado.estado !== 'aprobada').map(i => i.nivel!);
+  return pendientes.length ? Math.min(...pendientes) : null;
+}
+
 export function normalizar(s: string): string {
   return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 }

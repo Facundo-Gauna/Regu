@@ -482,7 +482,7 @@ dialog.hoja::backdrop { background: rgb(0 0 0 / 0.6); }
 }
 .portada__fecha { font-size: 1.05rem; font-weight: 700; }
 .portada__fecha::first-letter { text-transform: uppercase; }
-.portada__ciclo { color: var(--ambar); font-size: 0.85rem; font-weight: 700; }
+.portada__ciclo { color: var(--ambar); font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
 .portada__cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0; }
 .portada__cifras div { display: flex; flex-direction: column; }
 .portada__cifras strong { font-size: 2.4rem; font-weight: 800; line-height: 1; color: var(--ambar); font-variant-numeric: tabular-nums; }
@@ -727,3 +727,24 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 }
 ::selection { background: color-mix(in srgb, var(--foco) 30%, transparent); }
 .seccion__titulo::first-letter { text-transform: uppercase; }
+
+/* Inicio: lo próximo va primero; la portada queda de resumen, más baja */
+.proxima { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border-radius: 24px; background: var(--superficie); border: 2px solid var(--texto); }
+.proxima__titulo { font-size: 1.35rem; font-weight: 800; line-height: 1.2; text-wrap: balance; }
+.proxima__texto { color: var(--texto-suave); font-size: 0.92rem; }
+.proxima .boton { margin-top: 4px; }
+.proxima + .portada { padding-block: 16px 14px; gap: 8px; }
+.proxima + .portada .portada__cifras strong { font-size: 1.8rem; }
+
+/* Materias: años plegables */
+.anio > summary { list-style: none; font-size: inherit; }
+.anio > summary::-webkit-details-marker { display: none; }
+.anio > summary .seccion__n { margin-left: auto; }
+.anio > summary::after { content: ''; flex: none; width: 8px; height: 8px; margin-right: 4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
+.anio[open] > summary::after { transform: rotate(-135deg); }
+.anio[open] > summary { margin-bottom: 12px; }
+.anio > * + * { margin-top: 12px; }
+
+/* Pantallas angostas o letra grande: la etiqueta o el botón bajan de línea antes de aplastar el nombre */
+.fila--materia, .tarjeta--materia { flex-wrap: wrap; }
+.fila--materia .fila__principal, .tarjeta--materia .fila__principal { flex: 1 1 8rem; }

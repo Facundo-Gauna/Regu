@@ -41,7 +41,47 @@ export interface AvisoRiesgo {
   gravedad: 'atencion' | 'urgente';
 }
 
+/** Lo más urgente para hacer hoy. Una sola cosa. */
+export interface ProximaAccion {
+  tipo: 'finales-abierta' | 'cursado-abierta' | 'finales-pronto' | 'registrar-mesa' | 'cargar-notas';
+  titulo: string;
+  texto: string;
+  destino: 'finales' | 'habilitadas' | 'cursando';
+  boton: string;
+}
+
+const DIAS_PRONTO = 30;
+
+function proximaAccion(m: Omit<ModeloInicio, 'proxima'>): ProximaAccion | null {
+  // Si hay cursadas por cerrar, «¿Cómo te fue?» ya está arriba de todo: no se compite con eso
+  if (m.vacio || m.porCerrar.length > 0) return null;
+  const materias = (n: number) => `${n} ${n === 1 ? 'materia' : 'materias'}`;
+  const abierta = m.inscripcionesFinal[0];
+  if (abierta && (m.rendir.length || m.pendientesMesa.length)) {
+    return { tipo: 'finales-abierta', titulo: 'Inscripción a finales abierta', texto: `Podés rendir ${materias(m.rendir.length)}. La última inscripción cierra el ${formatear(abierta.cierre)}.`, destino: 'finales', boton: 'Ver finales' };
+  }
+  const v = m.proximo?.ventana;
+  if (v && v.desde <= m.hoy && m.hoy <= v.hasta && m.paraCursar.length) {
+    return { tipo: 'cursado-abierta', titulo: `Inscribite a cursar${v.estimada ? ' (fecha estimada)' : ''}`, texto: `Hasta el ${formatear(v.hasta)}. Tenés ${materias(m.paraCursar.length)} para anotarte.`, destino: 'habilitadas', boton: 'Ver cuáles' };
+  }
+  const abre = m.proximoPeriodo?.inscripcionDesde;
+  if (abre && abre > m.hoy && (m.rendir.length || m.pendientesMesa.length)) {
+    const dias = diasEntre(m.hoy, abre);
+    if (dias <= DIAS_PRONTO) {
+      return { tipo: 'finales-pronto', titulo: `Finales: la inscripción abre en ${dias} ${dias === 1 ? 'día' : 'días'}`, texto: `El ${formatear(abre)}. ${m.rendir.length ? `Podés rendir ${materias(m.rendir.length)}.` : 'Tenés una promoción para registrar en mesa.'}`, destino: 'finales', boton: 'Ver finales' };
+    }
+  }
+  if (m.cantidades.cursando) {
+    return { tipo: 'cargar-notas', titulo: '¿Te dieron alguna nota?', texto: `Estás cursando ${materias(m.cantidades.cursando)}.`, destino: 'cursando', boton: 'Cargar notas' };
+  }
+  if (m.pendientesMesa.length) {
+    return { tipo: 'registrar-mesa', titulo: 'Registrá tu promoción en una mesa', texto: m.pendientesMesa.map(i => i.nombre).join(', '), destino: 'finales', boton: 'Ver finales' };
+  }
+  return null;
+}
+
 export interface ModeloInicio {
+  proxima: ProximaAccion | null;
   hoy: Fecha;
   ciclo: number;
   porCerrar: (CursadaPorCerrar & { nombre: string })[];
@@ -77,7 +117,7 @@ export function modeloInicio(resumen: Resumen, datos: DatosUsuario, plan: Plan, 
     }
   }
 
-  return {
+  const modelo: Omit<ModeloInicio, 'proxima'> = {
     hoy,
     ciclo: resumen.ciclo,
     porCerrar: cursadasPorCerrar(datos, cal, hoy).map(c => ({ ...c, nombre: nombre(c.materiaId) })),
@@ -99,6 +139,7 @@ export function modeloInicio(resumen: Resumen, datos: DatosUsuario, plan: Plan, 
     },
     vacio: datos.materias.length === 0,
   };
+  return { ...modelo, proxima: proximaAccion(modelo) };
 }
 
 function diasEntre(a: Fecha, b: Fecha): number {
