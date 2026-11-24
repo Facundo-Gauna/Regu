@@ -652,6 +652,21 @@
     await esperar(() => hallar('a.acceso', 'Inglés I'), 'el acceso tras recargar');
   });
 
+  await prueba('Ayuda: el «?» muestra los pasos de la pantalla y al cerrar el foco vuelve al botón', async () => {
+    await cargar(`${BASE}?ejemplo=1#/materia/fisica-2`);
+    const boton = await esperar(() => doc().querySelector('.cabecera .ayuda-boton'), 'el botón de ayuda');
+    boton.focus();
+    await clic(boton, 'Ayuda');
+    const h = await esperar(hoja, 'la hoja de ayuda');
+    afirmar(texto(h).includes('Cómo cargar tus notas') && todos('li', h).length === 5, `la ayuda dice: ${texto(h).slice(0, 160)}`);
+    await clic(h.querySelector('button[aria-label=Cerrar]'));
+    await esperarHojaCerrada();
+    afirmar(doc().activeElement === boton, `el foco quedó en ${doc().activeElement?.tagName}`);
+    irA('#/ajustes');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Ajustes', 'Ajustes');
+    afirmar(!doc().querySelector('.cabecera .ayuda-boton'), 'Ajustes no debería tener ayuda');
+  });
+
   await prueba('Sin errores de JavaScript durante todos los flujos', async () => {
     afirmar(erroresApp.length === 0, erroresApp.join(' | '));
   });

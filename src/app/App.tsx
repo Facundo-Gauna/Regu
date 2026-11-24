@@ -3,6 +3,7 @@ import { fechaCorta } from '../vista/formato.ts';
 import { enlaces, parseRuta, pestaña, type Ruta } from '../vista/rutas.ts';
 import { Aviso, Boton, Icono, Logo, type NombreIconoUi } from './componentes.tsx';
 import { referencia, useModelo } from './modelo.ts';
+import { BotonAyuda } from './ayuda.tsx';
 import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Bienvenida } from './pantallas/Bienvenida.tsx';
 import { Calendario } from './pantallas/Calendario.tsx';
@@ -96,6 +97,7 @@ export function App() {
         <span class="cabecera__titulo">{TITULOS[ruta.nombre]}</span>
         {m.simulada && <span class="cabecera__modo cabecera__modo--fecha">Fecha simulada</span>}
         {s.modo === 'ejemplo' && <span class="cabecera__modo">Ejemplo</span>}
+        <BotonAyuda key={ruta.nombre} ruta={ruta.nombre} />
       </header>
 
       <nav class="nav" aria-label="Secciones">
@@ -106,6 +108,7 @@ export function App() {
             <span>{p.etiqueta}</span>
           </a>
         ))}
+        <BotonAyuda key={ruta.nombre} ruta={ruta.nombre} texto="Ayuda" clase="nav__item nav__ayuda" />
       </nav>
 
       <main class="contenido">

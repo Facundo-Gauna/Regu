@@ -23,7 +23,7 @@ export function Logo({ alto = 26, titulo = 'Regu' }: { alto?: number; titulo?: s
 
 export type NombreIconoUi =
   | NombreIcono | 'inicio' | 'materias' | 'plan' | 'finales' | 'mas' | 'calendario' | 'progreso' | 'ajustes'
-  | 'cerrar' | 'agregar' | 'der' | 'izq' | 'borrar' | 'descargar' | 'subir' | 'editar' | 'instalar';
+  | 'cerrar' | 'agregar' | 'der' | 'izq' | 'borrar' | 'descargar' | 'subir' | 'editar' | 'instalar' | 'ayuda';
 
 const TRAZOS: Record<string, string> = {
   inicio: 'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10',
@@ -50,6 +50,7 @@ const TRAZOS: Record<string, string> = {
   subir: 'M12 16V5M7 9l5-5 5 5M5 20h14',
   editar: 'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',
   instalar: 'M12 3v12M7 10l5 5 5-5M4 19h16',
+  ayuda: 'M12 3a9 9 0 100 18 9 9 0 000-18zM9.5 9.5a2.6 2.6 0 115 1c0 1.6-2.5 2-2.5 3.5M12 17h.01',
 };
 
 export function Icono({ nombre, tam = 20 }: { nombre: NombreIconoUi; tam?: number }) {

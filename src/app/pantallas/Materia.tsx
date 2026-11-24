@@ -12,6 +12,7 @@ import { veredictoCursar, veredictoRendir, type Veredicto } from '../../vista/ve
 import { Boton, Hoja, Icono, Insignia, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
 import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado, FormUmbrales } from '../formularios.tsx';
 import { referencia, type Modelo } from '../modelo.ts';
+import { BotonAyuda } from '../ayuda.tsx';
 import { Medidor } from '../medidor.tsx';
 import { Referencias } from '../referencias.tsx';
 import { EditorEstructura, TecladoNota, VistaEstructura } from '../estructura.tsx';
@@ -242,6 +243,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
       </Boton>
       {regla && <ReglaCatedra regla={regla} cursada={cursada} />}
       <Referencias cursada={cursada} s={s} onAjustar={abrirUmbrales} />
+      <BotonAyuda ruta="materia" texto="¿Cómo se cargan las notas?" clase="boton boton--texto" />
     </Seccion>
   );
 }
