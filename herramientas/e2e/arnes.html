@@ -266,7 +266,8 @@
     irA('#/materia/algebra-geometria-analitica');
     await esperar(() => texto(doc().querySelector('h1')) === 'Álgebra y Geometría Analítica', 'la materia');
     await esperar(() => seccion('Cómo viene la cursada'), 'la sección de notas');
-    afirmar(resumen().includes('regla general, sin confirmar'), 'las referencias deberían figurar como sin confirmar');
+    const referencias = () => texto(seccion('Cómo viene la cursada').querySelector('.referencias'));
+    afirmar(referencias().includes('Regla general, sin confirmar'), `las referencias deberían figurar como sin confirmar: ${referencias()}`);
     await cargarNota('Parcial 1', 8);
     await cargarNota('Parcial 2', 6);
     await esperar(() => resumen().includes('Promedio 7 ') && resumen().includes('mínima 6 (Parcial 2)'), `promedio y mínima (${resumen().slice(0, 200)})`);
@@ -280,13 +281,16 @@
     await esperar(() => seccion('Cómo viene la cursada') && filas().length === 3, 'las 3 notas tras recargar');
     afirmar(resumen().includes('Promedio 8,5'), `tras recargar: ${resumen().slice(0, 200)}`);
     // referencias propias: ya no dicen «sin confirmar»
-    await clic(hallar('.enlace-boton', 'Ajustar', seccion('Cómo viene la cursada')), 'Ajustar');
+    await clic(hallar('.referencias button', 'Ajustar', seccion('Cómo viene la cursada')), 'Ajustar');
     await esperar(hoja, 'la hoja de referencias');
     const [promo, regu] = todos('dialog[open] input[type=number]');
     await escribir(promo, '7'); await escribir(regu, '5');
     await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
     await esperarHojaCerrada();
-    afirmar(resumen().includes('7 para promocionar · 5 para regularizar') && !resumen().includes('regla general, sin confirmar'), `referencias: ${resumen().slice(0, 300)}`);
+    const dd = () => todos('.referencias__valores dd').map(texto).join(' / ');
+    afirmar(dd() === '7 / 5', `referencias: ${dd()}`);
+    const bloque = texto(doc().querySelector('.referencias'));
+    afirmar(bloque.includes('Las fijaste vos') && !bloque.includes('Regla general, sin confirmar'), `referencias: ${bloque}`);
     // borrar el recuperatorio: «Parcial 2» vuelve a contar
     // por el nombre exacto: la fila de «Parcial 2» también dice «reemplazada por Recuperatorio P2»
     const filaDe = nombre => filas().find(f => texto(f.querySelector('.nota__texto strong')) === nombre);
@@ -322,7 +326,7 @@
     afirmar(texto(regla()).includes('Asistencia de 75 %'), 'la asistencia debe figurar como algo que depende del usuario');
     afirmar(texto(regla()).includes('Esto depende de vos'), 'falta el bloque «depende de vos»');
     afirmar(!/vas a promocionar|vas a regularizar/i.test(texto(regla())), 'no debería prometer un resultado');
-    afirmar(texto(seccion('Cómo viene la cursada')).includes('de la planificación de tu cátedra'), 'las referencias deberían decir que salen de la planificación');
+    afirmar(texto(doc().querySelector('.referencias')).includes('De la planificación de tu cátedra'), 'las referencias deberían decir que salen de la planificación');
     // una materia con regla de texto no se calcula
     irA('#/materia/analisis-matematico-1');
     await esperar(() => texto(doc().querySelector('h1')) === 'Análisis Matemático I', 'otra materia');

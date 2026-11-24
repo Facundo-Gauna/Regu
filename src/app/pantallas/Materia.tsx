@@ -12,6 +12,8 @@ import { veredictoCursar, veredictoRendir, type Veredicto } from '../../vista/ve
 import { Boton, Hoja, Icono, Insignia, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
 import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado, FormUmbrales } from '../formularios.tsx';
 import { referencia, type Modelo } from '../modelo.ts';
+import { Medidor } from '../medidor.tsx';
+import { Referencias } from '../referencias.tsx';
 import { EditorEstructura, TecladoNota, VistaEstructura } from '../estructura.tsx';
 import { calcular } from '../../vista/estructura.ts';
 import { actualizar } from '../store.ts';
@@ -214,21 +216,24 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
               );
             })}
           </ul>
-          <div class="tarjeta">
+          <div class="marcador">
             {s.promedio !== null ? (
-              <strong>
-                Promedio {formatearNota(s.promedio)} · mínima {formatearNota(s.minima!.nota)} ({s.minima!.nombre})
-              </strong>
+              <>
+                <strong class="marcador__titulo">
+                  Promedio <span class="marcador__nota">{formatearNota(s.promedio)}</span> <small>· mínima {formatearNota(s.minima!.nota)} ({s.minima!.nombre})</small>
+                </strong>
+                <Medidor valor={s.promedio} marcas={[regular, promocion]} tono={TONO_NIVEL[s.promedio >= promocion ? 'promocion' : s.promedio >= regular ? 'regular' : 'debajo']} />
+              </>
             ) : (
               <strong>Todavía no hay notas cargadas</strong>
             )}
             {s.conNota > 0 && (
-              <span class="fila__detalle">
+              <span class="marcador__detalle">
                 {s.enPromocion} de {s.conNota} en {formatearNota(promocion)} o más
                 {s.debajo.length > 0 ? ` · por debajo de ${formatearNota(regular)}: ${s.debajo.map(e => `${e.nombre} (${formatearNota(e.nota!)})`).join(', ')}` : ''}
               </span>
             )}
-            {s.pendientes.length > 0 && <span class="fila__detalle">Sin nota todavía: {s.pendientes.map(e => e.nombre).join(', ')}</span>}
+            {s.pendientes.length > 0 && <span class="marcador__detalle">Sin nota todavía: {s.pendientes.map(e => e.nombre).join(', ')}</span>}
           </div>
         </>
       )}
@@ -236,15 +241,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
         <Icono nombre={cursada.estructura ? 'editar' : 'plan'} tam={16} /> {cursada.estructura ? 'Editar estructura' : 'Organizar mis notas por partes'}
       </Boton>
       {regla && <ReglaCatedra regla={regla} cursada={cursada} />}
-      <p class="fila__detalle">
-        <span class="leyenda__item t-aprobada"><span class="leyenda__punto" aria-hidden="true" /> {formatearNota(promocion)} para promocionar</span>
-        {' · '}
-        <span class="leyenda__item t-regular"><span class="leyenda__punto" aria-hidden="true" /> {formatearNota(regular)} para regularizar</span>
-        {cursada.estructura && cursada.estructura.partes.length > 1 ? `· cada parte con ${formatearNota(cursada.estructura.minimoParte ?? 6)}${cursada.estructura.minimoParte === undefined ? ' (sin confirmar)' : ''} ` : ''}
-        {s.origenUmbrales === 'general' ? ' (regla general, sin confirmar)' : s.origenUmbrales === 'planificacion' ? ' (de la planificación de tu cátedra)' : s.origenUmbrales === 'plantilla' ? ' (de la plantilla, sin confirmar)' : ' (las que fijaste vos)'}.{' '}
-        <button type="button" class="enlace-boton" onClick={abrirUmbrales}>Ajustar</button>
-      </p>
-      <p class="fila__detalle">No es el resultado oficial: lo confirman la cátedra y autogestión.</p>
+      <Referencias cursada={cursada} s={s} onAjustar={abrirUmbrales} />
     </Seccion>
   );
 }
@@ -312,7 +309,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
   const titulos: Record<Exclude<Panel, null>, string> = {
     cursada: 'Cargar cursada', empezar: 'Empezar a cursarla', final: 'Cargar final', aprobada: 'Marcar como aprobada', correccion: 'Corregir el estado',
     promocion: 'Promocioné', regularidad: 'Regularicé', libre: 'Quedé libre',
-    nota: evaluacionEditada ? 'Editar nota' : 'Cargar nota', umbrales: 'Referencias de notas',
+    nota: evaluacionEditada ? 'Editar nota' : 'Cargar nota', umbrales: 'Ajustar las notas que se piden',
     estructura: 'Estructura de la cursada', poner: evaluacionEditada?.nombre ?? 'Cargar nota',
   };
   const cursadaVigente = r.estado.cursadaVigente;
@@ -531,7 +528,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
         )}
         {panel === 'estructura' && cursadaVigente && <EditorEstructura materiaId={id} cursada={cursadaVigente} onListo={cerrar} />}
         {panel === 'umbrales' && cursadaVigente && (
-          <FormUmbrales materiaId={id} cursadaId={cursadaVigente.id} actual={seguimientoCursada(cursadaVigente, reglaDe(id, cursadaVigente.ciclo)).umbrales} propios={cursadaVigente.umbrales !== undefined} onListo={cerrar} />
+          <FormUmbrales materiaId={id} cursadaId={cursadaVigente.id} actual={seguimientoCursada(cursadaVigente, reglaDe(id, cursadaVigente.ciclo)).umbrales} propios={cursadaVigente.umbrales !== undefined} {...((cursadaVigente.estructura?.partes.length ?? 0) > 1 ? { minimoParte: cursadaVigente.estructura!.minimoParte ?? null } : {})} onListo={cerrar} />
         )}
         {panel === 'promocion' && <FormResultado m={m} materiaId={id} resultado="aprobada-directa" onListo={cerrar} />}
         {panel === 'regularidad' && <FormResultado m={m} materiaId={id} resultado="regular" onListo={cerrar} />}

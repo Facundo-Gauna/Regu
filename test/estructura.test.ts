@@ -163,3 +163,11 @@ test('la plantilla de Álgebra compara contra 7 y 6, como su planificación, y s
   assert.equal(calcular(c, s.umbrales).promocion.estado, 'cumple');
   assert.equal(aplicarPlantilla('analisis-1', [], () => 'z').estructura.referencias, undefined);
 });
+
+test('la nota para aprobar cada parte se ajusta sin tocar el resto de la estructura', () => {
+  const con = A.fijarMinimoParte(conEstructura(), M, C, 7);
+  assert.equal(cursada(con).estructura?.minimoParte, 7);
+  assert.equal(cursada(con).estructura?.partes[0]?.nombre, 'RA 1');
+  assert.equal(cursada(A.fijarMinimoParte(con, M, C, null)).estructura?.minimoParte, undefined);
+  assert.equal(cursada(A.fijarMinimoParte(datosEjemplo(), M, C, 7)).estructura, undefined);
+});

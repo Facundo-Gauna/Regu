@@ -8,6 +8,7 @@ import { aplicarPlantilla, plantillasPara, type ClavePlantilla } from '../vista/
 import { formatearNota, type ResultadoNivel } from '../vista/seguimiento.ts';
 import { Aviso, Boton, Campo, Icono } from './componentes.tsx';
 import { idNuevo } from './formularios.tsx';
+import { Medidor } from './medidor.tsx';
 import { actualizar } from './store.ts';
 
 const numero = (s: string) => Number(s.replace(',', '.'));
@@ -99,6 +100,7 @@ export function TarjetaParte({ p, minimo, unica, onNota, onEditar, accion }: { p
         </div>
         {p.nota !== null && <strong class="parte__nota">{formatearContra(p.nota, minimo)}</strong>}
       </header>
+      <Medidor valor={p.nota} marcas={[minimo]} tono={p.nota !== null && p.nota < minimo ? 'recursar' : 'aprobada'} />
       {!unica && <span class={`etiqueta t-${estado.tono}`}>{estado.texto}</span>}
       {p.aviso && <Aviso tipo="alerta">{p.aviso}</Aviso>}
       {p.items.length ? (
@@ -118,8 +120,9 @@ export function VistaEstructura({ calculo, umbrales, onNota, onEditar, onAsignar
   const notaDe = (i: ItemParte) => onNota(notaVigente(i));
   return (
     <>
-      <div class="tarjeta regla">
-        <strong class="total">{calculo.total === null ? 'Todavía no hay notas cargadas' : <>Con lo cargado: <span>{formatearTotal(calculo.total, umbrales)}</span></>}</strong>
+      <div class="marcador">
+        <strong class="marcador__titulo total">{calculo.total === null ? 'Todavía no hay notas cargadas' : <>Con lo cargado: <span class="marcador__nota">{formatearTotal(calculo.total, umbrales)}</span></>}</strong>
+        {calculo.total !== null && <Medidor valor={calculo.total} marcas={[umbrales.regular, umbrales.promocion]} tono={calculo.total >= umbrales.promocion ? 'aprobada' : calculo.total >= umbrales.regular ? 'regular' : 'recursar'} />}
         <Nivel titulo="Para promocionar" r={calculo.promocion} />
         <Nivel titulo="Para regularizar" r={calculo.regular} />
       </div>

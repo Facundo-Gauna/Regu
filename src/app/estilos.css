@@ -33,7 +33,7 @@
   --sobre-marca: #1a1a1a;
   --enlace: #124b77;
 
-  --sombra: 0 1px 2px rgb(60 42 20 / 0.06), 0 6px 18px rgb(60 42 20 / 0.07);
+  --sombra: 0 1px 1px rgb(60 42 20 / 0.05), 0 3px 8px rgb(60 42 20 / 0.05), 0 12px 28px rgb(60 42 20 / 0.06);
 
   /* estados: texto sobre fondo tenue, y color fuerte para bordes y barras */
   --aprobada-fg: #17612b;   --aprobada-bg: #e2f4e6;   --aprobada-fuerte: #2e9e4a;
@@ -321,8 +321,6 @@ a.etiqueta { min-height: 32px; }
 .etiqueta--mio { background: var(--habilitada-bg); color: var(--habilitada-fg); border-color: var(--habilitada-fuerte); }
 
 .sin-confirmar { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 700; color: var(--texto); }
-.fila__detalle .leyenda__item { display: inline; font-size: inherit; color: var(--texto); }
-.fila__detalle .leyenda__punto { display: inline-block; margin-right: 4px; }
 .sin-confirmar--boton { align-self: flex-start; min-height: var(--toque); padding: 0; background: none; border: 0; font-family: inherit; text-align: left; cursor: pointer; }
 
 /* ---------- Avisos y vacíos ---------- */
@@ -751,8 +749,6 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 
 /* ---------- Notas por partes ---------- */
 
-.total { font-size: 1.05rem; }
-.total span { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; margin-left: 4px; }
 .parte { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 16px 14px 10px; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); }
 .parte > .etiqueta { align-self: flex-start; }
 .parte__cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -784,3 +780,50 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 .cargar__aviso { min-height: 1.4em; margin: -16px 0 -8px; font-weight: 700; color: var(--aprobada-fg); }
 .accesos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
 .acceso { display: flex; flex-direction: column; gap: 4px; height: 100%; min-height: 84px; padding: 14px; background: var(--superficie); border: 1.5px solid var(--borde-campo); border-radius: var(--radio); color: var(--texto); text-decoration: none; overflow-wrap: anywhere; line-height: 1.25; }
+
+/* ---------- Marcador: el número que importa, en el mismo negro que la portada (en los dos temas) ---------- */
+
+.marcador { display: flex; flex-direction: column; gap: 12px; padding: 20px 18px; background: var(--negro); color: #fff; border-radius: 24px; }
+.marcador__titulo { font-size: 1rem; line-height: 1.35; }
+.marcador__titulo small { display: block; margin-top: 4px; font-size: 0.85rem; font-weight: 600; color: #d6d1c9; }
+.marcador__nota { font-size: 2.8rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin-left: 6px; color: var(--ambar); }
+.marcador__detalle, .marcador .razones { font-size: 0.85rem; color: #d6d1c9; }
+.marcador .condicion { padding-top: 12px; border-top: 1px solid #37332e; }
+.marcador .medidor { background: #37332e; }
+.marcador .medidor__marca { background: #fff; }
+
+.medidor { position: relative; flex: none; height: 8px; border-radius: 999px; background: var(--superficie-2); }
+.medidor__relleno { height: 100%; border-radius: 999px; background: var(--fuerte, var(--aprobada-fuerte)); }
+.medidor__marca { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--texto); }
+
+/* ---------- Notas que se piden ---------- */
+
+.referencias { display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 14px; background: var(--superficie-2); border-radius: var(--radio); }
+.referencias__cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.referencias__cab h3 { font-size: 1rem; font-weight: 800; line-height: 1.25; }
+.referencias__cab .boton { flex: none; }
+.referencias__valores { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
+.referencias__valores div { display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; padding: 10px 6px; border-radius: var(--radio-chico); background: var(--bg); color: var(--fg); }
+.referencias__valores dt { font-size: 0.9rem; font-weight: 700; }
+.referencias__valores dd { font-size: 2rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.referencias__origen { font-size: 0.85rem; font-weight: 700; }
+
+.contador { display: flex; flex-direction: column; gap: 6px; }
+.contador__controles { display: grid; grid-template-columns: 56px 1fr 56px; gap: 8px; }
+.contador__boton { min-height: 52px; padding: 0; font-size: 1.6rem; line-height: 1; }
+.contador__controles input { text-align: center; font-size: 1.4rem; font-weight: 800; }
+
+/* ---------- Tarjetas que se tocan ---------- */
+
+.parte { box-shadow: var(--sombra); }
+.parte--suelta { box-shadow: none; }
+.item__nota, .nota__valor { min-height: 48px; }
+.cifra strong { font-size: 2rem; letter-spacing: -0.02em; }
+.fila--menu > .icono:first-child, .acceso > .icono { box-sizing: content-box; max-width: none; padding: 10px; border-radius: 14px; background: var(--ambar); color: var(--negro); }
+.acceso > .icono { align-self: flex-start; margin-bottom: 4px; }
+.acceso { box-shadow: var(--sombra); border: 1px solid var(--borde); }
+a.fila:hover, .acceso:hover, .plantilla:hover { border-color: var(--borde-campo); }
+@media (prefers-reduced-motion: no-preference) {
+  a.fila, .acceso, .plantilla, .boton, .item__nota, .teclado__tecla { transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1); }
+  a.fila:active, .acceso:active, .plantilla:active, .boton:active:not(:disabled), .item__nota:active, .teclado__tecla:active { transform: scale(0.97); }
+}

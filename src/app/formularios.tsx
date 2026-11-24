@@ -6,7 +6,7 @@ import * as A from '../datos/acciones.ts';
 import { construirCursada, fechaDeCierre, finDeCursada, periodoSugerido } from '../vista/cierres.ts';
 import { detalleCorto, presentarMateria } from '../vista/estados.ts';
 import { fechaCorta } from '../vista/formato.ts';
-import { UMBRALES_GENERALES } from '../vista/seguimiento.ts';
+import { MINIMO_PARTE_GENERAL } from '../vista/estructura.ts';
 import { enlaces } from '../vista/rutas.ts';
 import { Aviso, Boton, Campo, Hoja, Icono, Insignia, Segmentado } from './componentes.tsx';
 import type { Modelo } from './modelo.ts';
@@ -264,37 +264,61 @@ export function FormEvaluacion({ m, materiaId, cursadaId, existentes, inicial, p
 }
 
 /** Las notas de referencia para ver cómo viene la cursada. Cada cátedra tiene las suyas: se ajustan según su planificación. */
-export function FormUmbrales({ materiaId, cursadaId, actual, propios, onListo }: { materiaId: string; cursadaId: string; actual: Umbrales; propios: boolean; onListo: () => void }) {
+/** Una nota con botones grandes para subir y bajar; también se puede escribir. */
+function Contador({ etiqueta, valor: v, onCambio }: { etiqueta: string; valor: string; onCambio: (v: string) => void }) {
+  const mover = (paso: number) => {
+    const n = Number(v.replace(',', '.'));
+    onCambio(String(Math.min(10, Math.max(1, (Number.isFinite(n) ? n : 6) + paso))));
+  };
+  return (
+    <div class="contador">
+      <span class="campo__etiqueta">{etiqueta}</span>
+      <div class="contador__controles">
+        <button type="button" class="boton contador__boton" aria-label={`Bajar: ${etiqueta}`} onClick={() => mover(-1)}>−</button>
+        <input type="number" inputMode="decimal" min={1} max={10} step="any" aria-label={etiqueta} value={v} onInput={e => onCambio(valor(e))} required />
+        <button type="button" class="boton contador__boton" aria-label={`Subir: ${etiqueta}`} onClick={() => mover(1)}>+</button>
+      </div>
+    </div>
+  );
+}
+
+/** Las notas que se piden. Cada cátedra tiene las suyas: se ajustan según su planificación. `minimoParte` solo si hay varias partes. */
+export function FormUmbrales({ materiaId, cursadaId, actual, propios, minimoParte, onListo }: { materiaId: string; cursadaId: string; actual: Umbrales; propios: boolean; minimoParte?: number | null; onListo: () => void }) {
+  const conPartes = minimoParte !== undefined;
   const [promocion, setPromocion] = useState(String(actual.promocion));
   const [regular, setRegular] = useState(String(actual.regular));
+  const [parte, setParte] = useState(String(minimoParte ?? MINIMO_PARTE_GENERAL));
+  const [tocoParte, setTocoParte] = useState(false);
   const [error, setError] = useState('');
 
   const guardar = (e: Event) => {
     e.preventDefault();
     const p = Number(promocion.replace(',', '.'));
     const r = Number(regular.replace(',', '.'));
-    if (![p, r].every(x => Number.isFinite(x) && x >= 1 && x <= 10)) return setError('Las dos notas van de 1 a 10');
+    const c = Number(parte.replace(',', '.'));
+    if (![p, r, ...(conPartes ? [c] : [])].every(x => Number.isFinite(x) && x >= 1 && x <= 10)) return setError('Las notas van de 1 a 10');
     if (r > p) return setError('La nota para regularizar no puede ser mayor que la de promocionar');
-    actualizar(d => A.fijarUmbrales(d, materiaId, cursadaId, { promocion: p, regular: r }));
+    actualizar(d => {
+      const con = A.fijarUmbrales(d, materiaId, cursadaId, { promocion: p, regular: r });
+      // El mínimo por parte solo se marca como propio si lo cambiaron
+      return conPartes && tocoParte ? A.fijarMinimoParte(con, materiaId, cursadaId, c) : con;
+    });
     onListo();
   };
 
   return (
-    <form class="formulario" onSubmit={guardar}>
-      <p class="fila__detalle">Solo sirven para leer tus notas; no cambian el estado. Usá lo de tu planificación.</p>
-      <div class="campos-fila">
-        <Campo etiqueta="Para promocionar"><input type="number" inputMode="decimal" min={1} max={10} step="any" value={promocion} onInput={e => setPromocion(valor(e))} required /></Campo>
-        <Campo etiqueta="Para regularizar"><input type="number" inputMode="decimal" min={1} max={10} step="any" value={regular} onInput={e => setRegular(valor(e))} required /></Campo>
-      </div>
+    <form class="formulario" onSubmit={guardar} noValidate>
+      <p class="seccion__texto">Poné lo que dice tu planificación. No cambia el estado de la materia.</p>
+      <Contador etiqueta="Para promocionar" valor={promocion} onCambio={setPromocion} />
+      <Contador etiqueta="Para regularizar" valor={regular} onCambio={setRegular} />
+      {conPartes && <Contador etiqueta="Para aprobar cada parte" valor={parte} onCambio={v => { setParte(v); setTocoParte(true); }} />}
       {error && <Aviso tipo="error">{error}</Aviso>}
-      <div class="botonera">
-        <Boton type="submit" variante="primario">Guardar referencias</Boton>
-        {propios && (
-          <Boton variante="texto" onClick={() => { actualizar(d => A.fijarUmbrales(d, materiaId, cursadaId, null)); onListo(); }}>
-            Volver a la regla general ({UMBRALES_GENERALES.promocion} / {UMBRALES_GENERALES.regular})
-          </Boton>
-        )}
-      </div>
+      <Boton type="submit" variante="primario">Guardar referencias</Boton>
+      {propios && (
+        <Boton variante="texto" onClick={() => { actualizar(d => A.fijarUmbrales(d, materiaId, cursadaId, null)); onListo(); }}>
+          Volver a las notas por defecto
+        </Boton>
+      )}
     </form>
   );
 }

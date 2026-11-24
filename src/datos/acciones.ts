@@ -227,6 +227,14 @@ export function guardarEstructura(datos: DatosUsuario, materiaId: Id, cursadaId:
   });
 }
 
+export function fijarMinimoParte(datos: DatosUsuario, materiaId: Id, cursadaId: string, minimo: number | null): DatosUsuario {
+  return editarCursada(datos, materiaId, cursadaId, c => {
+    if (!c.estructura) return;
+    if (minimo === null) delete c.estructura.minimoParte;
+    else c.estructura.minimoParte = minimo;
+  });
+}
+
 export function fijarUmbrales(datos: DatosUsuario, materiaId: Id, cursadaId: string, umbrales: Umbrales | null): DatosUsuario {
   return editarCursada(datos, materiaId, cursadaId, c => {
     if (umbrales) c.umbrales = umbrales;
