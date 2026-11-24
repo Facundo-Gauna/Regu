@@ -4,6 +4,7 @@
 // (hay promedios, mínimos por instancia, porcentajes, recuperatorios que mantienen o hacen perder la promoción), así que
 // la regla general 8 / 6 se muestra siempre como "sin confirmar" hasta que el usuario la ajusta.
 
+import { calcular } from './estructura.ts';
 import type { CondicionNotas, Cursada, Evaluacion, ReglaCursada, Umbrales } from '../motor/tipos.ts';
 
 export const UMBRALES_GENERALES: Umbrales = { promocion: 8, regular: 6 };
@@ -98,8 +99,13 @@ export function formatearNota(n: number): string {
 }
 
 /** Una frase para la lista de materias: "Promedio 7,5 (2 notas)". null si no hay notas. */
-export function resumenCorto(c: Pick<Cursada, 'evaluaciones' | 'umbrales'> | undefined): string | null {
+export function resumenCorto(c: Pick<Cursada, 'evaluaciones' | 'umbrales' | 'estructura'> | undefined): string | null {
   if (!c?.evaluaciones?.length) return null;
+  // Con estructura propia vale su promedio ponderado: no se muestra además el simple
+  if (c.estructura) {
+    const { total } = calcular(c, c.umbrales ?? UMBRALES_GENERALES);
+    return total === null ? null : `Con lo cargado ${formatearNota(total)}`;
+  }
   const s = seguimientoCursada(c);
   if (s.promedio === null) return `${s.pendientes.length} sin nota`;
   return `Promedio ${formatearNota(s.promedio)} (${s.conNota} ${s.conNota === 1 ? 'nota' : 'notas'})`;
