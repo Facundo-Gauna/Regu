@@ -286,7 +286,7 @@
     await escribir(promo, '7'); await escribir(regu, '5');
     await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
     await esperarHojaCerrada();
-    afirmar(resumen().includes('7 para promocionar · 5 para regularizar') && !resumen().includes('sin confirmar'), `referencias: ${resumen().slice(0, 300)}`);
+    afirmar(resumen().includes('7 para promocionar · 5 para regularizar') && !resumen().includes('regla general, sin confirmar'), `referencias: ${resumen().slice(0, 300)}`);
     // borrar el recuperatorio: «Parcial 2» vuelve a contar
     // por el nombre exacto: la fila de «Parcial 2» también dice «reemplazada por Recuperatorio P2»
     const filaDe = nombre => filas().find(f => texto(f.querySelector('.nota__texto strong')) === nombre);
@@ -331,7 +331,16 @@
     await clic(hallar('dialog[open] button[type=submit]', 'Guardar cursada'));
     await esperarHojaCerrada();
     await esperar(() => regla(), 'la regla de Análisis Matemático I');
-    afirmar(texto(regla()).includes('no se puede calcular') && texto(regla()).includes('A confirmar'), `AM I: ${texto(regla()).slice(0, 250)}`);
+    afirmar(texto(regla()).includes('no se puede calcular') && texto(regla()).includes('Sin confirmar'), `AM I: ${texto(regla()).slice(0, 250)}`);
+    // «Sin confirmar» se toca y abre la hoja con las dudas
+    const aviso = hallar('button', 'Sin confirmar', regla());
+    aviso?.focus(); // el.click() no enfoca solo
+    await clic(aviso, 'Sin confirmar');
+    const dudas = await esperar(hoja, 'la hoja de dudas');
+    afirmar(texto(dudas).includes('nadie de la cátedra la confirmó') && todos('li', dudas).length > 0, `la hoja de dudas dice: ${texto(dudas).slice(0, 200)}`);
+    await clic(dudas.querySelector('button[aria-label=Cerrar]'));
+    await esperarHojaCerrada();
+    afirmar(doc().activeElement === aviso, `al cerrar la hoja el foco no vuelve al botón (quedó en ${doc().activeElement?.tagName})`);
   });
 
   await prueba('Validación: un final aprobado con nota 3 se rechaza y la hoja sigue abierta', async () => {

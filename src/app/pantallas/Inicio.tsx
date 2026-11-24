@@ -37,19 +37,19 @@ export function Inicio({ m }: { m: Modelo }) {
 
       {v.vacio && (
         <Aviso tipo="info" titulo="Empecemos por lo que ya hiciste" accion={<a class="boton boton--primario boton--chico" href={enlaces.plan()}>Ir al plan</a>}>
-          Marcá en el plan las materias que tenés aprobadas, regulares o que estás cursando. Con eso Regu te dice qué podés cursar y rendir.
+          Marcá en el plan lo que aprobaste, regularizaste o estás cursando.
         </Aviso>
       )}
 
       {recordarBackup && (
         <Aviso tipo="alerta" titulo="Hacé un backup" accion={<a class="boton boton--chico" href={enlaces.ajustes()}>Ajustes</a>}>
-          {diasSinBackup === null ? 'Todavía no exportaste tus datos.' : `Hace ${diasSinBackup} días que no exportás tus datos.`} Si el navegador borra el almacenamiento, el backup es lo único que los recupera.
+          {diasSinBackup === null ? 'Todavía no exportaste tus datos.' : `Hace ${diasSinBackup} días que no exportás tus datos.`} Es lo único que los recupera si el navegador los borra.
         </Aviso>
       )}
 
       {v.porCerrar.length > 0 && (
         <Seccion titulo="¿Cómo te fue en el cursado?">
-          <p class="seccion__texto">Terminó el cuatrimestre. Contame el resultado para saber si ya podés rendir.</p>
+          <p class="seccion__texto">Terminó el cuatrimestre. ¿Qué resultado tuviste?</p>
           <ul class="lista">
             {v.porCerrar.map(c => (
               <li key={c.materiaId} class="tarjeta tarjeta--cierre">
@@ -93,7 +93,7 @@ export function Inicio({ m }: { m: Modelo }) {
               <li key={periodo.id} class="tarjeta tarjeta--destacada">
                 <strong>Inscripción abierta</strong>
                 <span>Finales del {rango(periodo.desde, periodo.hasta)}</span>
-                <span class="fila__detalle">Podés inscribirte hasta 48 h hábiles antes de cada examen (el último cierra el {fechaCorta(cierre)}).</span>
+                <span class="fila__detalle">Hasta 48 h hábiles antes de cada examen (el último cierra el {fechaCorta(cierre)}).</span>
               </li>
             ))}
           </ul>
@@ -128,9 +128,9 @@ export function Inicio({ m }: { m: Modelo }) {
           <p class="seccion__texto">
             {v.proximo.inicio ? `Empieza${v.proximo.estimado ? ' aproximadamente' : ''} el ${fechaCorta(v.proximo.inicio)}. ` : ''}
             {v.proximo.ventana
-              ? `Inscripción en autogestión${v.proximo.ventana.estimada ? ' (estimada)' : ''}: ${rango(v.proximo.ventana.desde, v.proximo.ventana.hasta)}.`
+              ? `Inscripción${v.proximo.ventana.estimada ? ' (estimada)' : ''}: ${rango(v.proximo.ventana.desde, v.proximo.ventana.hasta)}.`
               : 'Todavía no hay fechas de inscripción.'}
-            {v.proximo.estimado && <> <a href={enlaces.calendario()}>Cargá las fechas reales</a> cuando la facultad las publique.</>}
+            {v.proximo.estimado && <> <a href={enlaces.calendario()}>Cargá las fechas reales</a> cuando salgan.</>}
           </p>
           {v.paraCursar.length > 0 ? (
             <>

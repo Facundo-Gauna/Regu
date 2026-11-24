@@ -39,7 +39,7 @@ export function Calendario({ m }: { m: Modelo }) {
     <div class="pagina">
       <h1 class="pagina__titulo">Calendario</h1>
       <p class="seccion__texto">
-        Calendario académico {referencia.ok ? referencia.calendario.versionDatos : ''} de la FRVM. La facultad lo ajusta durante el año: si algo cambió o todavía no está publicado, cargalo vos.
+        Calendario académico {referencia.ok ? referencia.calendario.versionDatos : ''} de la FRVM. Si algo cambió o falta, cargalo vos.
       </p>
       <div class="botonera">
         <Boton chico onClick={() => setEdicion({ tipo: 'cuatrimestre' })}><Icono nombre="agregar" tam={16} /> Cursado</Boton>

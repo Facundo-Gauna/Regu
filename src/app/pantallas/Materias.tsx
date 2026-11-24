@@ -34,7 +34,7 @@ export function Materias({ m, filtro }: { m: Modelo; filtro: Filtro }) {
             <span class="seccion__n">{g.items.length}</span>
           </div>
           {g.clave === 'electivas' && (
-            <p class="seccion__texto">Catálogo de electivas. Sus correlativas y horas todavía no están confirmadas para el plan 2023: no figuran como habilitadas.</p>
+            <p class="seccion__texto">Correlativas y horas sin confirmar: no figuran como habilitadas.</p>
           )}
           <ul class="lista">
             {g.items.map(i => (

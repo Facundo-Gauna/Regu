@@ -228,7 +228,7 @@ export function FormEvaluacion({ m, materiaId, cursadaId, existentes, inicial, o
         <input type="date" value={fecha} onInput={e => setFecha(valor(e))} max={m.hoy} />
       </Campo>
       {tipo === 'recuperatorio' && (
-        <Campo etiqueta="¿Qué evaluación reemplaza?" ayuda="Su nota reemplaza a la que elijas. Si en tu cátedra se calcula distinto (por ejemplo, se queda la mayor), cargala como «Otra».">
+        <Campo etiqueta="¿Qué evaluación reemplaza?" ayuda="Reemplaza a la nota elegida. Si tu cátedra calcula distinto, cargala como «Otra».">
           <select value={reemplaza} onChange={e => setReemplaza(e.currentTarget.value)}>
             <option value="">Ninguna: cuenta como una más</option>
             {candidatas.map(c => <option key={c.id} value={c.id}>{c.nombre}{c.nota != null ? ` (${c.nota})` : ''}</option>)}
@@ -259,7 +259,7 @@ export function FormUmbrales({ materiaId, cursadaId, actual, propios, onListo }:
 
   return (
     <form class="formulario" onSubmit={guardar}>
-      <p class="fila__detalle">Son tus referencias para leer las notas: no cambian el estado de la materia. Usá lo que dice la planificación de tu cátedra.</p>
+      <p class="fila__detalle">Solo sirven para leer tus notas; no cambian el estado. Usá lo de tu planificación.</p>
       <div class="campos-fila">
         <Campo etiqueta="Para promocionar"><input type="number" inputMode="decimal" min={1} max={10} step="any" value={promocion} onInput={e => setPromocion(valor(e))} required /></Campo>
         <Campo etiqueta="Para regularizar"><input type="number" inputMode="decimal" min={1} max={10} step="any" value={regular} onInput={e => setRegular(valor(e))} required /></Campo>
@@ -410,7 +410,7 @@ export function FormCorreccion({ m, materiaId, onListo }: { m: Modelo; materiaId
 
   return (
     <form class="formulario" onSubmit={guardar}>
-      <Aviso tipo="info">Si la cátedra o autogestión dicen algo distinto de lo que calcula Regu, forzá el estado acá. Tiene prioridad sobre el cálculo.</Aviso>
+      <Aviso tipo="info">Forzá el estado si la cátedra o autogestión dicen otra cosa. Tiene prioridad sobre el cálculo.</Aviso>
       <Segmentado nombre="estado-forzado" etiqueta="Estado" valor={estado} onCambio={setEstado} opciones={ESTADOS} />
       <Campo etiqueta="Motivo">
         <input type="text" value={motivo} onInput={e => setMotivo(valor(e))} placeholder="Ej.: la cátedra me dio la regularidad" required />

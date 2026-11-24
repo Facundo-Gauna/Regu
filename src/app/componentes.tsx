@@ -1,7 +1,7 @@
 // Componentes compartidos: marca, íconos, insignias de estado, hoja inferior y campos de formulario.
 
 import type { ComponentChildren, JSX } from 'preact';
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { GROSOR, LETRAS, VIEWBOX_PALABRA } from './marca.ts';
 import type { Icono as NombreIcono, Presentacion } from '../vista/estados.ts';
 import type { ItemLista } from '../vista/materias.ts';
@@ -87,12 +87,30 @@ export function Insignia({ p, chica = false }: { p: Presentacion; chica?: boolea
   );
 }
 
+/** Marca no interactiva, para las filas que ya son un enlace: el detalle se ve en la materia. */
 export function AvisoDatos({ textos }: { textos: string[] }) {
   if (!textos.length) return null;
   return (
-    <span class="sin-confirmar" title={textos.join('\n')}>
-      <Icono nombre="alerta" tam={13} /> datos por confirmar
+    <span class="sin-confirmar">
+      <Icono nombre="alerta" tam={13} /> Sin confirmar
     </span>
+  );
+}
+
+/** «Sin confirmar ⓘ»: la advertencia queda a la vista y la explicación se abre al tocarla. No usar dentro de un enlace. */
+export function SinConfirmar({ titulo, etiqueta = 'Sin confirmar', children }: { titulo: string; etiqueta?: string; children: ComponentChildren | ((cerrar: () => void) => ComponentChildren) }) {
+  const [abierta, setAbierta] = useState(false);
+  const cerrar = () => setAbierta(false);
+  return (
+    <>
+      <button type="button" class="sin-confirmar sin-confirmar--boton" aria-haspopup="dialog" aria-label={`${etiqueta}: ${titulo}`} onClick={() => setAbierta(true)}>
+        <Icono nombre="alerta" tam={13} /> {etiqueta} <Icono nombre="info" tam={15} />
+      </button>
+      {/* La hoja queda montada: al cerrarse con close() el navegador devuelve el foco al botón */}
+      <Hoja abierta={abierta} titulo={titulo} onCerrar={cerrar}>
+        {typeof children === 'function' ? children(cerrar) : children}
+      </Hoja>
+    </>
   );
 }
 

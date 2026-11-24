@@ -4,7 +4,7 @@ import * as A from '../../datos/acciones.ts';
 import { plural } from '../../vista/formato.ts';
 import { calcularPromedios } from '../../vista/promedios.ts';
 import { enlaces } from '../../vista/rutas.ts';
-import { Aviso, Barra, Boton, Campo, Icono, Seccion } from '../componentes.tsx';
+import { Barra, Boton, Campo, Icono, Seccion, SinConfirmar } from '../componentes.tsx';
 import type { Modelo } from '../modelo.ts';
 import { actualizar } from '../store.ts';
 
@@ -47,9 +47,9 @@ function Paquete({ m, p }: { m: Modelo; p: ProgresoPaquete }) {
           <p class="fila__detalle">{p.horasAprobadas} de {p.horasExigidas} h aprobadas{p.horasEnCurso ? ` · ${p.horasEnCurso} h en curso` : ''}</p>
         </>
       ) : (
-        <p class="fila__detalle destacado">Horas exigidas sin especificar: el resumen de la facultad no las trae.</p>
+        <p class="fila__detalle destacado">Horas exigidas sin especificar.</p>
       )}
-      <Campo etiqueta="Horas exigidas por el plan" ayuda={p.horasExigidasOrigen === 'plan' ? 'Dato del plan' : p.horasExigidasOrigen === 'usuario' ? 'Dato tuyo' : 'Buscalas en el plan oficial y cargalas acá'}>
+      <Campo etiqueta="Horas exigidas por el plan" ayuda={p.horasExigidasOrigen === 'plan' ? 'Dato del plan' : p.horasExigidasOrigen === 'usuario' ? 'Dato tuyo' : 'Buscalas en el plan oficial'}>
         <input
           type="number" inputMode="numeric" min={0} placeholder="Sin especificar" value={horasExigidas}
           onInput={e => setHorasExigidas(e.currentTarget.value)}
@@ -70,7 +70,7 @@ function Paquete({ m, p }: { m: Modelo; p: ProgresoPaquete }) {
           ))}
         </ul>
       )}
-      {p.electivasSinHoras.length > 0 && <p class="fila__detalle destacado">Cargá las horas de las electivas aprobadas para saber si el paquete está cumplido.</p>}
+      {p.electivasSinHoras.length > 0 && <p class="fila__detalle destacado">Cargá las horas de tus electivas aprobadas.</p>}
 
       <form class="formulario formulario--linea" onSubmit={agregar}>
         <Campo etiqueta="Agregar electiva">
@@ -144,7 +144,11 @@ export function Progreso({ m }: { m: Modelo }) {
             </li>
           ))}
         </ul>
-        {r.titulos.some(t => t.incierto) && <p class="fila__detalle destacado"><Icono nombre="alerta" tam={14} /> No se puede confirmar si están completos: faltan las horas de las electivas.</p>}
+        {r.titulos.some(t => t.incierto) && (
+          <SinConfirmar titulo="Faltan las horas de electivas" etiqueta="Títulos sin confirmar">
+            <p class="seccion__texto">No se puede confirmar si los títulos están completos. Cargá las horas en «Electivas».</p>
+          </SinConfirmar>
+        )}
       </Seccion>
 
       <Seccion titulo="Electivas">
@@ -152,9 +156,11 @@ export function Progreso({ m }: { m: Modelo }) {
           <summary>Elegir electivas y cargar horas</summary>
           <div class="plegable__cuerpo">
             <p class="seccion__texto">
-              Elegí las electivas que cursás o aprobaste y a qué paquete suman sus horas. El estado de cada una (cursada, final) se carga en <a href={enlaces.materias()}>Materias</a>.
+              Elegí tus electivas y a qué paquete suman. Su estado se carga en <a href={enlaces.materias()}>Materias</a>.
             </p>
-            <p class="fila__detalle destacado"><Icono nombre="alerta" tam={14} /> Las correlativas y las horas de las electivas del plan 2023 todavía no están confirmadas: Regu no las muestra como habilitadas hasta que las cargues vos.</p>
+            <SinConfirmar titulo="Electivas sin confirmar">
+              <p class="seccion__texto">Las correlativas y las horas de las electivas del plan 2023 todavía no están confirmadas: Regu no las muestra como habilitadas hasta que las cargues vos.</p>
+            </SinConfirmar>
             <ul class="lista">{r.paquetes.map(p => <li key={p.id}><Paquete m={m} p={p} /></li>)}</ul>
           </div>
         </details>
@@ -166,7 +172,11 @@ export function Progreso({ m }: { m: Modelo }) {
             <li key={q.id} class="tarjeta">
               <strong>{q.nombre}</strong>
               <span class="fila__detalle">{q.iniciar.puede ? 'Podés iniciarlo' : q.iniciar.razones.at(-1)}</span>
-              {m.plan.requisitos.find(x => x.id === q.id)?.verificar?.map(t => <span key={t} class="fila__detalle destacado"><Icono nombre="alerta" tam={14} /> {t}</span>)}
+              {!!m.plan.requisitos.find(x => x.id === q.id)?.verificar?.length && (
+                <SinConfirmar titulo={q.nombre}>
+                  <ul class="razones">{m.plan.requisitos.find(x => x.id === q.id)!.verificar!.map(t => <li key={t}>{t}</li>)}</ul>
+                </SinConfirmar>
+              )}
               <label class="campo">
                 <span class="campo__etiqueta">Estado</span>
                 <select value={q.estado} onChange={e => actualizar(d => A.fijarRequisito(d, { requisitoId: q.id, estado: e.currentTarget.value as 'pendiente' | 'en-curso' | 'cumplido' }))}>

@@ -9,7 +9,7 @@ import { relaciones } from '../../vista/mapa.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { caminoMateria, GLOSA, type Camino } from '../../vista/camino.ts';
 import { veredictoCursar, veredictoRendir, type Veredicto } from '../../vista/veredicto.ts';
-import { AvisoDatos, Boton, Hoja, Icono, Insignia, Seccion, Vacio } from '../componentes.tsx';
+import { Boton, Hoja, Icono, Insignia, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
 import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado, FormUmbrales } from '../formularios.tsx';
 import { referencia, type Modelo } from '../modelo.ts';
 import { actualizar } from '../store.ts';
@@ -127,7 +127,12 @@ function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursad
     <div class="tarjeta regla">
       <div class="regla__cab">
         <strong>Regla de tu cátedra · planificación {regla.ciclo}</strong>
-        {aConfirmar && <span class="etiqueta t-habilitada">A confirmar</span>}
+        {aConfirmar && (
+          <SinConfirmar titulo="Dudas sobre esta regla">
+            <p class="seccion__texto">La transcribimos de la planificación, pero nadie de la cátedra la confirmó:</p>
+            <ul class="razones">{regla.verificar.map(t => <li key={t}>{t}</li>)}</ul>
+          </SinConfirmar>
+        )}
       </div>
       <p class="seccion__texto">{regla.resumen}</p>
       {q.calculable ? (
@@ -136,25 +141,19 @@ function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursad
           {q.regular && <Condicion titulo="Para regularizar" r={q.regular} />}
         </>
       ) : (
-        <p class="fila__detalle">Esta regla no se puede calcular con tus notas, así que no te digo cuánto te falta. Se muestra tal cual la escribió la cátedra.</p>
+        <p class="fila__detalle">Esta regla no se puede calcular con tus notas; va como la escribió la cátedra.</p>
       )}
       {q.dependeDeVos.length > 0 && (
         <div>
-          <strong class="fila__detalle">Esto depende de vos (la app no lo sabe)</strong>
+          <strong class="fila__detalle">Esto depende de vos</strong>
           <ul class="razones">{q.dependeDeVos.map(t => <li key={t}>{t}</li>)}</ul>
         </div>
       )}
       <details class="plegable">
-        <summary>Recuperatorios, dudas y fuente</summary>
+        <summary>Recuperatorios y fuente</summary>
         <div class="plegable__cuerpo">
           <h3>Recuperatorios</h3>
           <p class="seccion__texto">{regla.recuperatorios}</p>
-          {aConfirmar && (
-            <>
-              <h3>Dudas de la transcripción</h3>
-              <ul class="razones">{regla.verificar.map(t => <li key={t}>{t}</li>)}</ul>
-            </>
-          )}
           <h3>Fuente</h3>
           <p class="fila__detalle">{regla.fuente.archivo} · {regla.fuente.seccion}</p>
           <blockquote class="cita">{regla.fuente.cita}</blockquote>
@@ -177,7 +176,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
   return (
     <Seccion titulo="Cómo viene la cursada" acciones={<Boton chico onClick={abrirNota}><Icono nombre="agregar" tam={16} /> Cargar nota</Boton>}>
       {!hay ? (
-        <p class="seccion__texto">Cargá tus notas a medida que te las den (parciales, trabajos prácticos) y acá ves cómo vas.</p>
+        <p class="seccion__texto">Cargá tus parciales y trabajos prácticos y acá ves cómo vas.</p>
       ) : (
         <>
           <ul class="notas">
@@ -203,11 +202,6 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
               );
             })}
           </ul>
-          <div class="leyenda" aria-hidden="true">
-            <span class="leyenda__item t-aprobada"><span class="leyenda__punto" /> {formatearNota(promocion)} o más</span>
-            <span class="leyenda__item t-regular"><span class="leyenda__punto" /> {formatearNota(regular)} o más</span>
-            <span class="leyenda__item t-recursar"><span class="leyenda__punto" /> menos de {formatearNota(regular)}</span>
-          </div>
           <div class="tarjeta">
             {s.promedio !== null ? (
               <strong>
@@ -228,11 +222,13 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
       )}
       {regla && <ReglaCatedra regla={regla} cursada={cursada} />}
       <p class="fila__detalle">
-        Referencias para colorear las notas: {formatearNota(promocion)} para promocionar · {formatearNota(regular)} para regularizar
+        <span class="leyenda__item t-aprobada"><span class="leyenda__punto" aria-hidden="true" /> {formatearNota(promocion)} para promocionar</span>
+        {' · '}
+        <span class="leyenda__item t-regular"><span class="leyenda__punto" aria-hidden="true" /> {formatearNota(regular)} para regularizar</span>
         {s.origenUmbrales === 'general' ? ' (regla general, sin confirmar)' : s.origenUmbrales === 'planificacion' ? ' (de la planificación de tu cátedra)' : ' (las que fijaste vos)'}.{' '}
         <button type="button" class="enlace-boton" onClick={abrirUmbrales}>Ajustar</button>
       </p>
-      <p class="fila__detalle">Es un resumen según la planificación y tus notas, no el resultado oficial: lo confirma la cátedra y autogestión.</p>
+      <p class="fila__detalle">No es el resultado oficial: lo confirman la cátedra y autogestión.</p>
     </Seccion>
   );
 }
@@ -320,7 +316,19 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
         </p>
         <div class="encabezado-materia__estado">
           <Insignia p={p} />
-          <AvisoDatos textos={item.sinConfirmar} />
+          {item.sinConfirmar.length > 0 && (
+            <SinConfirmar titulo="Datos sin confirmar">
+              {cerrarAviso => (
+                <>
+                  <ul class="razones">{item.sinConfirmar.map(t => <li key={t}>{t}</li>)}</ul>
+                  <p class="fila__detalle">
+                    Si ves algo distinto en autogestión,{' '}
+                    <button type="button" class="enlace-boton" onClick={() => { cerrarAviso(); setPanel('correccion'); }}>corregí el estado</button> a mano.
+                  </p>
+                </>
+              )}
+            </SinConfirmar>
+          )}
         </div>
         <p class="fila__detalle">{r.estado.corregido ? 'Estado corregido a mano.' : detalleCorto(r)}</p>
       </header>
@@ -336,7 +344,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
         {anotada && estadoActual === 'no-cursada' ? (
           <div class="tarjeta siguiente">
             <strong>Anotada para el {nombreCuatrimestre(anotada.cuatrimestre).toLowerCase()} {anotada.ciclo}</strong>
-            <p class="fila__detalle">Todavía no empezó: va a figurar como «cursando» cuando arranque el cuatrimestre. Podés sacarla desde «Cursadas».</p>
+            <p class="fila__detalle">Va a figurar como «cursando» cuando arranque. Podés sacarla desde «Cursadas».</p>
           </div>
         ) : (
           <SiguientePaso c={camino} abrir={setPanel} />
@@ -379,15 +387,6 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
             {sinFaltan(r.rendir.razones).map(t => <li key={t}>{t}</li>)}
             {r.rendir.excepcion && <li>{r.rendir.excepcion}</li>}
           </ul>
-          {item.sinConfirmar.length > 0 && (
-            <>
-              <h3>Datos por confirmar</h3>
-              <ul class="razones">{item.sinConfirmar.map(t => <li key={t}>{t}</li>)}</ul>
-              <p class="fila__detalle">
-                Si ves algo distinto en autogestión, <button type="button" class="enlace-boton" onClick={() => setPanel('correccion')}>corregí el estado</button> a mano.
-              </p>
-            </>
-          )}
         </div>
       </details>
 
@@ -488,7 +487,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
                 <BotonBorrar etiqueta="Quitar corrección" onBorrar={() => actualizar(d => A.fijarCorreccion(d, id, null))} />
               </div>
             ) : (
-              <p class="seccion__texto">Si la cátedra decide algo distinto de lo que calcula Regu, podés forzar el estado.</p>
+              <p class="seccion__texto">Si la cátedra decide algo distinto, podés forzar el estado.</p>
             )}
           </Seccion>
 

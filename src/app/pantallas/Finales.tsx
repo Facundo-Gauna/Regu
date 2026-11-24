@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import { fechaCorta, plural, rango, relativo } from '../../vista/formato.ts';
 import { enlaces } from '../../vista/rutas.ts';
-import { AvisoDatos, Aviso, Boton, FilaMateria, Icono, Seccion, Vacio } from '../componentes.tsx';
+import { Aviso, Boton, FilaMateria, Icono, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
 import { HojaMateria } from '../formularios.tsx';
 import type { Modelo } from '../modelo.ts';
 
@@ -67,7 +67,11 @@ export function Finales({ m }: { m: Modelo }) {
                         Sin correlativas hasta el {r.sinCorrelativasHasta ? fechaCorta(r.sinCorrelativasHasta) : '—'}{r.sinCorrelativasHastaEstimado ? ' (estimado)' : ''}
                       </span>
                     )}
-                    <AvisoDatos textos={i.sinConfirmar} />
+                    {i.sinConfirmar.length > 0 && (
+                      <SinConfirmar titulo={i.nombre}>
+                        <ul class="razones">{i.sinConfirmar.map(t => <li key={t}>{t}</li>)}</ul>
+                      </SinConfirmar>
+                    )}
                   </div>
                   <Boton chico onClick={() => setCargando(i.id)}>Cargar resultado</Boton>
                 </li>

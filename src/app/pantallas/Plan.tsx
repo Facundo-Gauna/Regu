@@ -104,7 +104,7 @@ export function Plan({ m, inicial }: { m: Modelo; inicial?: string }) {
       <h1 class="pagina__titulo">Plan de estudios</h1>
       {m.datos.materias.length === 0 ? (
         <Aviso tipo="info" titulo="Marcá lo que ya hiciste">
-          Tocá una materia para ver su camino y después <strong>Editar estado</strong> para cargar si la aprobaste, la regularizaste o la estás cursando.
+          Tocá una materia y después <strong>Editar estado</strong> para cargar cómo te fue.
         </Aviso>
       ) : (
         !seleccion && <p class="seccion__texto">Tocá una materia para ver qué necesita y qué desbloquea.</p>

@@ -137,7 +137,7 @@ export function Ajustes({ m }: { m: Modelo }) {
       </Seccion>
 
       <Seccion titulo="Fecha de hoy">
-        <p class="seccion__texto">Regu calcula todo para la fecha de hoy. Podés simular otro día para ver, por ejemplo, qué vas a poder rendir en diciembre.</p>
+        <p class="seccion__texto">Simulá otro día para ver, por ejemplo, qué vas a poder rendir en diciembre.</p>
         <Campo etiqueta="Simular fecha" ayuda={s.prefs.fechaSimulada ? `Hoy real: ${fechaCorta(s.hoyReal)}` : 'Usando la fecha real'}>
           <input type="date" value={s.prefs.fechaSimulada ?? ''} onInput={e => guardarPrefs({ fechaSimulada: e.currentTarget.value || null })} />
         </Campo>
@@ -152,7 +152,7 @@ export function Ajustes({ m }: { m: Modelo }) {
             </Aviso>
           )}
           <p class="seccion__texto">
-            Todo se guarda solo en este dispositivo. Nada se envía a ningún servidor. {s.prefs.ultimoBackup ? `Último backup: ${fechaCorta(fechaLocal(new Date(s.prefs.ultimoBackup)))}.` : 'Todavía no hiciste un backup.'}
+            Todo queda en este dispositivo, nada se envía. {s.prefs.ultimoBackup ? `Último backup: ${fechaCorta(fechaLocal(new Date(s.prefs.ultimoBackup)))}.` : 'Todavía no hiciste un backup.'}
           </p>
           <div class="botonera">
             <Boton variante="primario" onClick={exportar}><Icono nombre="descargar" /> Exportar backup</Boton>
@@ -191,7 +191,7 @@ export function Ajustes({ m }: { m: Modelo }) {
       <Seccion titulo="Datos de referencia">
         <div class="tarjeta">
           <span class="fila__detalle">Plan: versión {m.plan.versionDatos} · Calendario: versión {m.calendario.versionDatos}</span>
-          <span class="fila__detalle">Transcriptos a mano de los documentos publicados por la facultad. Si ves un error, avisá o corregilo en la materia.</span>
+          <span class="fila__detalle">Transcriptos a mano de documentos de la facultad. Si ves un error, avisá o corregilo en la materia.</span>
           {avisosReferencia.length > 0 && (
             <details>
               <summary>Ver las {avisosReferencia.length} notas de la transcripción</summary>
