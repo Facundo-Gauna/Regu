@@ -60,7 +60,7 @@ test('importar: una materia sin cursadas ni finales también se normaliza', () =
 });
 
 test('importar: rechaza versiones desconocidas y archivos ajenos', () => {
-  const nueva = leerBackup({ app: 'regu', schemaVersion: 2, datos: {} });
+  const nueva = leerBackup({ app: 'regu', schemaVersion: 3, datos: {} });
   assert.ok(!nueva.ok);
   assert.match(nueva.errores[0]!, /más nueva/);
   assert.ok(!leerBackup({ app: 'regu', schemaVersion: 0, datos: {} }).ok);

@@ -8,12 +8,19 @@
 //  - una versión de esquema desconocida se rechaza.
 
 import type {
-  CalendarioUsuario, Cursada, DatosMateriaUsuario, DatosUsuario, EleccionElectiva, Evaluacion, EstadoRequisitoUsuario, IntentoFinal, Plan, Umbrales,
+  CalendarioUsuario, Cursada, DatosMateriaUsuario, DatosUsuario, EleccionElectiva, Evaluacion, EstadoRequisitoUsuario, IntentoFinal, Plan, Umbrales, EstructuraCursada,
 } from '../motor/tipos.ts';
 import { esFechaValida } from '../motor/fechas.ts';
 
 export const APP = 'regu';
-export const VERSION_ESQUEMA = 1;
+/** La versión más nueva que sabe leer esta app. Se escribe solo si los datos usan algo de ella. */
+export const VERSION_ESQUEMA = 2;
+
+/** 2 si hay estructura de cursada: una app anterior la descartaría sin avisar, así que mejor que rechace. */
+function versionDe(datos: DatosUsuario): number {
+  const usaEstructura = datos.materias.some(m => m.cursadas.some(c => c.estructura || c.evaluaciones?.some(e => e.parte !== undefined || e.peso !== undefined)));
+  return usaEstructura ? 2 : 1;
+}
 
 export interface BackupUsuario {
   app: typeof APP;
@@ -30,7 +37,7 @@ export function usuarioVacio(planId: string, calendarioId: string, anioIngreso: 
 }
 
 export function crearBackup(datos: DatosUsuario, ahora: Date = new Date()): BackupUsuario {
-  return { app: APP, schemaVersion: VERSION_ESQUEMA, exportado: ahora.toISOString(), datos: structuredClone(datos) };
+  return { app: APP, schemaVersion: versionDe(datos), exportado: ahora.toISOString(), datos: structuredClone(datos) };
 }
 
 export function serializarBackup(b: BackupUsuario): string {
@@ -154,6 +161,7 @@ function leerCursada(l: Lector, x: unknown, ruta: string): Cursada | undefined {
     }
   }
   if (ciclo === undefined || !cuatrimestre || !resultado) return undefined;
+  const estructura = leerEstructura(o['estructura']);
   return {
     id: typeof o['id'] === 'string' && o['id'] ? o['id'] : `${ciclo}-${cuatrimestre}`,
     ciclo,
@@ -162,7 +170,24 @@ function leerCursada(l: Lector, x: unknown, ruta: string): Cursada | undefined {
     ...(fechaResultado ? { fechaResultado } : {}),
     ...(evaluaciones.length ? { evaluaciones } : {}),
     ...(umbrales ? { umbrales } : {}),
+    ...(estructura ? { estructura } : {}),
   };
+}
+
+/** Tolerante a propósito: una estructura a medias no puede dejar al usuario sin sus datos. Lo estricto está en el editor. */
+function leerEstructura(x: unknown): EstructuraCursada | undefined {
+  if (!esObj(x) || !Array.isArray(x['partes'])) return undefined;
+  const vistas = new Set<string>();
+  const partes = x['partes'].flatMap((p: unknown) => {
+    if (!esObj(p)) return [];
+    const { id, nombre, peso } = p;
+    if (typeof id !== 'string' || !id || vistas.has(id)) return [];
+    vistas.add(id);
+    return [{ id, nombre: typeof nombre === 'string' && nombre ? nombre : 'Parte', peso: typeof peso === 'number' && Number.isFinite(peso) && peso > 0 ? peso : 1 }];
+  });
+  if (!partes.length) return undefined;
+  const min = x['minimoParte'];
+  return { partes, ...(typeof min === 'number' && min >= 1 && min <= 10 ? { minimoParte: min } : {}) };
 }
 
 function leerEvaluacion(l: Lector, x: unknown, ruta: string): Evaluacion | undefined {
@@ -175,7 +200,9 @@ function leerEvaluacion(l: Lector, x: unknown, ruta: string): Evaluacion | undef
   const fecha = l.fecha(o, 'fecha', ruta, true);
   const reemplazaA = l.texto(o, 'reemplazaA', ruta, true);
   if (!id || !nombre || !tipo || nota === undefined) return undefined;
-  return { id, nombre, tipo, nota, ...(fecha ? { fecha } : {}), ...(reemplazaA ? { reemplazaA } : {}) };
+  const parte = typeof o['parte'] === 'string' && o['parte'] ? o['parte'] : undefined;
+  const peso = typeof o['peso'] === 'number' && o['peso'] > 0 && o['peso'] <= 100 ? o['peso'] : undefined;
+  return { id, nombre, tipo, nota, ...(fecha ? { fecha } : {}), ...(reemplazaA ? { reemplazaA } : {}), ...(parte ? { parte } : {}), ...(peso !== undefined ? { peso } : {}) };
 }
 
 function leerFinal(l: Lector, x: unknown, ruta: string): IntentoFinal | undefined {

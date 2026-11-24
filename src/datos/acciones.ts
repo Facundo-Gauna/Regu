@@ -3,7 +3,7 @@
 
 import type {
   Aprobacion, CicloLectivo, Cursada, DatosMateriaUsuario, DatosUsuario, EleccionElectiva, EstadoRequisitoUsuario, IntentoFinal,
-  CuatrimestreCalendario, PeriodoExamen, Id, Evaluacion, Umbrales,
+  CuatrimestreCalendario, PeriodoExamen, Id, Evaluacion, Umbrales, EstructuraCursada,
 } from '../motor/tipos.ts';
 
 const ORDEN_CUATRIMESTRE = { '1C': 0, anual: 1, '2C': 2 } as const;
@@ -39,6 +39,7 @@ export function agregarCursada(datos: DatosUsuario, materiaId: Id, cursada: Omit
       id,
       ...(cursada.evaluaciones === undefined && previa?.evaluaciones ? { evaluaciones: previa.evaluaciones } : {}),
       ...(cursada.umbrales === undefined && previa?.umbrales ? { umbrales: previa.umbrales } : {}),
+      ...(cursada.estructura === undefined && previa?.estructura ? { estructura: previa.estructura } : {}),
     });
     m.cursadas.sort((a, b) => a.ciclo - b.ciclo || ORDEN_CUATRIMESTRE[a.cuatrimestre] - ORDEN_CUATRIMESTRE[b.cuatrimestre]);
   });
@@ -200,6 +201,24 @@ export function quitarEvaluacion(datos: DatosUsuario, materiaId: Id, cursadaId: 
     const lista = (c.evaluaciones ?? []).filter(e => e.id !== evaluacionId);
     // Un recuperatorio que reemplazaba a la evaluación borrada queda como una evaluación común
     for (const e of lista) if (e.reemplazaA === evaluacionId) delete e.reemplazaA;
+    if (lista.length) c.evaluaciones = lista;
+    else delete c.evaluaciones;
+  });
+}
+
+/** Guarda de una vez la estructura y sus evaluaciones. Con null se quita la estructura; las notas quedan. */
+export function guardarEstructura(datos: DatosUsuario, materiaId: Id, cursadaId: string, estructura: EstructuraCursada | null, evaluaciones: Evaluacion[]): DatosUsuario {
+  return editarCursada(datos, materiaId, cursadaId, c => {
+    if (estructura) c.estructura = estructura;
+    else delete c.estructura;
+    const lista = evaluaciones.map(e => {
+      const copia = { ...e };
+      if (!estructura) {
+        delete copia.parte;
+        delete copia.peso;
+      }
+      return copia;
+    });
     if (lista.length) c.evaluaciones = lista;
     else delete c.evaluaciones;
   });

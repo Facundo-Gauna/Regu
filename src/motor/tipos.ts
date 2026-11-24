@@ -137,6 +137,24 @@ export interface Evaluacion {
   fecha?: Fecha;
   /** Para un recuperatorio: la evaluación cuya nota reemplaza (lo elige el usuario). */
   reemplazaA?: Id;
+  /** Parte de la estructura de la cursada a la que pertenece. */
+  parte?: Id;
+  /** Porcentaje dentro de su parte. Si ninguna de la parte lo tiene, valen todas igual. */
+  peso?: number;
+}
+
+/** Una parte de la cursada según el alumno: un resultado de aprendizaje, un bloque, o la lista entera. */
+export interface ParteCursada {
+  id: Id;
+  nombre: string;
+  /** Relativo a las demás partes: 1, 1 y 1 son tercios. */
+  peso: number;
+}
+
+export interface EstructuraCursada {
+  partes: ParteCursada[];
+  /** Nota mínima para dar una parte por aprobada. Si falta, 6 «sin confirmar». */
+  minimoParte?: number;
 }
 
 /** Notas de referencia para ver cómo viene la cursada. Las fija el usuario según la planificación de su cátedra. */
@@ -191,6 +209,8 @@ export interface Cursada {
   /** Fecha de cierre del cursado (cuando se conoce el resultado). */
   fechaResultado?: Fecha;
   evaluaciones?: Evaluacion[];
+  /** Cómo se calcula esta cursada, armado por el alumno. Sin esto, las notas son una lista simple. */
+  estructura?: EstructuraCursada;
   /** Si falta, se usa la regla general (sin confirmar). */
   umbrales?: Umbrales;
 }
