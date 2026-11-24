@@ -4,7 +4,7 @@ Regu es una herramienta personal que se usa de a ratos en el celular. El tono es
 
 ## Color
 
-- Ámbar `#F5A800`: solo marca y acción principal (y el indicador de la pestaña activa).
+- Ámbar `#F5A800`: solo marca y acción principal (y la pestaña activa, que se marca con relleno ámbar y texto en 800 para que se note sin color).
 - Negro `#1A1A1A`: encabezado, navegación y portada, en los dos temas.
 - Neutros tibios para fondo, superficie, texto y bordes, con valores propios en claro y oscuro (el oscuro está repetido en dos bloques: tema elegido y preferencia del sistema).
 - Estados: verde aprobada, celeste regular, violeta cursando, azul habilitada, gris bloqueada, rojo recursar. Siempre con ícono y texto, nunca solo color.
