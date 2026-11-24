@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { FILTROS, agrupar, contarPorFiltro, type Filtro } from '../../vista/materias.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { FilaMateria, Vacio } from '../componentes.tsx';
@@ -8,12 +8,17 @@ export function Materias({ m, filtro }: { m: Modelo; filtro: Filtro }) {
   const [busqueda, setBusqueda] = useState('');
   const conteo = contarPorFiltro(m.items);
   const grupos = agrupar(m.items, filtro, busqueda);
+  // En el celular los filtros se deslizan: el elegido tiene que quedar a la vista
+  const filtros = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    filtros.current?.querySelector('.chip--activo')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [filtro]);
 
   return (
     <div class="pagina">
       <h1 class="pagina__titulo">Materias</h1>
       <input class="busqueda" type="search" placeholder="Buscar materia" aria-label="Buscar materia" value={busqueda} onInput={e => setBusqueda(e.currentTarget.value)} />
-      <div class="chips" role="tablist" aria-label="Filtrar materias">
+      <div class="chips" ref={filtros} role="tablist" aria-label="Filtrar materias">
         {FILTROS.map(f => (
           <a key={f.clave} role="tab" aria-selected={f.clave === filtro} class={`chip${f.clave === filtro ? ' chip--activo' : ''}`} href={enlaces.materias(f.clave)}>
             {f.etiqueta} <span class="chip__n">{conteo[f.clave]}</span>

@@ -309,6 +309,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
     <div class="pagina">
       <a class="volver" href={enlaces.materias()}><Icono nombre="izq" tam={16} /> Materias</a>
       <header class={`encabezado-materia t-${p.tono}`}>
+        {estadoActual === 'aprobada' && <span class="encabezado-materia__sello" aria-hidden="true"><Icono nombre="check" tam={28} /></span>}
         <h1>{item.nombre}</h1>
         <p class="encabezado-materia__meta">
           {item.nivel ? `${item.nivel}.º año · ` : 'Electiva · '}
