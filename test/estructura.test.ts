@@ -131,3 +131,8 @@ test('plantillas: la lista única adopta las notas que ya había; Análisis I su
   const al = aplicarPlantilla('algebra', [], () => `x${n++}`);
   assert.deepEqual(al.estructura.partes.map(p => p.nombre), ['RA 1', 'RA 2', 'RA 3']);
 });
+
+test('cargar una nota no mueve la evaluación de lugar', () => {
+  const d = A.guardarEvaluacion(conEstructura(), M, C, item('a', 'ra1', 80, 9));
+  assert.deepEqual(cursada(d).evaluaciones!.map(e => [e.id, e.nota]), [['a', 9], ['b', null]]);
+});

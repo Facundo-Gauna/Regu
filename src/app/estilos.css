@@ -748,3 +748,35 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 /* Pantallas angostas o letra grande: la etiqueta o el botón bajan de línea antes de aplastar el nombre */
 .fila--materia, .tarjeta--materia { flex-wrap: wrap; }
 .fila--materia .fila__principal, .tarjeta--materia .fila__principal { flex: 1 1 8rem; }
+
+/* ---------- Notas por partes ---------- */
+
+.total { font-size: 1.05rem; }
+.total span { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; margin-left: 4px; }
+.parte { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 16px 14px 10px; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); }
+.parte > .etiqueta { align-self: flex-start; }
+.parte__cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.parte h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+.parte__nota { font-size: 1.6rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.parte--suelta { border-style: dashed; border-color: var(--borde-campo); background: transparent; }
+.items { display: flex; flex-direction: column; }
+.item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+.item + .item { border-top: 1px solid var(--borde); }
+.item__texto { flex: 1; min-width: 0; min-height: var(--toque); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; background: none; border: 0; padding: 0; overflow-wrap: anywhere; }
+.item__nota { flex: none; min-width: 72px; min-height: var(--toque); padding: 0 10px; border-radius: var(--radio-chico); background: var(--bg); color: var(--fg); border: 1.5px solid color-mix(in srgb, var(--fuerte) 55%, transparent); font-size: 1.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.item__nota--vacia { background: transparent; color: var(--texto); border: 1.5px dashed var(--borde-campo); font-size: 0.85rem; }
+.item > select.item__asignar { width: auto; flex: none; max-width: 46%; }
+.boton--organizar { align-self: stretch; }
+
+.teclado { display: flex; flex-direction: column; gap: 14px; }
+.teclado__numeros { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.teclado__tecla { min-height: 56px; border-radius: var(--radio-chico); border: 1.5px solid var(--borde-campo); background: var(--superficie); font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.teclado__tecla--activa { background: var(--activo-bg); border-color: var(--activo-bg); color: var(--activo-fg); }
+.teclado__decimal { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+
+.plantillas { display: flex; flex-direction: column; gap: 10px; }
+.plantilla { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; text-align: left; background: var(--superficie); border: 1.5px solid var(--borde-campo); border-radius: var(--radio); }
+.editor__parte { border: 1px solid var(--borde); border-radius: var(--radio); padding: 12px; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.editor__fila { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.editor__fila .campo:nth-child(2) { width: 72px; }
+.editor__item { display: grid; grid-template-columns: minmax(0, 1fr) 64px var(--toque); gap: 6px; align-items: center; }

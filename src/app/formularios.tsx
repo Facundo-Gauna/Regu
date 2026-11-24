@@ -1,7 +1,7 @@
 // Formularios de carga: cursada, final, aprobación y corrección manual. Más la hoja de acciones rápidas de una materia.
 
 import { useState } from 'preact/hooks';
-import type { Cursada, EstadoForzado, Evaluacion, Fecha, ResultadoCursada, TipoEvaluacion, Umbrales } from '../motor/index.ts';
+import type { Cursada, EstadoForzado, Evaluacion, ParteCursada, Fecha, ResultadoCursada, TipoEvaluacion, Umbrales } from '../motor/index.ts';
 import * as A from '../datos/acciones.ts';
 import { construirCursada, fechaDeCierre, finDeCursada, periodoSugerido } from '../vista/cierres.ts';
 import { detalleCorto, presentarMateria } from '../vista/estados.ts';
@@ -178,18 +178,20 @@ const TIPOS: { valor: TipoEvaluacion; etiqueta: string }[] = [
   { valor: 'otra', etiqueta: 'Otra' },
 ];
 
-function idNuevo(): string {
+export function idNuevo(): string {
   return globalThis.crypto?.randomUUID?.() ?? `ev-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 /** Carga o edita una evaluación de la cursada. La nota puede quedar vacía hasta que te la den. */
-export function FormEvaluacion({ m, materiaId, cursadaId, existentes, inicial, onListo }: { m: Modelo; materiaId: string; cursadaId: string; existentes: Evaluacion[]; inicial?: Evaluacion; onListo: () => void }) {
+export function FormEvaluacion({ m, materiaId, cursadaId, existentes, inicial, partes, onListo }: { m: Modelo; materiaId: string; cursadaId: string; existentes: Evaluacion[]; inicial?: Evaluacion; partes?: ParteCursada[]; onListo: () => void }) {
+  const [parte, setParte] = useState(inicial?.parte ?? partes?.[0]?.id ?? '');
   const [nombre, setNombre] = useState(inicial?.nombre ?? '');
   const [tipo, setTipo] = useState<TipoEvaluacion>(inicial?.tipo ?? 'parcial');
   const [nota, setNota] = useState(inicial?.nota != null ? String(inicial.nota) : '');
   const [fecha, setFecha] = useState<string>(inicial?.fecha ?? '');
   const [reemplaza, setReemplaza] = useState(inicial?.reemplazaA ?? '');
   const [error, setError] = useState('');
+  const [borrando, setBorrando] = useState(false);
   const candidatas = existentes.filter(e => e.id !== inicial?.id && e.tipo !== 'recuperatorio');
 
   const guardar = (e: Event) => {
@@ -207,6 +209,9 @@ export function FormEvaluacion({ m, materiaId, cursadaId, existentes, inicial, o
       nota: n,
       ...(fecha ? { fecha } : {}),
       ...(tipo === 'recuperatorio' && reemplaza ? { reemplazaA: reemplaza } : {}),
+      // Con estructura, un recuperatorio que reemplaza usa el lugar de la otra
+      ...(partes && parte && !(tipo === 'recuperatorio' && reemplaza) ? { parte } : !partes && inicial?.parte ? { parte: inicial.parte } : {}),
+      ...(inicial?.peso !== undefined && parte === inicial.parte ? { peso: inicial.peso } : {}),
     };
     actualizar(d => A.guardarEvaluacion(d, materiaId, cursadaId, ev));
     onListo();
@@ -221,6 +226,14 @@ export function FormEvaluacion({ m, materiaId, cursadaId, existentes, inicial, o
         </datalist>
       </Campo>
       <Segmentado nombre="tipo-evaluacion" etiqueta="Tipo" valor={tipo} onCambio={setTipo} opciones={TIPOS} />
+      {partes && !(tipo === 'recuperatorio' && reemplaza) && (
+        <Campo etiqueta="Parte">
+          <select value={parte} onChange={e => setParte(e.currentTarget.value)}>
+            <option value="">Sin parte (no cuenta)</option>
+            {partes.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          </select>
+        </Campo>
+      )}
       <Campo etiqueta="Nota" ayuda="De 1 a 10. Dejala vacía si todavía no te la dieron.">
         <input type="number" inputMode="decimal" min={1} max={10} step="any" value={nota} onInput={e => setNota(valor(e))} />
       </Campo>
@@ -237,6 +250,15 @@ export function FormEvaluacion({ m, materiaId, cursadaId, existentes, inicial, o
       )}
       {error && <Aviso tipo="error">{error}</Aviso>}
       <Boton type="submit" variante="primario">{inicial ? 'Guardar cambios' : 'Cargar nota'}</Boton>
+      {inicial && partes && (
+        <Boton variante="texto" onClick={() => {
+          if (!borrando) return setBorrando(true);
+          actualizar(d => A.quitarEvaluacion(d, materiaId, cursadaId, inicial.id));
+          onListo();
+        }}>
+          {borrando ? 'Tocá otra vez para borrar' : 'Borrar esta evaluación'}
+        </Boton>
+      )}
     </form>
   );
 }

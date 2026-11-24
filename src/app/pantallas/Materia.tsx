@@ -12,6 +12,8 @@ import { veredictoCursar, veredictoRendir, type Veredicto } from '../../vista/ve
 import { Boton, Hoja, Icono, Insignia, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
 import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado, FormUmbrales } from '../formularios.tsx';
 import { referencia, type Modelo } from '../modelo.ts';
+import { EditorEstructura, TecladoNota, VistaEstructura } from '../estructura.tsx';
+import { calcular } from '../../vista/estructura.ts';
 import { actualizar } from '../store.ts';
 
 const RESULTADO_CURSADA: Record<ResultadoCursada, string> = {
@@ -122,6 +124,8 @@ function Condicion({ titulo, r }: { titulo: string; r: ResultadoNivel }) {
  */
 function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursada }) {
   const q = queFalta(seguimientoCursada(cursada, regla), regla);
+  // Con estructura propia manda la del alumno: no se calculan dos cosas distintas
+  const calcula = q.calculable && !cursada.estructura;
   const aConfirmar = regla.verificar.length > 0;
   return (
     <div class="tarjeta regla">
@@ -135,12 +139,12 @@ function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursad
         )}
       </div>
       <p class="seccion__texto">{regla.resumen}</p>
-      {q.calculable ? (
+      {calcula ? (
         <>
           {q.promocion && <Condicion titulo="Para promocionar" r={q.promocion} />}
           {q.regular && <Condicion titulo="Para regularizar" r={q.regular} />}
         </>
-      ) : (
+      ) : cursada.estructura ? null : (
         <p class="fila__detalle">Esta regla no se puede calcular con tus notas; va como la escribió la cátedra.</p>
       )}
       {q.dependeDeVos.length > 0 && (
@@ -167,7 +171,7 @@ function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursad
  * Cómo viene la cursada: las notas que fue cargando, con el promedio y la mínima. Es un resumen de lo cargado:
  * no afirma que vaya a promocionar ni a regularizar, porque eso lo define la planificación de cada cátedra.
  */
-function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, abrirUmbrales }: { cursada: Cursada; regla?: ReglaCursada; materiaId: string; abrirNota: () => void; editarNota: (e: Evaluacion) => void; abrirUmbrales: () => void }) {
+function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, ponerNota, abrirUmbrales, abrirEstructura }: { cursada: Cursada; regla?: ReglaCursada; materiaId: string; abrirNota: () => void; editarNota: (e: Evaluacion) => void; ponerNota: (e: Evaluacion) => void; abrirUmbrales: () => void; abrirEstructura: () => void }) {
   const s = seguimientoCursada(cursada, regla);
   const hay = s.filas.length > 0;
   const { promocion, regular } = s.umbrales;
@@ -175,7 +179,14 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
 
   return (
     <Seccion titulo="Cómo viene la cursada" acciones={<Boton chico onClick={abrirNota}><Icono nombre="agregar" tam={16} /> Cargar nota</Boton>}>
-      {!hay ? (
+      {cursada.estructura ? (
+        <VistaEstructura
+          calculo={calcular(cursada, s.umbrales)}
+          onNota={ponerNota}
+          onEditar={editarNota}
+          onAsignar={(e, parte) => actualizar(d => A.guardarEvaluacion(d, materiaId, cursada.id, { ...e, parte }))}
+        />
+      ) : !hay ? (
         <p class="seccion__texto">Cargá tus parciales y trabajos prácticos y acá ves cómo vas.</p>
       ) : (
         <>
@@ -220,11 +231,15 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
           </div>
         </>
       )}
+      <Boton class="boton--organizar" onClick={abrirEstructura}>
+        <Icono nombre={cursada.estructura ? 'editar' : 'plan'} tam={16} /> {cursada.estructura ? 'Editar estructura' : 'Organizar mis notas por partes'}
+      </Boton>
       {regla && <ReglaCatedra regla={regla} cursada={cursada} />}
       <p class="fila__detalle">
         <span class="leyenda__item t-aprobada"><span class="leyenda__punto" aria-hidden="true" /> {formatearNota(promocion)} para promocionar</span>
         {' · '}
         <span class="leyenda__item t-regular"><span class="leyenda__punto" aria-hidden="true" /> {formatearNota(regular)} para regularizar</span>
+        {cursada.estructura && cursada.estructura.partes.length > 1 ? `· cada parte con ${formatearNota(cursada.estructura.minimoParte ?? 6)}${cursada.estructura.minimoParte === undefined ? ' (sin confirmar)' : ''} ` : ''}
         {s.origenUmbrales === 'general' ? ' (regla general, sin confirmar)' : s.origenUmbrales === 'planificacion' ? ' (de la planificación de tu cátedra)' : ' (las que fijaste vos)'}.{' '}
         <button type="button" class="enlace-boton" onClick={abrirUmbrales}>Ajustar</button>
       </p>
@@ -233,7 +248,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
   );
 }
 
-type Panel = 'cursada' | 'empezar' | 'final' | 'aprobada' | 'correccion' | 'promocion' | 'regularidad' | 'libre' | 'nota' | 'umbrales' | null;
+type Panel = 'estructura' | 'poner' | 'cursada' | 'empezar' | 'final' | 'aprobada' | 'correccion' | 'promocion' | 'regularidad' | 'libre' | 'nota' | 'umbrales' | null;
 
 /** Los tres pasos del camino: cursada, final y aprobada, con el actual marcado. */
 function Pasos({ c }: { c: Camino }) {
@@ -297,6 +312,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
     cursada: 'Cargar cursada', empezar: 'Empezar a cursarla', final: 'Cargar final', aprobada: 'Marcar como aprobada', correccion: 'Corregir el estado',
     promocion: 'Promocioné', regularidad: 'Regularicé', libre: 'Quedé libre',
     nota: evaluacionEditada ? 'Editar nota' : 'Cargar nota', umbrales: 'Referencias de notas',
+    estructura: 'Estructura de la cursada', poner: evaluacionEditada?.nombre ?? 'Cargar nota',
   };
   const cursadaVigente = r.estado.cursadaVigente;
   const camino = caminoMateria(r);
@@ -370,6 +386,8 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
           abrirNota={() => { setEvaluacionEditada(undefined); setPanel('nota'); }}
           editarNota={e => { setEvaluacionEditada(e); setPanel('nota'); }}
           abrirUmbrales={() => setPanel('umbrales')}
+          ponerNota={e => { setEvaluacionEditada(e); setPanel('poner'); }}
+          abrirEstructura={() => setPanel('estructura')}
         />
       )}
 
@@ -505,8 +523,12 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
         {panel === 'cursada' && <FormCursada m={m} materiaId={id} onListo={cerrar} />}
         {panel === 'empezar' && <FormCursada m={m} materiaId={id} simple onListo={cerrar} />}
         {panel === 'nota' && cursadaVigente && (
-          <FormEvaluacion m={m} materiaId={id} cursadaId={cursadaVigente.id} existentes={cursadaVigente.evaluaciones ?? []} inicial={evaluacionEditada} onListo={cerrar} />
+          <FormEvaluacion m={m} materiaId={id} cursadaId={cursadaVigente.id} existentes={cursadaVigente.evaluaciones ?? []} inicial={evaluacionEditada} {...(cursadaVigente.estructura ? { partes: cursadaVigente.estructura.partes } : {})} onListo={cerrar} />
         )}
+        {panel === 'poner' && cursadaVigente && evaluacionEditada && (
+          <TecladoNota actual={evaluacionEditada.nota} onElegir={nota => { actualizar(d => A.guardarEvaluacion(d, id, cursadaVigente.id, { ...evaluacionEditada, nota })); cerrar(); }} />
+        )}
+        {panel === 'estructura' && cursadaVigente && <EditorEstructura materiaId={id} cursada={cursadaVigente} onListo={cerrar} />}
         {panel === 'umbrales' && cursadaVigente && (
           <FormUmbrales materiaId={id} cursadaId={cursadaVigente.id} actual={seguimientoCursada(cursadaVigente, reglaDe(id, cursadaVigente.ciclo)).umbrales} propios={cursadaVigente.umbrales !== undefined} onListo={cerrar} />
         )}

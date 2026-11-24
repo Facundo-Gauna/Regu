@@ -14,6 +14,8 @@ export interface Preferencias {
   fechaSimulada?: Fecha | null;
   /** Tema visual: automático (según el sistema), claro u oscuro. */
   tema?: 'auto' | 'claro' | 'oscuro';
+  /** Accesos de carga rápida fijados en Inicio: una materia y, si tiene estructura, una de sus partes. */
+  accesos?: { materiaId: string; parte?: string }[];
 }
 
 export interface Almacen {

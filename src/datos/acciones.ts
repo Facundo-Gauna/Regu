@@ -191,8 +191,11 @@ function editarCursada(datos: DatosUsuario, materiaId: Id, cursadaId: string, ca
 /** Agrega una evaluación a la cursada; si ya hay una con el mismo id, la reemplaza (editar). */
 export function guardarEvaluacion(datos: DatosUsuario, materiaId: Id, cursadaId: string, evaluacion: Evaluacion): DatosUsuario {
   return editarCursada(datos, materiaId, cursadaId, c => {
-    const lista = (c.evaluaciones ?? []).filter(e => e.id !== evaluacion.id);
-    c.evaluaciones = [...lista, evaluacion];
+    const lista = [...(c.evaluaciones ?? [])];
+    const i = lista.findIndex(e => e.id === evaluacion.id);
+    if (i >= 0) lista[i] = evaluacion;
+    else lista.push(evaluacion);
+    c.evaluaciones = lista;
   });
 }
 
