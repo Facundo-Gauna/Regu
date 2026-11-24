@@ -11,14 +11,14 @@ export const PLANTILLAS: { clave: ClavePlantilla; nombre: string; detalle: strin
   {
     clave: 'algebra', nombre: 'Según la planificación 2026', detalle: 'Tres RA con integradora y cuestionario. Sin confirmar.', materiaId: 'algebra-geometria-analitica',
     molde: [
-      { parte: 'RA 1', items: [['Actividad integradora 1', 80], ['Cuestionario 1', 20]] },
-      { parte: 'RA 2', items: [['Actividad integradora 2', 70], ['Cuestionario 2', 30]] },
-      { parte: 'RA 3', items: [['Actividad integradora 3', 100]] },
+      { parte: 'RA 1', items: [['Integradora 1', 80], ['Cuestionario 1', 20]] },
+      { parte: 'RA 2', items: [['Integradora 2', 70], ['Cuestionario 2', 30]] },
+      { parte: 'RA 3', items: [['Integradora 3', 100]] },
     ],
   },
   {
     clave: 'analisis-1', nombre: 'Según la planificación 2026', detalle: 'La tabla de ponderación. La planificación la da como forma alternativa. Sin confirmar.', materiaId: 'analisis-matematico-1',
-    molde: [{ parte: 'Cursada', items: [['Cuestionario 1', 5], ['Cuestionario 2', 5], ['Cuestionario 3', 5], ['Cuestionario 4', 15], ['Evaluación escrita 1', 16], ['Actividad colaborativa', 24], ['Evaluación escrita 2', 30]] }],
+    molde: [{ parte: 'Cursada', items: [['Cuestionario 1', 5], ['Cuestionario 2', 5], ['Cuestionario 3', 5], ['Cuestionario 4', 15], ['Escrita 1', 16], ['Colaborativa', 24], ['Escrita 2', 30]] }],
   },
   { clave: 'tres-partes', nombre: 'Tres partes', detalle: 'Tres resultados de aprendizaje vacíos para completar.', molde: [{ parte: 'RA 1', items: [] }, { parte: 'RA 2', items: [] }, { parte: 'RA 3', items: [] }] },
   { clave: 'lista', nombre: 'Una sola lista', detalle: 'Tus notas actuales, con porcentajes si querés.', molde: [{ parte: 'Cursada', items: [] }] },

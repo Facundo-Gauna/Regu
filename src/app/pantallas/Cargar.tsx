@@ -6,22 +6,19 @@ import * as A from '../../datos/acciones.ts';
 import { calcular } from '../../vista/estructura.ts';
 import { formatearNota, seguimientoCursada } from '../../vista/seguimiento.ts';
 import { enlaces } from '../../vista/rutas.ts';
+import { enCurso } from '../../vista/materias.ts';
 import { Boton, Campo, Hoja, Icono, Vacio } from '../componentes.tsx';
 import { TarjetaParte, TecladoNota, FilaItem } from '../estructura.tsx';
 import { idNuevo } from '../formularios.tsx';
 import type { Modelo } from '../modelo.ts';
 import { actualizar, guardarPrefs, useStore } from '../store.ts';
 
-export function enCurso(m: Modelo) {
-  return m.items.flatMap(i => (i.resumen.estado.cursadaVigente ? [{ item: i, cursada: i.resumen.estado.cursadaVigente }] : []));
-}
-
 export function Cargar({ m, materiaId, parte }: { m: Modelo; materiaId?: string; parte?: string }) {
   const { prefs } = useStore();
   const [elegida, setElegida] = useState<Evaluacion | null>(null);
   const [nueva, setNueva] = useState<{ nombre: string; parte?: string } | null>(null);
   const [aviso, setAviso] = useState('');
-  const materias = enCurso(m);
+  const materias = enCurso(m.items);
   const actual = materias.find(x => x.item.id === materiaId);
 
   if (!actual) {
@@ -125,7 +122,7 @@ export function Cargar({ m, materiaId, parte }: { m: Modelo; materiaId?: string;
 /** Los accesos fijados, en Inicio. Los que quedaron sin materia en curso no se muestran. */
 export function AccesosRapidos({ m }: { m: Modelo }) {
   const { prefs } = useStore();
-  const materias = enCurso(m);
+  const materias = enCurso(m.items);
   if (!materias.length) return null;
   const accesos = (prefs.accesos ?? []).flatMap(a => {
     const x = materias.find(y => y.item.id === a.materiaId);

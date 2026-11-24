@@ -765,7 +765,7 @@ input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-o
 .item__texto { flex: 1; min-width: 0; min-height: var(--toque); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; background: none; border: 0; padding: 0; overflow-wrap: anywhere; }
 .item__nota { flex: none; min-width: 72px; min-height: var(--toque); padding: 0 10px; border-radius: var(--radio-chico); background: var(--bg); color: var(--fg); border: 1.5px solid color-mix(in srgb, var(--fuerte) 55%, transparent); font-size: 1.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 .item__nota--vacia { background: transparent; color: var(--texto); border: 1.5px dashed var(--borde-campo); font-size: 0.85rem; }
-.item > select.item__asignar { width: auto; flex: none; max-width: 46%; }
+.item > select.item__asignar { width: 150px; flex: none; }
 .boton--organizar { align-self: stretch; }
 
 .teclado { display: flex; flex-direction: column; gap: 14px; }

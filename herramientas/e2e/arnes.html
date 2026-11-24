@@ -612,7 +612,9 @@
 
   await prueba('Carga rápida: fijar un acceso en Inicio y cargar una nota desde ahí', async () => {
     irA('#/cargar');
-    await clic(await esperar(() => hallar('a.fila', 'Física II'), 'la materia en curso'));
+    await esperar(() => hallar('a.fila', 'Física II'), 'la materia en curso');
+    afirmar(todos('a.fila').length === 4, `deberían ser las 4 que se cursan, hay ${todos('a.fila').length}`);
+    await clic(hallar('a.fila', 'Física II'), 'la materia en curso');
     await clic(await esperar(() => hallar('button', 'Fijar en Inicio'), 'fijar'));
     irA('#/');
     await clic(await esperar(() => hallar('a.acceso', 'Física II'), 'el acceso en Inicio'));

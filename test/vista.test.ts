@@ -4,7 +4,7 @@ import { evaluar, ConsultaCalendario, aplicarCalendarioUsuario } from '../src/mo
 import { datosEjemplo } from '../src/datos/ejemplo.ts';
 import * as A from '../src/datos/acciones.ts';
 import { presentarMateria } from '../src/vista/estados.ts';
-import { agrupar, contarPorFiltro, cumpleFiltro, listarItems, nivelActual } from '../src/vista/materias.ts';
+import { agrupar, contarPorFiltro, cumpleFiltro, listarItems, nivelActual, enCurso } from '../src/vista/materias.ts';
 import { construirCursada, cursadasPorCerrar, finDeCursada } from '../src/vista/cierres.ts';
 import { modeloInicio, proximoCuatrimestre } from '../src/vista/inicio.ts';
 import { columnasPlan, relaciones, relacionadas } from '../src/vista/mapa.ts';
@@ -495,4 +495,12 @@ test('año actual: el que tiene más materias cursando; sin ninguna, el primero 
   const items = (datos: ReturnType<typeof datosEjemplo>) => listarItems(evaluar(plan, calendario, datos, '2026-10-15'), plan);
   assert.equal(nivelActual(items(datosEjemplo())), 3);
   assert.equal(nivelActual(items(usuario([]))), 1);
+});
+
+test('carga rápida: solo las materias que se están cursando, no las ya aprobadas o regulares', () => {
+  const items = listarItems(evaluar(plan, calendario, datosEjemplo(), '2026-10-15'), plan);
+  const lista = enCurso(items);
+  assert.ok(lista.length > 0);
+  assert.deepEqual(lista.filter(x => x.item.resumen.estado.estado !== 'cursando'), []);
+  assert.ok(lista.some(x => x.item.id === 'fisica-2'));
 });

@@ -108,6 +108,11 @@ export function nivelActual(items: ItemLista[]): number | null {
   return pendientes.length ? Math.min(...pendientes) : null;
 }
 
+/** Las materias a las que se les puede cargar notas hoy. Una aprobada conserva su cursada, pero ya no cuenta. */
+export function enCurso(items: ItemLista[]) {
+  return items.flatMap(i => (i.resumen.estado.estado === 'cursando' && i.resumen.estado.cursadaVigente ? [{ item: i, cursada: i.resumen.estado.cursadaVigente }] : []));
+}
+
 export function normalizar(s: string): string {
   return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 }
