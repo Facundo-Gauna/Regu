@@ -221,7 +221,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
             {s.promedio !== null ? (
               <>
                 <strong class="marcador__titulo">
-                  Promedio <span class="marcador__nota">{formatearNota(s.promedio)}</span> <small>· mínima {formatearNota(s.minima!.nota)} ({s.minima!.nombre})</small>
+                  Promedio <span class="marcador__nota">{formatearNota(s.promedio)}</span> <small>mínima {formatearNota(s.minima!.nota)} ({s.minima!.nombre})</small>
                 </strong>
                 <Medidor valor={s.promedio} marcas={[regular, promocion]} tono={TONO_NIVEL[s.promedio >= promocion ? 'promocion' : s.promedio >= regular ? 'regular' : 'debajo']} />
               </>

@@ -25,6 +25,16 @@ Montserrat incluida en la app (funciona sin conexión). Títulos de sección en 
 - En listas la insignia lleva el estado y la fila queda neutra.
 - El color de fondo se reserva para donde el color es el contenido: mapa del plan, notas y encabezado de materia.
 
+## Notas
+
+- El número que importa va en un «marcador» negro (igual en los dos temas) con una regla de 0 a 10 y marcas en las notas pedidas. La regla es un apoyo: los valores siempre van en texto.
+- «Notas que se piden» es un bloque propio, con cada valor grande y un botón «Ajustar»; el origen se dice y, si no está confirmado, se explica a un toque.
+- Las notas se cambian con botones grandes (teclado de 1 a 10, o contador − / +).
+
+## Ayuda
+
+Un «?» en el encabezado (y «Ayuda» en la barra de escritorio) abre 3 a 5 pasos de esa pantalla, con los nombres exactos de los botones. Los textos están en `src/vista/ayuda.ts`.
+
 ## Detalles
 
 - Una materia aprobada lleva un sello en su encabezado. Es el único adorno.

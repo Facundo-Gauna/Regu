@@ -100,7 +100,7 @@ export function TarjetaParte({ p, minimo, unica, onNota, onEditar, accion }: { p
         </div>
         {p.nota !== null && <strong class="parte__nota">{formatearContra(p.nota, minimo)}</strong>}
       </header>
-      <Medidor valor={p.nota} marcas={[minimo]} tono={p.nota !== null && p.nota < minimo ? 'recursar' : 'aprobada'} />
+      {p.nota !== null && <Medidor valor={p.nota} marcas={[minimo]} tono={p.nota < minimo ? 'recursar' : 'aprobada'} />}
       {!unica && <span class={`etiqueta t-${estado.tono}`}>{estado.texto}</span>}
       {p.aviso && <Aviso tipo="alerta">{p.aviso}</Aviso>}
       {p.items.length ? (
