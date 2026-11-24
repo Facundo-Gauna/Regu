@@ -49,3 +49,11 @@ Prometer un resultado; perder notas ya cargadas; que una app vieja descarte la e
 
 ## Para quien construye
 Textos, disposición fina y nombres internos, siguiendo `PRODUCT.md` y `DESIGN.md`.
+
+## Decisiones tomadas al construir
+- Un acceso fijado apunta a materia y parte (no a una evaluación). Si ya no existen, no se muestra. Es preferencia del dispositivo.
+- La lista única adopta las notas que ya había; con las otras plantillas quedan «sin parte» y se asignan desde la vista.
+- La lectura es tolerante con estructuras dañadas; la validación estricta está en el editor.
+- Se compara con tolerancia de coma flotante y nunca se muestra redondeado un valor que no llega.
+- «Cargar nota» lista solo las materias en estado «cursando».
+- No se escribió un plan de implementación aparte: se pidió pasar directo a construir.

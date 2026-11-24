@@ -19,7 +19,7 @@ Regu es una PWA personal, local y sin cuentas que le dice a un estudiante de Ing
 | Reglas de cátedra de 1.er año | Las 8 materias transcriptas de sus planificaciones 2026, con fuente, cita y dudas. Cinco se calculan («qué te falta», con asistencia y laboratorios aparte) y tres se muestran como texto | Tests y e2e |
 | Backup | Exportar e importar validado, que conserva las notas | Tests y e2e |
 
-Verificación al 24/11/2026: 123 tests, 28 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
+Verificación al 24/11/2026: 140 tests, 31 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
 
 ## Qué falta, en orden de prioridad
 
@@ -28,7 +28,7 @@ Verificación al 24/11/2026: 123 tests, 28 pruebas e2e, contrastes de la paleta 
 3. **Importar pegando** las notas de autogestión o del campus. Para armarlo hace falta una captura de cada pantalla con los datos personales tapados. No hay conexión directa y no se resolvió: ver [`docs/idea.md`](docs/idea.md) §18.
 4. **Sin verificar** (se probó solo en Firefox con Node 26): Chrome y Safari, dispositivos Android e iOS reales, el aviso de "hay una versión nueva" del service worker, y la instalación como app.
 5. **Datos que la facultad no publica** y se dejan configurables: horas de electivas por nivel, correlativas de las electivas del plan 2023, requisitos del título intermedio, fechas de inscripción a cursado, mesas por materia.
-6. **Diseño (en la rama `diseno-calido`, sin publicar):** hechos el recorte de textos y la dirección cálida (ver [`DESIGN.md`](DESIGN.md)). También: Inicio con «próxima acción», turnos siguientes plegados en Finales y años plegables en Materias. Falta: escala de tipografía, animaciones y la pasada final. Siguen los formatos de fecha mezclados. El detector de diseño marca 1 hallazgo (la tipografía), que se deja a propósito. Sin probar en un celular real.
+6. **Diseño (en la rama `diseno-calido`, sin publicar):** hechos el recorte de textos y la dirección cálida (ver [`DESIGN.md`](DESIGN.md)). También: Inicio con «próxima acción», turnos siguientes plegados en Finales y años plegables en Materias. Falta: escala de tipografía, animaciones y la pasada final. Siguen los formatos de fecha mezclados. El detector de diseño marca 1 hallazgo (la tipografía), que se deja a propósito. Sin probar en un celular real. En la rama `notas-estructura` (encima de la anterior): notas por partes con ponderaciones, carga rápida en `#/cargar`, accesos en Inicio y atajo del ícono ([diseño](docs/superpowers/specs/2026-11-24-notas-estructura-design.md)). Falta probar el atajo en un Android real.
 7. **Dependencias:** `npm audit` marca 1 aviso moderado en las herramientas de compilación (`glob` dentro de `workbox-build`, que trae `vite-plugin-pwa`) y **0 en producción**. El arreglo que propone npm (`--force`) baja `workbox-build` a una versión anterior con cambios incompatibles: no se aplicó. Revisar cuando `workbox-build` publique una versión corregida.
 8. **Más adelante:** simulación "qué pasa si", planificador de carrera, otras carreras, horarios con superposición, exportar a `.ics`.
 
