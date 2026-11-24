@@ -19,7 +19,7 @@ Regu es una PWA personal, local y sin cuentas que le dice a un estudiante de Ing
 | Reglas de cátedra de 1.er año | Las 8 materias transcriptas de sus planificaciones 2026, con fuente, cita y dudas. Cinco se calculan («qué te falta», con asistencia y laboratorios aparte) y tres se muestran como texto | Tests y e2e |
 | Backup | Exportar e importar validado, que conserva las notas | Tests y e2e |
 
-Verificación al 24/11/2026: 140 tests, 31 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
+Verificación al 24/11/2026: 142 tests, 31 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
 
 ## Qué falta, en orden de prioridad
 
