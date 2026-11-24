@@ -6,6 +6,7 @@ import { referencia, useModelo } from './modelo.ts';
 import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Bienvenida } from './pantallas/Bienvenida.tsx';
 import { Calendario } from './pantallas/Calendario.tsx';
+import { Cargar } from './pantallas/Cargar.tsx';
 import { Finales } from './pantallas/Finales.tsx';
 import { Inicio } from './pantallas/Inicio.tsx';
 import { Materia } from './pantallas/Materia.tsx';
@@ -34,7 +35,7 @@ const PESTAÑAS: { clave: ReturnType<typeof pestaña>; href: string; icono: Nomb
 ];
 
 const TITULOS: Record<Ruta['nombre'], string> = {
-  inicio: 'Inicio', materias: 'Materias', materia: 'Materia', plan: 'Plan', finales: 'Finales', calendario: 'Calendario', progreso: 'Progreso', ajustes: 'Ajustes', mas: 'Más',
+  inicio: 'Inicio', materias: 'Materias', materia: 'Materia', plan: 'Plan', finales: 'Finales', calendario: 'Calendario', progreso: 'Progreso', ajustes: 'Ajustes', mas: 'Más', cargar: 'Cargar nota',
 };
 
 export function App() {
@@ -135,6 +136,7 @@ export function App() {
         {ruta.nombre === 'progreso' && <Progreso m={m} />}
         {ruta.nombre === 'ajustes' && <Ajustes m={m} />}
         {ruta.nombre === 'mas' && <Mas />}
+        {ruta.nombre === 'cargar' && <Cargar key={`${ruta.materiaId}-${ruta.parte}`} m={m} materiaId={ruta.materiaId} parte={ruta.parte} />}
       </main>
     </div>
   );

@@ -182,6 +182,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
       {cursada.estructura ? (
         <VistaEstructura
           calculo={calcular(cursada, s.umbrales)}
+          umbrales={s.umbrales}
           onNota={ponerNota}
           onEditar={editarNota}
           onAsignar={(e, parte) => actualizar(d => A.guardarEvaluacion(d, materiaId, cursada.id, { ...e, parte }))}

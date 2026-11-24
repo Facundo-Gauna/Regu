@@ -1,9 +1,9 @@
 // Notas con estructura propia: el teclado para cargar una nota, la vista por partes y el editor.
 
 import { useState } from 'preact/hooks';
-import type { Cursada, Evaluacion } from '../motor/tipos.ts';
+import type { Cursada, Evaluacion, Umbrales } from '../motor/tipos.ts';
 import * as A from '../datos/acciones.ts';
-import { formatearContra, MINIMO_PARTE_GENERAL, type CalculoEstructura, type ItemParte, type ParteCalculada } from '../vista/estructura.ts';
+import { formatearContra, formatearTotal, MINIMO_PARTE_GENERAL, type CalculoEstructura, type ItemParte, type ParteCalculada } from '../vista/estructura.ts';
 import { aplicarPlantilla, plantillasPara, type ClavePlantilla } from '../vista/plantillas.ts';
 import { formatearNota, type ResultadoNivel } from '../vista/seguimiento.ts';
 import { Aviso, Boton, Campo, Icono } from './componentes.tsx';
@@ -108,13 +108,13 @@ export function TarjetaParte({ p, minimo, unica, onNota, onEditar, accion }: { p
   );
 }
 
-export function VistaEstructura({ calculo, onNota, onEditar, onAsignar }: { calculo: CalculoEstructura; onNota: (e: Evaluacion) => void; onEditar: (e: Evaluacion) => void; onAsignar: (e: Evaluacion, parte: string) => void }) {
+export function VistaEstructura({ calculo, umbrales, onNota, onEditar, onAsignar }: { calculo: CalculoEstructura; umbrales: Umbrales; onNota: (e: Evaluacion) => void; onEditar: (e: Evaluacion) => void; onAsignar: (e: Evaluacion, parte: string) => void }) {
   const unica = calculo.partes.length === 1;
   const notaDe = (i: ItemParte) => onNota(i.reemplazo ?? i.evaluacion);
   return (
     <>
       <div class="tarjeta regla">
-        <strong class="total">{calculo.total === null ? 'Todavía no hay notas cargadas' : <>Con lo cargado: <span>{formatearNota(Math.floor(calculo.total * 100 + 1e-9) / 100)}</span></>}</strong>
+        <strong class="total">{calculo.total === null ? 'Todavía no hay notas cargadas' : <>Con lo cargado: <span>{formatearTotal(calculo.total, umbrales)}</span></>}</strong>
         <Nivel titulo="Para promocionar" r={calculo.promocion} />
         <Nivel titulo="Para regularizar" r={calculo.regular} />
       </div>

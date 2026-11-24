@@ -49,6 +49,11 @@ export function formatearContra(n: number, minimo: number): string {
   return formatearNota(Math.floor(n * 100 + EPS) / 100);
 }
 
+export function formatearTotal(n: number, u: Umbrales): string {
+  const engañoso = [u.promocion, u.regular].find(t => n < t - EPS && Math.round(n * 100) / 100 >= t);
+  return formatearContra(n, engañoso ?? 0);
+}
+
 function fracciones(items: Evaluacion[], nombre: string): { f: number[]; aviso?: string } {
   const iguales = items.map(() => 1 / items.length);
   const conPeso = items.filter(e => e.peso !== undefined).length;

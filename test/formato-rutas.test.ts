@@ -54,3 +54,11 @@ test('rutas: cada pantalla pertenece a una pestaña de la navegación', () => {
   assert.equal(pestaña(parseRuta('#/ajustes')), 'mas');
   assert.equal(pestaña(parseRuta('#/finales')), 'finales');
 });
+
+test('ruta de carga rápida: sola, con materia y con parte', () => {
+  assert.deepEqual(parseRuta('#/cargar'), { nombre: 'cargar' });
+  assert.deepEqual(parseRuta('#/cargar?m=fisica-2'), { nombre: 'cargar', materiaId: 'fisica-2' });
+  assert.deepEqual(parseRuta('#/cargar?m=fisica-2&p=ra%201'), { nombre: 'cargar', materiaId: 'fisica-2', parte: 'ra 1' });
+  assert.equal(enlaces.cargar('fisica-2', 'ra 1'), '#/cargar?m=fisica-2&p=ra%201');
+  assert.equal(enlaces.cargar(), '#/cargar');
+});

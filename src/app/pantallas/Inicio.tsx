@@ -5,6 +5,7 @@ import { modeloInicio } from '../../vista/inicio.ts';
 import { diasEntre, fechaCorta, fechaLarga, plural, rango, relativo } from '../../vista/formato.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { Aviso, Barra, Boton, FilaMateria, Icono, Seccion } from '../componentes.tsx';
+import { AccesosRapidos } from './Cargar.tsx';
 import { HojaMateria, type AccionRapida, type InicialCursada } from '../formularios.tsx';
 import type { Modelo } from '../modelo.ts';
 import { actualizar, useStore } from '../store.ts';
@@ -26,9 +27,11 @@ export function Inicio({ m }: { m: Modelo }) {
         <section class="proxima" aria-label="Lo próximo">
           <h1 class="proxima__titulo">{v.proxima.titulo}</h1>
           <p class="proxima__texto">{v.proxima.texto}</p>
-          <a class="boton boton--primario" href={v.proxima.destino === 'finales' ? enlaces.finales() : enlaces.materias(v.proxima.destino)}>{v.proxima.boton}</a>
+          <a class="boton boton--primario" href={v.proxima.destino === 'finales' ? enlaces.finales() : v.proxima.destino === 'cargar' ? enlaces.cargar() : enlaces.materias(v.proxima.destino)}>{v.proxima.boton}</a>
         </section>
       )}
+
+      <AccesosRapidos m={m} />
 
       <header class="portada">
         <p class="portada__fecha">{fechaLarga(m.hoy)} <span class="portada__ciclo">· ciclo {v.ciclo}</span></p>

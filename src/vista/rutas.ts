@@ -11,6 +11,7 @@ export type Ruta =
   | { nombre: 'calendario' }
   | { nombre: 'progreso' }
   | { nombre: 'ajustes' }
+  | { nombre: 'cargar'; materiaId?: string; parte?: string }
   | { nombre: 'mas' };
 
 const FILTROS_VALIDOS = new Set<string>(FILTROS.map(f => f.clave));
@@ -33,6 +34,11 @@ export function parseRuta(hash: string): Ruta {
       return sel ? { nombre: 'plan', seleccion: sel } : { nombre: 'plan' };
     }
     case 'finales': return { nombre: 'finales' };
+    case 'cargar': {
+      const m = params.get('m');
+      const p = params.get('p');
+      return { nombre: 'cargar', ...(m ? { materiaId: m } : {}), ...(m && p ? { parte: p } : {}) };
+    }
     case 'calendario': return { nombre: 'calendario' };
     case 'progreso': return { nombre: 'progreso' };
     case 'ajustes': return { nombre: 'ajustes' };
@@ -51,6 +57,8 @@ export const enlaces = {
   progreso: () => '#/progreso',
   ajustes: () => '#/ajustes',
   mas: () => '#/mas',
+  cargar: (materiaId?: string, parte?: string) =>
+    materiaId ? `#/cargar?m=${encodeURIComponent(materiaId)}${parte ? `&p=${encodeURIComponent(parte)}` : ''}` : '#/cargar',
 };
 
 /** A qué pestaña de la navegación pertenece cada ruta. */
@@ -61,6 +69,7 @@ export function pestaña(r: Ruta): 'inicio' | 'materias' | 'plan' | 'finales' | 
     case 'materia': return 'materias';
     case 'plan': return 'plan';
     case 'finales': return 'finales';
+    case 'cargar': return 'inicio';
     default: return 'mas';
   }
 }

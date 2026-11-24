@@ -46,7 +46,7 @@ export interface ProximaAccion {
   tipo: 'finales-abierta' | 'cursado-abierta' | 'finales-pronto' | 'registrar-mesa' | 'cargar-notas';
   titulo: string;
   texto: string;
-  destino: 'finales' | 'habilitadas' | 'cursando';
+  destino: 'finales' | 'habilitadas' | 'cargar';
   boton: string;
 }
 
@@ -72,7 +72,7 @@ function proximaAccion(m: Omit<ModeloInicio, 'proxima'>): ProximaAccion | null {
     }
   }
   if (m.cantidades.cursando) {
-    return { tipo: 'cargar-notas', titulo: '¿Te dieron alguna nota?', texto: `Estás cursando ${materias(m.cantidades.cursando)}.`, destino: 'cursando', boton: 'Cargar notas' };
+    return { tipo: 'cargar-notas', titulo: '¿Te dieron alguna nota?', texto: `Estás cursando ${materias(m.cantidades.cursando)}.`, destino: 'cargar', boton: 'Cargar notas' };
   }
   if (m.pendientesMesa.length) {
     return { tipo: 'registrar-mesa', titulo: 'Registrá tu promoción en una mesa', texto: m.pendientesMesa.map(i => i.nombre).join(', '), destino: 'finales', boton: 'Ver finales' };

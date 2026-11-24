@@ -22,6 +22,8 @@ export default defineConfig({
         orientation: 'portrait',
         background_color: '#1a1a1a',
         theme_color: '#1a1a1a',
+        // Atajo al mantener apretado el ícono (Android). Relativo al manifest: funciona en subcarpetas.
+        shortcuts: [{ name: 'Cargar nota', short_name: 'Cargar nota', url: './#/cargar', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }] }],
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },

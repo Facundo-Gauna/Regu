@@ -5,7 +5,7 @@ import * as A from '../src/datos/acciones.ts';
 import { crearBackup, leerBackup, leerBackupTexto, serializarBackup } from '../src/datos/backup.ts';
 import { AlmacenMemoria } from '../src/datos/almacen.ts';
 import type { Cursada, DatosUsuario, Evaluacion } from '../src/motor/tipos.ts';
-import { calcular, formatearContra } from '../src/vista/estructura.ts';
+import { calcular, formatearContra, formatearTotal } from '../src/vista/estructura.ts';
 import { aplicarPlantilla } from '../src/vista/plantillas.ts';
 
 const M = 'fisica-2';
@@ -135,4 +135,10 @@ test('plantillas: la lista única adopta las notas que ya había; Análisis I su
 test('cargar una nota no mueve la evaluación de lugar', () => {
   const d = A.guardarEvaluacion(conEstructura(), M, C, item('a', 'ra1', 80, 9));
   assert.deepEqual(cursada(d).evaluaciones!.map(e => [e.id, e.nota]), [['a', 9], ['b', null]]);
+});
+
+test('el total se redondea normal, salvo que el redondeo haga parecer que llega a un umbral', () => {
+  assert.equal(formatearTotal(23 / 3, U), '7,67');
+  assert.equal(formatearTotal(6.999, U), '6,99');
+  assert.equal(formatearTotal(5.999, U), '5,99');
 });
