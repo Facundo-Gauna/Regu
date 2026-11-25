@@ -8,6 +8,8 @@ import { detalleCorto, presentarMateria } from '../vista/estados.ts';
 import { fechaCorta } from '../vista/formato.ts';
 import { MINIMO_PARTE_GENERAL } from '../vista/estructura.ts';
 import { enlaces } from '../vista/rutas.ts';
+import { NOMBRE_PERIODO, periodoFijo } from '../vista/periodo.ts';
+import { resultadosPara } from '../vista/resultados.ts';
 import { Aviso, Boton, Campo, Hoja, Icono, Insignia, Segmentado } from './componentes.tsx';
 import type { Modelo } from './modelo.ts';
 import { actualizar } from './store.ts';
@@ -21,13 +23,6 @@ function entero(s: string): number | null {
 
 // ---------- Cursada ----------
 
-const RESULTADOS: { valor: ResultadoCursada; etiqueta: string }[] = [
-  { valor: 'cursando', etiqueta: 'Cursando' },
-  { valor: 'regular', etiqueta: 'Regular' },
-  { valor: 'aprobada-directa', etiqueta: 'Promoción (aprobación directa)' },
-  { valor: 'promocion-practica', etiqueta: 'Práctica promocionada' },
-  { valor: 'libre', etiqueta: 'Libre' },
-];
 
 export interface InicialCursada {
   ciclo?: number;
@@ -45,7 +40,12 @@ export function FormCursada({ m, materiaId, inicial, simple = false, onListo }: 
   const regimen = item?.resumen.regimen;
   const sugerido = periodoSugerido(m.cal, regimen ?? null, m.hoy, m.resumen.ciclo);
   const [ciclo, setCiclo] = useState(String(inicial?.ciclo ?? (simple ? sugerido.ciclo : m.resumen.ciclo)));
-  const [cuatri, setCuatri] = useState<Cursada['cuatrimestre']>(inicial?.cuatrimestre ?? (simple ? sugerido.cuatrimestre : regimen === 'anual' ? 'anual' : (regimen ?? '1C')));
+  const delPlan = [...m.plan.materias, ...m.plan.electivas].find(x => x.id === materiaId);
+  const fijo = periodoFijo(delPlan);
+  // Al cerrar una cursada que ya existe se respeta su período, aunque esté mal: se corrige desde la materia
+  const bloqueado = inicial?.cuatrimestre ?? fijo;
+  const [elegido, setCuatri] = useState<Cursada['cuatrimestre']>(simple ? sugerido.cuatrimestre : (regimen ?? '1C'));
+  const cuatri = bloqueado ?? elegido;
   const [resultado, setResultado] = useState<ResultadoCursada>(simple ? 'cursando' : (inicial?.resultado ?? 'regular'));
   const [cierre, setCierre] = useState(inicial?.fechaResultado ?? '');
   const [nota, setNota] = useState('');
@@ -79,18 +79,26 @@ export function FormCursada({ m, materiaId, inicial, simple = false, onListo }: 
         <Campo etiqueta="Ciclo lectivo">
           <input type="number" inputMode="numeric" value={ciclo} onInput={e => setCiclo(valor(e))} min={1990} max={2200} required />
         </Campo>
-        <Segmentado
-          nombre="cuatri"
-          etiqueta="Período"
-          valor={cuatri}
-          onCambio={setCuatri}
-          opciones={[{ valor: '1C', etiqueta: '1.er cuat.' }, { valor: '2C', etiqueta: '2.º cuat.' }, { valor: 'anual', etiqueta: 'Anual' }]}
-        />
+        {bloqueado ? (
+          <div class="campo">
+            <span class="campo__etiqueta">Se cursa</span>
+            <p class="periodo-fijo">{NOMBRE_PERIODO[bloqueado]}</p>
+          </div>
+        ) : (
+          <Segmentado
+            nombre="cuatri"
+            etiqueta="Período"
+            valor={cuatri}
+            onCambio={setCuatri}
+            opciones={[{ valor: '1C', etiqueta: '1.er cuat.' }, { valor: '2C', etiqueta: '2.º cuat.' }, { valor: 'anual', etiqueta: 'Anual' }]}
+          />
+        )}
       </div>
+      {!bloqueado && <p class="nota-ayuda">El plan no confirma cuándo se dicta: elegí el período en que la cursás.</p>}
       {simple && cicloNum !== null && cicloNum > m.resumen.ciclo && (
         <Aviso tipo="info">El período de este año ya terminó, así que se anota para el {cuatri === 'anual' ? 'cursado anual' : cuatri === '1C' ? '1.er cuatrimestre' : '2.º cuatrimestre'} {cicloNum}. Va a figurar como «cursando» cuando empiece.</Aviso>
       )}
-      {!simple && <Segmentado nombre="resultado" etiqueta="¿Cómo te fue?" valor={resultado} onCambio={setResultado} opciones={RESULTADOS} />}
+      {!simple && <Segmentado nombre="resultado" etiqueta="¿Cómo te fue?" valor={resultado} onCambio={setResultado} opciones={resultadosPara(materiaId)} />}
       {necesitaCierre && (
         <Campo
           etiqueta="Fecha de cierre del cursado"
@@ -408,12 +416,17 @@ export function FormAprobacion({ m, materiaId, onListo }: { m: Modelo; materiaId
 
   return (
     <form class="formulario" onSubmit={guardar}>
+      <p class="nota-ayuda">Para materias que ya tenés aprobadas. Si la estás cursando, contalo desde «Tu camino».</p>
       <Segmentado
         nombre="forma"
         etiqueta="¿Cómo la aprobaste?"
         valor={forma}
         onCambio={setForma}
-        opciones={[{ valor: 'final', etiqueta: 'Final' }, { valor: 'directa', etiqueta: 'Aprobación directa' }, { valor: 'equivalencia', etiqueta: 'Equivalencia' }]}
+        opciones={[
+          { valor: 'final', etiqueta: 'Con final', detalle: 'Rendiste el examen y aprobaste.' },
+          { valor: 'directa', etiqueta: 'Promoción (aprobación directa)', detalle: 'La aprobaste sin final.' },
+          { valor: 'equivalencia', etiqueta: 'Equivalencia', detalle: 'Te la reconocieron de otro plan o carrera.' },
+        ]}
       />
       <Campo etiqueta={forma === 'final' ? 'Fecha del examen' : 'Fecha de aprobación'}>
         <input type="date" value={fecha} onInput={e => setFecha(valor(e))} required />
@@ -501,9 +514,9 @@ export function HojaMateria({ m, materiaId, accion: accionInicial, inicialCursad
           </div>
           {accion === null && (
             <div class="acciones-rapidas">
-              <Boton onClick={() => setAccion('aprobada')}><Icono nombre="check" /> Aprobada</Boton>
-              <Boton onClick={() => setAccion('cursada')}><Icono nombre="play" /> Cursada / regular</Boton>
-              <Boton onClick={() => setAccion('final')}><Icono nombre="finales" /> Cargar final</Boton>
+              <Boton onClick={() => setAccion('aprobada')}><Icono nombre="check" /> <span class="accion__texto">Aprobada<small>Ya la tenés: por final, promoción o equivalencia</small></span></Boton>
+              <Boton onClick={() => setAccion('cursada')}><Icono nombre="play" /> <span class="accion__texto">Cursada<small>La estás cursando, o contar cómo te fue</small></span></Boton>
+              <Boton onClick={() => setAccion('final')}><Icono nombre="finales" /> <span class="accion__texto">Cargar final<small>Rendiste una mesa: aprobado, aplazo o ausente</small></span></Boton>
               {m.datos.materias.some(x => x.materiaId === item.id) && (
                 <Boton variante="texto" onClick={() => { actualizar(d => A.borrarMateria(d, item.id)); cerrar(); }}>
                   <Icono nombre="borrar" /> Borrar sus datos

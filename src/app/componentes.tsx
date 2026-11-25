@@ -233,15 +233,15 @@ export function Campo({ etiqueta, ayuda, error, children }: { etiqueta: string; 
   );
 }
 
-export function Segmentado<T extends string>({ nombre, valor, opciones, onCambio, etiqueta }: { nombre: string; valor: T; opciones: { valor: T; etiqueta: string }[]; onCambio: (v: T) => void; etiqueta: string }) {
+export function Segmentado<T extends string>({ nombre, valor, opciones, onCambio, etiqueta }: { nombre: string; valor: T; opciones: { valor: T; etiqueta: string; detalle?: string }[]; onCambio: (v: T) => void; etiqueta: string }) {
   return (
-    <fieldset class="segmentado">
+    <fieldset class={`segmentado${opciones.some(o => o.detalle) ? ' segmentado--lista' : ''}`}>
       <legend class="campo__etiqueta">{etiqueta}</legend>
       <div class="segmentado__opciones">
         {opciones.map(o => (
           <label key={o.valor} class={`segmentado__opcion${o.valor === valor ? ' segmentado__opcion--activa' : ''}`}>
             <input type="radio" name={nombre} value={o.valor} checked={o.valor === valor} onChange={() => onCambio(o.valor)} />
-            <span>{o.etiqueta}</span>
+            <span>{o.etiqueta}{o.detalle && <small>{o.detalle}</small>}</span>
           </label>
         ))}
       </div>

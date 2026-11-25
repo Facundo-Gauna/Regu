@@ -689,6 +689,24 @@
     await esperar(() => hallar('a.acceso', 'Inglés I'), 'el acceso tras recargar');
   });
 
+  await prueba('Período fijo: una materia anual no deja elegir cuatrimestre; práctica promocionada solo donde existe', async () => {
+    await cargar(`${BASE}?ejemplo=1#/materia/algoritmos-estructuras-datos`);
+    await clic(await esperar(() => seccion('Cursadas')?.querySelector('button'), 'Cargar cursada'));
+    await esperar(hoja, 'la hoja');
+    afirmar(texto(hoja().querySelector('.periodo-fijo')) === 'anual', `período: ${texto(hoja().querySelector('.periodo-fijo'))}`);
+    afirmar(!hallar('dialog[open] legend', 'Período'), 'no debería poder elegirse el período');
+    afirmar(!hallar('dialog[open] label.segmentado__opcion', 'Práctica promocionada'), 'Algoritmos no tiene práctica promocionable');
+    await clic(hoja().querySelector('button[aria-label=Cerrar]'));
+    await esperarHojaCerrada();
+    irA('#/materia/fisica-2');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Física II', 'Física II');
+    await clic(seccion('Cursadas').querySelector('button'), 'Cargar cursada');
+    await esperar(hoja, 'la hoja');
+    afirmar(hallar('dialog[open] label.segmentado__opcion', 'Práctica promocionada'), 'Física II sí la tiene');
+    await clic(hoja().querySelector('button[aria-label=Cerrar]'));
+    await esperarHojaCerrada();
+  });
+
   await prueba('Ayuda: el «?» muestra los pasos de la pantalla y al cerrar el foco vuelve al botón', async () => {
     await cargar(`${BASE}?ejemplo=1#/materia/fisica-2`);
     const boton = await esperar(() => doc().querySelector('.cabecera .ayuda-boton'), 'el botón de ayuda');

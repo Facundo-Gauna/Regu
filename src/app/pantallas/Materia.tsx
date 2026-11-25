@@ -9,10 +9,12 @@ import { relaciones } from '../../vista/mapa.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { caminoMateria, GLOSA, type Camino } from '../../vista/camino.ts';
 import { veredictoCursar, veredictoRendir, type Veredicto } from '../../vista/veredicto.ts';
-import { Boton, Hoja, Icono, Insignia, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
+import { Aviso, Boton, Hoja, Icono, Insignia, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
 import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado, FormUmbrales } from '../formularios.tsx';
 import { referencia, type Modelo } from '../modelo.ts';
 import { BotonAyuda } from '../ayuda.tsx';
+import { NOMBRE_PERIODO, periodosInvalidos } from '../../vista/periodo.ts';
+import { GLOSARIO } from '../../vista/resultados.ts';
 import { Medidor } from '../medidor.tsx';
 import { Referencias } from '../referencias.tsx';
 import { EditorEstructura, TecladoNota, VistaEstructura } from '../estructura.tsx';
@@ -350,12 +352,30 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
         <p class="fila__detalle">{r.estado.corregido ? 'Estado corregido a mano.' : detalleCorto(r)}</p>
       </header>
 
+      {periodosInvalidos(m.datos, m.plan).filter(x => x.materiaId === id).map(x => {
+        const ocupado = datos?.cursadas.some(c => c.id !== x.cursadaId && c.cuatrimestre === x.correcto && c.id.startsWith(x.cursadaId.slice(0, 4)));
+        return (
+          <Aviso key={x.cursadaId} tipo="alerta" titulo={`Esta materia es ${NOMBRE_PERIODO[x.correcto] === 'anual' ? 'anual' : `de ${NOMBRE_PERIODO[x.correcto]}`}`}
+            accion={ocupado ? undefined : <Boton chico onClick={() => actualizar(d => A.corregirPeriodo(d, id, x.cursadaId, x.correcto))}>Corregir</Boton>}>
+            Tenés una cursada {x.cursadaId.slice(0, 4)} cargada como {NOMBRE_PERIODO[x.actual]}.{ocupado ? ' Ya hay otra en el período correcto: borrá la que sobra en «Cursadas».' : ' Al corregirla se conservan las notas.'}
+          </Aviso>
+        );
+      })}
+
       <Seccion titulo="Tu camino">
         <div class="tarjeta camino-tarjeta">
           <Pasos c={camino} />
           <details class="camino__glosa">
-            <summary>¿Qué es cursar y qué es rendir?</summary>
+            <summary>¿Qué es cursar, rendir y promocionar?</summary>
             <p>{GLOSA}</p>
+            <dl class="glosario">
+              {GLOSARIO.map(g => (
+                <div key={g.termino}>
+                  <dt>{g.termino}</dt>
+                  <dd>{g.texto}</dd>
+                </div>
+              ))}
+            </dl>
           </details>
         </div>
         {anotada && estadoActual === 'no-cursada' ? (

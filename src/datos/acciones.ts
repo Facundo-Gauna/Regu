@@ -45,6 +45,18 @@ export function agregarCursada(datos: DatosUsuario, materiaId: Id, cursada: Omit
   });
 }
 
+/** Mueve una cursada al período correcto sin perder nada. Si ya hay otra ahí, no la pisa. */
+export function corregirPeriodo(datos: DatosUsuario, materiaId: Id, cursadaId: string, cuatrimestre: Cursada['cuatrimestre']): DatosUsuario {
+  return editarMateria(datos, materiaId, m => {
+    const c = m.cursadas.find(x => x.id === cursadaId);
+    if (!c) return;
+    const id = idCursada(c.ciclo, cuatrimestre);
+    if (m.cursadas.some(x => x !== c && x.id === id)) return;
+    c.id = id;
+    c.cuatrimestre = cuatrimestre;
+  });
+}
+
 export function quitarCursada(datos: DatosUsuario, materiaId: Id, cursadaId: string): DatosUsuario {
   return editarMateria(datos, materiaId, m => {
     m.cursadas = m.cursadas.filter(c => c.id !== cursadaId);

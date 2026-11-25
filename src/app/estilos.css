@@ -899,3 +899,17 @@ a.fila:hover, .acceso:hover, .plantilla:hover { border-color: var(--borde-campo)
 .temas .segmentado__opcion--activa { background: var(--superficie); border-color: var(--texto); border-width: 3px; color: var(--texto); }
 .temas__muestra { display: flex; width: 100%; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid var(--borde-campo); }
 .temas__muestra span { flex: 1; }
+
+/* ---------- Resultados y período ---------- */
+
+.periodo-fijo { display: flex; align-items: center; min-height: var(--toque); font-weight: 800; }
+.periodo-fijo::first-letter { text-transform: uppercase; }
+.segmentado--lista .segmentado__opciones { flex-direction: column; }
+.segmentado--lista .segmentado__opcion { padding: 10px 14px; border-radius: var(--radio-chico); }
+.segmentado--lista small { display: block; margin-top: 2px; font-size: 0.8rem; font-weight: 500; opacity: 0.85; }
+.acciones-rapidas .boton { padding-block: 10px; text-align: left; }
+.accion__texto { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.accion__texto small { font-size: 0.8rem; font-weight: 500; color: var(--texto-suave); }
+.glosario { margin: 0; padding-bottom: 6px; display: flex; flex-direction: column; gap: 8px; }
+.glosario dt { font-weight: 800; color: var(--texto); }
+.glosario dd { margin: 0; }
