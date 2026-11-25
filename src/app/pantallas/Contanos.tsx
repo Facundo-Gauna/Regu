@@ -14,9 +14,11 @@ const URL_ENVIO: string = import.meta.env['VITE_FEEDBACK_URL'] ?? '/api/feedback
 
 export function Contanos({ m, ruta }: { m: Modelo; ruta: Extract<Ruta, { nombre: 'contanos' }> }) {
   const s = useStore();
-  const contexto = contextoDesde(ruta, id => [...m.plan.materias, ...m.plan.electivas].find(x => x.id === id)?.nombre);
-  const nuevo = (): Borrador => ({ tipo: contexto ? 'regla' : 'otro', mensaje: '', incluirTecnico: true });
+  const delAviso = contextoDesde(ruta, id => [...m.plan.materias, ...m.plan.electivas].find(x => x.id === id)?.nombre);
+  const nuevo = (): Borrador => ({ tipo: delAviso ? 'regla' : 'otro', mensaje: '', incluirTecnico: true });
   const [borrador, setBorrador] = useState<Borrador>(() => leerBorrador() ?? nuevo());
+  // Manda el aviso desde donde se llega ahora; si se llega desde Más, el del borrador
+  const contexto = delAviso ?? borrador.contexto;
   const [estado, setEstado] = useState<Estado>('editando');
   const [error, setError] = useState<string>();
   const [copia, setCopia] = useState<'copiado' | 'a-mano'>();
@@ -29,10 +31,13 @@ export function Contanos({ m, ruta }: { m: Modelo; ruta: Extract<Ruta, { nombre:
     navegador: resumirNavegador(navigator.userAgent),
     tema: s.prefs.tema ?? 'auto',
   };
-  const armar = () => armarEnvio({ ...borrador, tecnico, trampa, ...(contexto ? { contexto } : {}) });
+  const armar = () => armarEnvio({
+    tipo: borrador.tipo, mensaje: borrador.mensaje, incluirTecnico: borrador.incluirTecnico, tecnico, trampa,
+    ...(contexto ? { contexto } : {}),
+  });
 
   const cambiar = (cambios: Partial<Borrador>) => {
-    const b = { ...borrador, ...cambios };
+    const b = { ...borrador, contexto, ...cambios };
     setBorrador(b);
     guardarBorrador(b);
     setError(undefined);

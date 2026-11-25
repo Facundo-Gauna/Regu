@@ -369,6 +369,14 @@
     afirmar(!hoja(), 'la hoja quedó abierta');
     afirmar(opcion('Una regla o dato está mal').checked, 'el tipo debería ser «Una regla o dato está mal»');
     afirmar(hallar('.contanos', 'Sobre: «Dudas sobre esta regla» · Análisis Matemático I'), `contexto: ${texto(doc().querySelector('.contanos')).slice(0, 250)}`);
+    // lo escrito desde un aviso conserva de qué hablaba aunque se retome desde Más
+    await escribir(await cuadro(), 'En mi comisión se aprueba con 7', 'el mensaje');
+    irA('#/mas');
+    await pausa(PAUSA_UI);
+    irA('#/contanos');
+    await cuadro();
+    afirmar(hallar('.contanos', 'Sobre: «Dudas sobre esta regla» · Análisis Matemático I'), 'el borrador perdió de qué materia hablaba');
+    await escribir(await cuadro(), '', 'vaciar el borrador');
     irA('#/materia/analisis-matematico-1');
     await esperar(() => doc().querySelector('.regla'), 'volver a la materia');
   });

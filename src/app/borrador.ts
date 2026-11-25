@@ -1,9 +1,15 @@
 // Borrador de «Contanos»: queda en este navegador hasta que se envía. localStorage puede fallar (modo privado).
-import type { TipoFeedback } from '../vista/feedback.ts';
+import type { ContextoFeedback, TipoFeedback } from '../vista/feedback.ts';
 
 const CLAVE = 'regu.contanos.borrador';
 
-export interface Borrador { tipo: TipoFeedback; mensaje: string; incluirTecnico: boolean }
+export interface Borrador {
+  tipo: TipoFeedback;
+  mensaje: string;
+  incluirTecnico: boolean;
+  /** El aviso desde donde se escribió: es parte del mensaje aunque se retome desde Más. */
+  contexto?: ContextoFeedback | undefined;
+}
 
 export function leerBorrador(): Borrador | null {
   try {
