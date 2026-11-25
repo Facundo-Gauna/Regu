@@ -95,7 +95,7 @@ Además del e2e en Firefox, se prueba a mano en Brave (pedido de Facundo).
 1. Crear el repo privado `Regu-feedback` en GitHub, vacío, con las etiquetas `error`, `regla`, `idea`, `otro`.
 2. Crear un *fine-grained token* con acceso solo a ese repo y permiso **Issues: Read and write**; vencimiento de un año (anotar la fecha).
 3. En Vercel → proyecto Regu → Settings → Environment Variables: `GITHUB_TOKEN`, `FEEDBACK_REPO`, `ORIGENES_PERMITIDOS`.
-4. Activar notificaciones de GitHub para ese repo (para enterarse de cada mensaje).
+4. Activar notificaciones de GitHub para ese repo y, como los issues se crean con el propio token, también las de «Your own updates».
 
 ## Rama y publicación
 Se construye en una rama nueva `feedback` desde `notas-estructura` (ahí están las pantallas actuales). Llega a producción recién cuando se mergee a `main`, lo que sigue siendo decisión de Facundo.

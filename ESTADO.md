@@ -43,7 +43,7 @@ El código está en la rama `feedback` ([diseño](docs/superpowers/specs/2026-11
    - `FEEDBACK_REPO`: `Facundo-Gauna/Regu-feedback`
    - `ORIGENES_PERMITIDOS`: el origen de producción (`https://…`, sin barra final). Para probar una preview, sumar su origen separado por coma.
    - Después de crear o cambiar variables hay que volver a desplegar.
-4. En `Regu-feedback`, activar las notificaciones (Watch → All activity).
+4. En `Regu-feedback`, activar las notificaciones (Watch → All activity). **Además:** los issues se crean con tu token, así que cuentan como actividad tuya y GitHub no avisa de eso por defecto. En Settings → Notifications, activar por email «Your own updates» (si no aparece, buscarlo en las opciones de email).
 
 **Cómo probarlo:** mandar un mensaje desde Más → Contanos en el sitio desplegado y ver que aparece el issue. Si sale «No se pudo enviar», mirar los logs de la función en Vercel: 403 es el origen, 500 son las variables, 502 es el token o el repo.
 
