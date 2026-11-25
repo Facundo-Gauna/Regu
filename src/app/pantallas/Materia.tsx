@@ -138,7 +138,7 @@ function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursad
       <div class="regla__cab">
         <strong>Regla de tu cátedra · planificación {regla.ciclo}</strong>
         {aConfirmar && (
-          <SinConfirmar titulo="Dudas sobre esta regla">
+          <SinConfirmar titulo="Dudas sobre esta regla" materiaId={regla.materiaId}>
             <p class="seccion__texto">La transcribimos de la planificación, pero nadie de la cátedra la confirmó:</p>
             <ul class="razones">{regla.verificar.map(t => <li key={t}>{t}</li>)}</ul>
           </SinConfirmar>
@@ -258,7 +258,7 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
         <Icono nombre={cursada.estructura ? 'editar' : 'plan'} tam={16} /> {cursada.estructura ? 'Editar estructura' : 'Organizar mis notas por partes'}
       </Boton>
       {regla && <ReglaCatedra regla={regla} cursada={cursada} />}
-      <Referencias cursada={cursada} s={s} onAjustar={abrirUmbrales} />
+      <Referencias cursada={cursada} s={s} materiaId={materiaId} onAjustar={abrirUmbrales} />
       <BotonAyuda ruta="materia" texto="¿Cómo se cargan las notas?" clase="boton boton--texto" />
     </Seccion>
   );
@@ -358,7 +358,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
         <div class="encabezado-materia__estado">
           <Insignia p={p} />
           {item.sinConfirmar.length > 0 && (
-            <SinConfirmar titulo="Datos sin confirmar">
+            <SinConfirmar titulo="Datos sin confirmar" materiaId={id}>
               {cerrarAviso => (
                 <>
                   <ul class="razones">{item.sinConfirmar.map(t => <li key={t}>{t}</li>)}</ul>

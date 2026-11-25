@@ -359,6 +359,7 @@ a.etiqueta { min-height: 32px; }
 .etiqueta--mio { background: var(--habilitada-bg); color: var(--habilitada-fg); border-color: var(--habilitada-fuerte); }
 
 .sin-confirmar { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 700; color: var(--texto); }
+.enlace-contanos { display: flex; align-items: center; min-height: var(--toque); font-weight: 700; color: var(--texto); }
 .sin-confirmar--boton { align-self: flex-start; min-height: var(--toque); padding: 0; background: none; border: 0; font-family: inherit; text-align: left; cursor: pointer; }
 
 /* ---------- Avisos y vacíos ---------- */

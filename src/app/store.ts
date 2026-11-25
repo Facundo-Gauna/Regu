@@ -10,6 +10,7 @@ import { usuarioVacio } from '../datos/backup.ts';
 import { datosEjemplo } from '../datos/ejemplo.ts';
 import { fechaLocal } from '../datos/hoy.ts';
 import { crearAlmacen } from './almacen-idb.ts';
+import { borrarBorrador } from './borrador.ts';
 
 export interface EstadoApp {
   cargando: boolean;
@@ -164,6 +165,7 @@ export function crearPerfil(planId: string, calendarioId: string, anioIngreso: n
 export async function borrarTodo(): Promise<void> {
   await colaGuardado;
   await almacen.borrarUsuario();
+  borrarBorrador(); // puede tener un contacto escrito
   emitir({ datos: null, errorGuardado: undefined });
 }
 

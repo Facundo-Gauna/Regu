@@ -99,7 +99,7 @@ export function AvisoDatos({ textos }: { textos: string[] }) {
 }
 
 /** «Sin confirmar ⓘ»: la advertencia queda a la vista y la explicación se abre al tocarla. No usar dentro de un enlace. */
-export function SinConfirmar({ titulo, etiqueta = 'Sin confirmar', children }: { titulo: string; etiqueta?: string; children: ComponentChildren | ((cerrar: () => void) => ComponentChildren) }) {
+export function SinConfirmar({ titulo, etiqueta = 'Sin confirmar', materiaId, children }: { titulo: string; etiqueta?: string; materiaId?: string; children: ComponentChildren | ((cerrar: () => void) => ComponentChildren) }) {
   const [abierta, setAbierta] = useState(false);
   const cerrar = () => setAbierta(false);
   return (
@@ -110,6 +110,7 @@ export function SinConfirmar({ titulo, etiqueta = 'Sin confirmar', children }: {
       {/* La hoja queda montada: al cerrarse con close() el navegador devuelve el foco al botón */}
       <Hoja abierta={abierta} titulo={titulo} onCerrar={cerrar}>
         {typeof children === 'function' ? children(cerrar) : children}
+        <a class="enlace-contanos" href={enlaces.contanos({ desde: 'regla', titulo, materiaId })} onClick={cerrar}>¿En tu cátedra es distinto? Contanos</a>
       </Hoja>
     </>
   );

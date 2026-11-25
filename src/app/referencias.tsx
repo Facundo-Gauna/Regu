@@ -12,7 +12,7 @@ const ORIGEN: Record<Seguimiento['origenUmbrales'], { texto: string; explicacion
   usuario: { texto: 'Las fijaste vos' },
 };
 
-export function Referencias({ cursada, s, onAjustar }: { cursada: Cursada; s: Seguimiento; onAjustar: () => void }) {
+export function Referencias({ cursada, s, materiaId, onAjustar }: { cursada: Cursada; s: Seguimiento; materiaId: string; onAjustar: () => void }) {
   const origen = ORIGEN[s.origenUmbrales];
   const partes = cursada.estructura?.sinMinimo ? 0 : (cursada.estructura?.partes.length ?? 0);
   const minimo = cursada.estructura?.minimoParte;
@@ -36,7 +36,7 @@ export function Referencias({ cursada, s, onAjustar }: { cursada: Cursada; s: Se
         {partes > 1 && <div class="t-bloqueada"><dt>Cada parte</dt><dd>{formatearNota(minimo ?? MINIMO_PARTE_GENERAL)}</dd></div>}
       </dl>
       {origen.explicacion ? (
-        <SinConfirmar titulo="Notas sin confirmar" etiqueta={origen.texto}>
+        <SinConfirmar titulo="Notas sin confirmar" etiqueta={origen.texto} materiaId={materiaId}>
           <p class="seccion__texto">{origen.explicacion}</p>
           {partes > 1 && minimo === undefined && <p class="seccion__texto">El {MINIMO_PARTE_GENERAL} para aprobar cada parte también es un valor por defecto.</p>}
         </SinConfirmar>

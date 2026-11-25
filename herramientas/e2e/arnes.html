@@ -361,6 +361,18 @@
   const botonEnviar = () => doc().querySelector('.contanos button[type=submit]');
   const opcion = t => hallar('.contanos .segmentado__opcion', t)?.querySelector('input');
 
+  await prueba('Desde «Sin confirmar»: Contanos abre con el tipo de regla y el contexto a la vista', async () => {
+    await clic(hallar('button', 'Sin confirmar', doc().querySelector('.regla')), 'Sin confirmar');
+    await esperar(hoja, 'la hoja de dudas');
+    await clic(hallar('dialog[open] a', '¿En tu cátedra es distinto? Contanos'), 'el enlace a Contanos');
+    await cuadro();
+    afirmar(!hoja(), 'la hoja quedó abierta');
+    afirmar(opcion('Una regla o dato está mal').checked, 'el tipo debería ser «Una regla o dato está mal»');
+    afirmar(hallar('.contanos', 'Sobre: «Dudas sobre esta regla» · Análisis Matemático I'), `contexto: ${texto(doc().querySelector('.contanos')).slice(0, 250)}`);
+    irA('#/materia/analisis-matematico-1');
+    await esperar(() => doc().querySelector('.regla'), 'volver a la materia');
+  });
+
   await prueba('Contanos desde Más: se ve qué se manda, sin notas, y al enviar llega y se limpia el borrador', async () => {
     irA('#/mas');
     await clic(await esperar(() => hallar('a.fila--menu', 'Contanos'), 'Contanos en Más'));
@@ -649,12 +661,14 @@
   });
 
   await prueba('Borrar todos los datos vuelve a la bienvenida, también tras recargar', async () => {
+    ventana().localStorage.setItem('regu.contanos.borrador', JSON.stringify({ tipo: 'otro', mensaje: 'mi mail es x@y.z', incluirTecnico: true }));
     irA('#/ajustes');
     await clic(await esperar(() => hallar('button', 'Borrar todos mis datos'), 'el botón de borrado'));
     await clic(await esperar(() => hallar('button', 'Sí, borrar'), 'la confirmación'));
     await esperar(() => hallar('button', 'Empezar'), 'la bienvenida');
     await recargar();
     await esperar(() => hallar('button', 'Empezar'), 'la bienvenida tras recargar');
+    afirmar(ventana().localStorage.getItem('regu.contanos.borrador') === null, 'el borrador de Contanos no se borró');
   });
 
   await prueba('Restaurar: el backup exportado se importa desde la bienvenida y deja todo igual', async () => {
