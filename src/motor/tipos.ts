@@ -151,10 +151,20 @@ export interface ParteCursada {
   peso: number;
 }
 
+/** Cómo se aprueba esta cursada, según el alumno: nota mínima en cada instancia, en el promedio, o en las dos. */
+export interface CriterioAprobacion {
+  promocion: CondicionNotas;
+  regular: CondicionNotas;
+  /** Cuántas notas se toman en total, si se sabe. */
+  instancias?: number;
+}
+
 export interface EstructuraCursada {
   partes: ParteCursada[];
   /** Nota mínima para dar una parte por aprobada. Si falta, 6 «sin confirmar». */
   minimoParte?: number;
+  /** true: no hace falta aprobar cada parte por separado. */
+  sinMinimo?: boolean;
   /** Notas de promoción y regularidad que trae la plantilla usada. Las que fije el alumno pesan más. */
   referencias?: Umbrales;
 }
@@ -215,6 +225,8 @@ export interface Cursada {
   estructura?: EstructuraCursada;
   /** Si falta, se usa la regla general (sin confirmar). */
   umbrales?: Umbrales;
+  /** Lo que se pide para promocionar y regularizar. Pesa más que la regla transcripta. */
+  criterio?: CriterioAprobacion;
 }
 
 export interface IntentoFinal {

@@ -3,7 +3,7 @@
 
 import type {
   Aprobacion, CicloLectivo, Cursada, DatosMateriaUsuario, DatosUsuario, EleccionElectiva, EstadoRequisitoUsuario, IntentoFinal,
-  CuatrimestreCalendario, PeriodoExamen, Id, Evaluacion, Umbrales, EstructuraCursada,
+  CuatrimestreCalendario, PeriodoExamen, Id, Evaluacion, Umbrales, EstructuraCursada, CriterioAprobacion, CondicionNotas,
 } from '../motor/tipos.ts';
 
 const ORDEN_CUATRIMESTRE = { '1C': 0, anual: 1, '2C': 2 } as const;
@@ -40,6 +40,7 @@ export function agregarCursada(datos: DatosUsuario, materiaId: Id, cursada: Omit
       ...(cursada.evaluaciones === undefined && previa?.evaluaciones ? { evaluaciones: previa.evaluaciones } : {}),
       ...(cursada.umbrales === undefined && previa?.umbrales ? { umbrales: previa.umbrales } : {}),
       ...(cursada.estructura === undefined && previa?.estructura ? { estructura: previa.estructura } : {}),
+      ...(cursada.criterio === undefined && previa?.criterio ? { criterio: previa.criterio } : {}),
     });
     m.cursadas.sort((a, b) => a.ciclo - b.ciclo || ORDEN_CUATRIMESTRE[a.cuatrimestre] - ORDEN_CUATRIMESTRE[b.cuatrimestre]);
   });
@@ -236,6 +237,28 @@ export function guardarEstructura(datos: DatosUsuario, materiaId: Id, cursadaId:
     });
     if (lista.length) c.evaluaciones = lista;
     else delete c.evaluaciones;
+  });
+}
+
+/** Guarda cómo se aprueba la cursada; las notas de color salen de ahí para que no se contradigan. */
+export function fijarCriterio(datos: DatosUsuario, materiaId: Id, cursadaId: string, criterio: CriterioAprobacion | null): DatosUsuario {
+  return editarCursada(datos, materiaId, cursadaId, c => {
+    if (!criterio) {
+      delete c.criterio;
+      delete c.umbrales;
+      return;
+    }
+    c.criterio = criterio;
+    const de = (x: CondicionNotas, otra: number) => x.promedioMin ?? x.cadaInstanciaMin ?? otra;
+    c.umbrales = { promocion: de(criterio.promocion, 8), regular: de(criterio.regular, 6) };
+  });
+}
+
+export function fijarSinMinimo(datos: DatosUsuario, materiaId: Id, cursadaId: string, sinMinimo: boolean): DatosUsuario {
+  return editarCursada(datos, materiaId, cursadaId, c => {
+    if (!c.estructura) return;
+    if (sinMinimo) c.estructura.sinMinimo = true;
+    else delete c.estructura.sinMinimo;
   });
 }
 

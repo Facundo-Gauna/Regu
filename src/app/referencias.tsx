@@ -14,17 +14,25 @@ const ORIGEN: Record<Seguimiento['origenUmbrales'], { texto: string; explicacion
 
 export function Referencias({ cursada, s, onAjustar }: { cursada: Cursada; s: Seguimiento; onAjustar: () => void }) {
   const origen = ORIGEN[s.origenUmbrales];
-  const partes = cursada.estructura?.partes.length ?? 0;
+  const partes = cursada.estructura?.sinMinimo ? 0 : (cursada.estructura?.partes.length ?? 0);
   const minimo = cursada.estructura?.minimoParte;
+  const casilla = (clave: 'promocion' | 'regular') => {
+    const c = s.criterio?.[clave];
+    if (!c) return { nota: s.umbrales[clave], como: '' };
+    if (c.cadaInstanciaMin !== undefined && c.promedioMin !== undefined) return { nota: c.promedioMin, como: `de promedio y ${formatearNota(c.cadaInstanciaMin)} en cada nota` };
+    return c.cadaInstanciaMin !== undefined ? { nota: c.cadaInstanciaMin, como: 'en cada nota' } : { nota: c.promedioMin!, como: 'de promedio' };
+  };
+  const promocion = casilla('promocion');
+  const regular = casilla('regular');
   return (
     <div class="referencias">
       <div class="referencias__cab">
-        <h3>Notas que se piden</h3>
+        <h3>Cómo se aprueba</h3>
         <Boton chico onClick={onAjustar}><Icono nombre="ajustes" tam={16} /> Ajustar</Boton>
       </div>
       <dl class="referencias__valores">
-        <div class="t-aprobada"><dt>Promocionar</dt><dd>{formatearNota(s.umbrales.promocion)}</dd></div>
-        <div class="t-regular"><dt>Regularizar</dt><dd>{formatearNota(s.umbrales.regular)}</dd></div>
+        <div class="t-aprobada"><dt>Promocionar{promocion.como && <small>{promocion.como}</small>}</dt><dd>{formatearNota(promocion.nota)}</dd></div>
+        <div class="t-regular"><dt>Regularizar{regular.como && <small>{regular.como}</small>}</dt><dd>{formatearNota(regular.nota)}</dd></div>
         {partes > 1 && <div class="t-bloqueada"><dt>Cada parte</dt><dd>{formatearNota(minimo ?? MINIMO_PARTE_GENERAL)}</dd></div>}
       </dl>
       {origen.explicacion ? (

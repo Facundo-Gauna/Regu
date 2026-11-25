@@ -284,11 +284,14 @@
     await clic(hallar('.referencias button', 'Ajustar', seccion('Cómo viene la cursada')), 'Ajustar');
     await esperar(hoja, 'la hoja de referencias');
     await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
+    await esperar(() => hallar('dialog[open] .aviso--error', 'Elegí qué se pide'), 'sin elegir no se guarda nada');
+    await clic(hoja().querySelector('button[aria-label=Cerrar]'));
     await esperarHojaCerrada();
-    afirmar(texto(doc().querySelector('.referencias')).includes('sin confirmar'), `guardar sin cambios confirmó las referencias: ${texto(doc().querySelector('.referencias'))}`);
+    afirmar(texto(doc().querySelector('.referencias')).includes('sin confirmar'), `referencias: ${texto(doc().querySelector('.referencias'))}`);
     // referencias propias: ya no dicen «sin confirmar»
     await clic(hallar('.referencias button', 'Ajustar', seccion('Cómo viene la cursada')), 'Ajustar');
     await esperar(hoja, 'la hoja de referencias');
+    for (const grupo of todos('dialog[open] .criterio__nivel')) await clic(hallar('label.segmentado__opcion', 'El promedio', grupo), 'El promedio');
     const [promo, regu] = todos('dialog[open] input[type=number]');
     await escribir(promo, '7'); await escribir(regu, '5');
     await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
@@ -649,6 +652,37 @@
     await esperarHojaCerrada();
     await esperar(() => dd() === '8 / 6 / 7', `tras subir (${dd()})`);
     afirmar(texto(doc().querySelector('.referencias')).includes('Regla general, sin confirmar'), 'las otras notas siguen sin confirmar');
+  });
+
+  await prueba('Cómo se aprueba: al empezar una materia sin regla se pregunta, y «cada nota» no es lo mismo que «promedio»', async () => {
+    await cargar(`${BASE}?ejemplo=1#/ajustes`);
+    await escribir(await esperar(() => doc().querySelector('input[type=date]'), 'el campo de fecha simulada'), '2026-03-20');
+    irA('#/materia/analisis-numerico');
+    await clic(await esperar(() => hallar('.siguiente button', 'Empezar a cursarla'), 'Empezar'));
+    await clic(await esperar(() => hallar('dialog[open] button[type=submit]', 'Empezar a cursarla'), 'confirmar'));
+    await esperar(() => hoja() && texto(hoja()).includes('Cómo se aprueba'), 'que se abra «Cómo se aprueba»');
+    const grupos = () => todos('dialog[open] .criterio__nivel');
+    for (const g of grupos()) await clic(hallar('label.segmentado__opcion', 'Cada nota', g), 'Cada nota');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
+    await esperarHojaCerrada();
+    const sec = () => seccion('Cómo viene la cursada');
+    afirmar(!sec().querySelector('.definir'), 'sigue pidiendo definir');
+    afirmar(texto(sec().querySelector('.referencias')).includes('en cada nota'), `referencias: ${texto(sec().querySelector('.referencias'))}`);
+    for (const [nombre, nota] of [['P1', '10'], ['P2', '5']]) {
+      await clic(sec().querySelector('button'), 'Cargar nota');
+      await esperar(hoja, 'la hoja de la nota');
+      await escribir(hoja().querySelector('input[type=text]'), nombre, 'el nombre');
+      await escribir(hoja().querySelector('input[type=number]'), nota, 'la nota');
+      await clic(hallar('dialog[open] button[type=submit]', 'Cargar nota'));
+      await esperarHojaCerrada();
+    }
+    await esperar(() => texto(sec().querySelector('.veredicto-propio')).includes('P2 (5) no llega'), `veredicto (${texto(sec().querySelector('.veredicto-propio'))})`);
+    await clic(hallar('.referencias button', 'Ajustar'), 'Ajustar');
+    await esperar(hoja, 'la hoja');
+    for (const g of grupos()) await clic(hallar('label.segmentado__opcion', 'El promedio', g), 'El promedio');
+    await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
+    await esperarHojaCerrada();
+    await esperar(() => !texto(sec().querySelector('.veredicto-propio')).includes('no llega'), 'con promedio ya no se exige cada nota');
   });
 
   await prueba('Carga rápida: fijar un acceso en Inicio y cargar una nota desde ahí', async () => {

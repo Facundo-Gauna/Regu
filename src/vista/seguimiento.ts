@@ -5,7 +5,7 @@
 // la regla general 8 / 6 se muestra siempre como "sin confirmar" hasta que el usuario la ajusta.
 
 import { calcular, formatearTotal } from './estructura.ts';
-import type { CondicionNotas, Cursada, Evaluacion, ReglaCursada, Umbrales } from '../motor/tipos.ts';
+import type { CriterioAprobacion, CondicionNotas, Cursada, Evaluacion, ReglaCursada, Umbrales } from '../motor/tipos.ts';
 
 export const UMBRALES_GENERALES: Umbrales = { promocion: 8, regular: 6 };
 
@@ -30,6 +30,8 @@ export interface Seguimiento {
   promedioRedondeado: number | null;
   minima: { nota: number; nombre: string } | null;
   umbrales: Umbrales;
+  /** Qué se pide exactamente, o null si todavía no se sabe. */
+  criterio: CriterioAprobacion | null;
   /** true si el usuario fijó los umbrales; si no, son los de la planificación o la regla general sin confirmar. */
   umbralesPropios: boolean;
   /** De dónde salen las referencias: el usuario, la planificación de la cátedra o la regla general (sin confirmar). */
@@ -52,11 +54,20 @@ export function umbralesDeRegla(regla: ReglaCursada | undefined): Umbrales | nul
   return promocion !== undefined && regular !== undefined ? { promocion, regular } : null;
 }
 
-export function seguimientoCursada(c: Pick<Cursada, 'evaluaciones' | 'umbrales' | 'estructura'>, regla?: ReglaCursada): Seguimiento {
+export function seguimientoCursada(c: Pick<Cursada, 'evaluaciones' | 'umbrales' | 'estructura' | 'criterio'>, regla?: ReglaCursada): Seguimiento {
   const evaluaciones = c.evaluaciones ?? [];
   const deRegla = umbralesDeRegla(regla);
   const dePlantilla = c.estructura?.referencias;
   const umbrales = c.umbrales ?? dePlantilla ?? deRegla ?? UMBRALES_GENERALES;
+  // De dónde salen las condiciones; sin ninguna fuente, la app pregunta en lugar de suponer
+  const porPromedio = (u: Umbrales): CriterioAprobacion => ({ promocion: { promedioMin: u.promocion }, regular: { promedioMin: u.regular } });
+  const criterio: CriterioAprobacion | null = c.criterio
+    // Con partes propias se calcula por promedio mientras no diga otra cosa: se muestra eso, no la regla transcripta
+    ?? (c.estructura ? porPromedio(umbrales) : null)
+    ?? (c.umbrales ? null : dePlantilla ? { promocion: { promedioMin: dePlantilla.promocion }, regular: { promedioMin: dePlantilla.regular } } : null)
+    ?? (!c.umbrales && regla?.tipo === 'notas' && regla.promocion && regla.regular
+      ? { promocion: regla.promocion, regular: regla.regular, ...(regla.instancias ? { instancias: regla.instancias } : {}) }
+      : null);
 
   // Un recuperatorio con nota reemplaza a la evaluación que el usuario indicó
   const reemplazo = new Map<string, Evaluacion>();
@@ -86,6 +97,7 @@ export function seguimientoCursada(c: Pick<Cursada, 'evaluaciones' | 'umbrales' 
     promedioRedondeado: promedio === null ? null : Math.round(promedio),
     minima: peor ? { nota: peor.nota!, nombre: peor.nombre } : null,
     umbrales,
+    criterio,
     umbralesPropios: c.umbrales !== undefined,
     origenUmbrales: c.umbrales !== undefined ? 'usuario' : dePlantilla ? 'plantilla' : deRegla ? 'planificacion' : 'general',
     enPromocion: conNota.filter(e => e.nota! >= umbrales.promocion).length,
@@ -100,7 +112,7 @@ export function formatearNota(n: number): string {
 }
 
 /** Una frase para la lista de materias: "Promedio 7,5 (2 notas)". null si no hay notas. */
-export function resumenCorto(c: Pick<Cursada, 'evaluaciones' | 'umbrales' | 'estructura'> | undefined): string | null {
+export function resumenCorto(c: Pick<Cursada, 'evaluaciones' | 'umbrales' | 'estructura' | 'criterio'> | undefined): string | null {
   if (!c?.evaluaciones?.length) return null;
   // Con estructura propia vale su promedio ponderado: no se muestra además el simple
   if (c.estructura) {
@@ -185,6 +197,12 @@ function evaluarCondicion(c: CondicionNotas, s: Seguimiento, total: number | nul
 
   const estado: EstadoCondicion = estados.includes('no-cumple') ? 'no-cumple' : estados.every(e => e === 'cumple') ? 'cumple' : 'pendiente';
   return { estado, detalles };
+}
+
+/** Lo mismo que «qué te falta», pero contra lo que definió el alumno. */
+export function veredictoCriterio(s: Seguimiento, criterio: CriterioAprobacion): { promocion: ResultadoNivel; regular: ResultadoNivel } {
+  const total = criterio.instancias ?? null;
+  return { promocion: evaluarCondicion(criterio.promocion, s, total), regular: evaluarCondicion(criterio.regular, s, total) };
 }
 
 export function queFalta(s: Seguimiento, regla: ReglaCursada): QueFalta {

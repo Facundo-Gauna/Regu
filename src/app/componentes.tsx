@@ -191,18 +191,27 @@ export function Boton({ children, variante = 'secundario', chico = false, ...res
 
 export function Hoja({ abierta, titulo, onCerrar, children }: { abierta: boolean; titulo: string; onCerrar: () => void; children: ComponentChildren }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const cierreNuestro = useRef(false);
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
     if (abierta && !d.open) d.showModal();
-    if (!abierta && d.open) d.close();
+    if (!abierta && d.open) {
+      cierreNuestro.current = true;
+      d.close();
+    }
   }, [abierta]);
   return (
     <dialog
       ref={ref}
       class="hoja"
       aria-label={titulo}
-      onClose={onCerrar}
+      // El aviso de cierre llega tarde. Si lo pidió la app (por ejemplo, para pasar de una hoja a otra) no hay nada que
+      // avisar; solo interesa cuando cierra la persona (Escape)
+      onClose={() => {
+        if (cierreNuestro.current) cierreNuestro.current = false;
+        else onCerrar();
+      }}
       onClick={e => {
         if (e.target === ref.current) onCerrar();
       }}

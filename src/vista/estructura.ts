@@ -2,7 +2,7 @@
 //
 // Igual que el resto del seguimiento, NO promete resultados: dice qué pasa con lo cargado y qué haría falta.
 
-import type { Cursada, Evaluacion, ParteCursada, Umbrales } from '../motor/tipos.ts';
+import type { CriterioAprobacion, CondicionNotas, Cursada, Evaluacion, ParteCursada, Umbrales } from '../motor/tipos.ts';
 import { formatearNota, type EstadoCondicion, type ResultadoNivel } from './seguimiento.ts';
 
 export const MINIMO_PARTE_GENERAL = 6;
@@ -66,10 +66,10 @@ function fracciones(items: Evaluacion[], nombre: string): { f: number[]; aviso?:
   return Math.abs(suma - 100) > 0.01 ? { f, aviso: `Los porcentajes de «${nombre}» suman ${formatearNota(suma)} %, no 100.` } : { f };
 }
 
-export function calcular(c: Pick<Cursada, 'evaluaciones' | 'estructura'>, umbrales: Umbrales): CalculoEstructura {
+export function calcular(c: Pick<Cursada, 'evaluaciones' | 'estructura'>, umbrales: Umbrales, criterio?: CriterioAprobacion | null): CalculoEstructura {
   const evaluaciones = c.evaluaciones ?? [];
   const partes = c.estructura?.partes ?? [];
-  const minimoParte = c.estructura?.minimoParte ?? MINIMO_PARTE_GENERAL;
+  const minimoParte = c.estructura?.sinMinimo ? 0 : (c.estructura?.minimoParte ?? MINIMO_PARTE_GENERAL);
 
   // Un recuperatorio que apunta a otra evaluación existente no es un ítem aparte: ocupa su lugar
   const reemplazos = new Map<string, Evaluacion>();
@@ -113,19 +113,29 @@ export function calcular(c: Pick<Cursada, 'evaluaciones' | 'estructura'>, umbral
   }
   const total = pesoCargado > 0 ? suma / pesoCargado : null;
 
-  const nivel = (minimo: number): ResultadoNivel => {
+  const nivel = (general: number, condicion?: CondicionNotas): ResultadoNivel => {
+    // Sin criterio propio se pide ese promedio; con criterio, lo que diga: cada nota, el promedio o las dos
+    const minimo = condicion ? condicion.promedioMin : general;
+    const cada = condicion?.cadaInstanciaMin;
     const avisos = calculadas.flatMap(p => (p.aviso ? [p.aviso] : []));
     if (avisos.length) return { estado: 'pendiente', detalles: avisos };
     const detalles: string[] = [];
     let estado: EstadoCondicion = 'pendiente';
     const flojas = calculadas.filter(p => p.estado === 'desaprobada');
     for (const p of flojas) detalles.push(`«${p.parte.nombre}» (${formatearContra(p.nota!, minimoParte)}) no llega a ${formatearNota(minimoParte)}. Mirá si la cátedra te deja recuperarla.`);
+    const bajas = cada === undefined ? [] : calculadas.flatMap(p => p.items).filter(i => i.nota !== null && i.nota < cada - EPS);
+    if (bajas.length) detalles.push(`Se pide ${formatearNota(cada!)} o más en cada nota: ${bajas.map(i => `${i.evaluacion.nombre} (${formatearNota(i.nota!)})`).join(', ')} no llega.`);
+    const mal = flojas.length > 0 || bajas.length > 0;
 
     const pendiente = Math.max(0, 1 - pesoCargado);
-    if (pendiente < EPS) {
+    const completo = pendiente < EPS && calculadas.every(p => p.completa);
+    if (minimo === undefined) {
+      if (!mal) detalles.push(completo ? `Todas las notas llegan a ${formatearNota(cada!)}.` : `Hasta ahora todas llegan a ${formatearNota(cada!)}.`);
+      estado = mal ? 'no-cumple' : completo ? 'cumple' : 'pendiente';
+    } else if (pendiente < EPS) {
       const alcanza = suma >= minimo - EPS;
       detalles.push(`Promedio ${formatearContra(suma, minimo)}; se pide ${formatearNota(minimo)} o más.`);
-      estado = alcanza && !flojas.length && calculadas.every(p => p.estado === 'aprobada') ? 'cumple' : 'no-cumple';
+      estado = alcanza && !mal && calculadas.every(p => p.estado === 'aprobada') ? 'cumple' : 'no-cumple';
     } else {
       const necesario = (minimo - suma) / pendiente;
       if (necesario > 10 + EPS) {
@@ -136,7 +146,7 @@ export function calcular(c: Pick<Cursada, 'evaluaciones' | 'estructura'>, umbral
       } else {
         detalles.push(`Para ${formatearNota(minimo)} de promedio necesitás ${formatearNota(Math.ceil((necesario - EPS) * 100) / 100)} en lo que falta.`);
       }
-      if (flojas.length) estado = 'no-cumple';
+      if (mal) estado = 'no-cumple';
     }
     return { estado, detalles };
   };
@@ -147,7 +157,7 @@ export function calcular(c: Pick<Cursada, 'evaluaciones' | 'estructura'>, umbral
     total,
     minimoParte,
     minimoSinConfirmar: c.estructura?.minimoParte === undefined,
-    promocion: nivel(umbrales.promocion),
-    regular: nivel(umbrales.regular),
+    promocion: nivel(umbrales.promocion, criterio?.promocion),
+    regular: nivel(umbrales.regular, criterio?.regular),
   };
 }

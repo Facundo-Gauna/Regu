@@ -8,7 +8,7 @@
 //  - una versión de esquema desconocida se rechaza.
 
 import type {
-  CalendarioUsuario, Cursada, DatosMateriaUsuario, DatosUsuario, EleccionElectiva, Evaluacion, EstadoRequisitoUsuario, IntentoFinal, Plan, Umbrales, EstructuraCursada,
+  CalendarioUsuario, Cursada, DatosMateriaUsuario, DatosUsuario, EleccionElectiva, Evaluacion, EstadoRequisitoUsuario, IntentoFinal, Plan, Umbrales, EstructuraCursada, CriterioAprobacion, CondicionNotas,
 } from '../motor/tipos.ts';
 import { esFechaValida } from '../motor/fechas.ts';
 
@@ -18,7 +18,7 @@ export const VERSION_ESQUEMA = 2;
 
 /** 2 si hay estructura de cursada: una app anterior la descartaría sin avisar, así que mejor que rechace. */
 function versionDe(datos: DatosUsuario): number {
-  const usaEstructura = datos.materias.some(m => m.cursadas.some(c => c.estructura || c.evaluaciones?.some(e => e.parte !== undefined || e.peso !== undefined)));
+  const usaEstructura = datos.materias.some(m => m.cursadas.some(c => c.estructura || c.criterio || c.evaluaciones?.some(e => e.parte !== undefined || e.peso !== undefined)));
   return usaEstructura ? 2 : 1;
 }
 
@@ -162,6 +162,7 @@ function leerCursada(l: Lector, x: unknown, ruta: string): Cursada | undefined {
   }
   if (ciclo === undefined || !cuatrimestre || !resultado) return undefined;
   const estructura = leerEstructura(o['estructura']);
+  const criterio = leerCriterio(o['criterio']);
   return {
     id: typeof o['id'] === 'string' && o['id'] ? o['id'] : `${ciclo}-${cuatrimestre}`,
     ciclo,
@@ -171,7 +172,27 @@ function leerCursada(l: Lector, x: unknown, ruta: string): Cursada | undefined {
     ...(evaluaciones.length ? { evaluaciones } : {}),
     ...(umbrales ? { umbrales } : {}),
     ...(estructura ? { estructura } : {}),
+    ...(criterio ? { criterio } : {}),
   };
+}
+
+/** Igual de tolerante que la estructura: si no se entiende, se ignora y la app vuelve a preguntar. */
+function leerCriterio(x: unknown): CriterioAprobacion | undefined {
+  if (!esObj(x)) return undefined;
+  const condicion = (c: unknown): CondicionNotas | undefined => {
+    if (!esObj(c)) return undefined;
+    const r: CondicionNotas = {};
+    for (const k of ['cadaInstanciaMin', 'promedioMin'] as const) {
+      const n = c[k];
+      if (typeof n === 'number' && n >= 1 && n <= 10) r[k] = n;
+    }
+    return r.cadaInstanciaMin !== undefined || r.promedioMin !== undefined ? r : undefined;
+  };
+  const promocion = condicion(x['promocion']);
+  const regular = condicion(x['regular']);
+  if (!promocion || !regular) return undefined;
+  const n = x['instancias'];
+  return { promocion, regular, ...(typeof n === 'number' && Number.isInteger(n) && n > 0 && n <= 60 ? { instancias: n } : {}) };
 }
 
 /** Tolerante a propósito: una estructura a medias no puede dejar al usuario sin sus datos. Lo estricto está en el editor. */
@@ -192,6 +213,7 @@ function leerEstructura(x: unknown): EstructuraCursada | undefined {
   return {
     partes,
     ...(nota(min) ? { minimoParte: min } : {}),
+    ...(x['sinMinimo'] === true ? { sinMinimo: true } : {}),
     ...(esObj(ref) && nota(ref['promocion']) && nota(ref['regular']) ? { referencias: { promocion: ref['promocion'], regular: ref['regular'] } } : {}),
   };
 }

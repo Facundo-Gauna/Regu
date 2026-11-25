@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Cursada, Evaluacion, Falta, ResultadoCursada } from '../../motor/index.ts';
 import type { ReglaCursada } from '../../motor/tipos.ts';
 import * as A from '../../datos/acciones.ts';
 import { detalleCorto, etiquetaRegimen, presentarMateria } from '../../vista/estados.ts';
 import { fechaCorta, nombreCuatrimestre } from '../../vista/formato.ts';
-import { formatearNota, queFalta, seguimientoCursada, type EstadoCondicion, type NivelNota, type ResultadoNivel } from '../../vista/seguimiento.ts';
+import { formatearNota, queFalta, seguimientoCursada, veredictoCriterio, type EstadoCondicion, type NivelNota, type ResultadoNivel } from '../../vista/seguimiento.ts';
 import { relaciones } from '../../vista/mapa.ts';
 import { enlaces } from '../../vista/rutas.ts';
 import { caminoMateria, GLOSA, type Camino } from '../../vista/camino.ts';
 import { veredictoCursar, veredictoRendir, type Veredicto } from '../../vista/veredicto.ts';
 import { Aviso, Boton, Hoja, Icono, Insignia, Seccion, SinConfirmar, Vacio } from '../componentes.tsx';
-import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado, FormUmbrales } from '../formularios.tsx';
+import { FormAprobacion, FormCorreccion, FormCursada, FormEvaluacion, FormFinal, FormResultado } from '../formularios.tsx';
 import { referencia, type Modelo } from '../modelo.ts';
 import { BotonAyuda } from '../ayuda.tsx';
+import { FormCriterio } from '../criterio.tsx';
 import { NOMBRE_PERIODO, periodosInvalidos } from '../../vista/periodo.ts';
 import { GLOSARIO } from '../../vista/resultados.ts';
 import { Medidor } from '../medidor.tsx';
@@ -130,7 +131,7 @@ function Condicion({ titulo, r }: { titulo: string; r: ResultadoNivel }) {
 function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursada }) {
   const q = queFalta(seguimientoCursada(cursada, regla), regla);
   // Con estructura propia manda la del alumno: no se calculan dos cosas distintas
-  const calcula = q.calculable && !cursada.estructura;
+  const calcula = q.calculable && !cursada.estructura && !cursada.criterio;
   const aConfirmar = regla.verificar.length > 0;
   return (
     <div class="tarjeta regla">
@@ -149,7 +150,7 @@ function ReglaCatedra({ regla, cursada }: { regla: ReglaCursada; cursada: Cursad
           {q.promocion && <Condicion titulo="Para promocionar" r={q.promocion} />}
           {q.regular && <Condicion titulo="Para regularizar" r={q.regular} />}
         </>
-      ) : cursada.estructura ? null : (
+      ) : cursada.estructura || cursada.criterio || q.calculable ? null : (
         <p class="fila__detalle">Esta regla no se puede calcular con tus notas; va como la escribió la cátedra.</p>
       )}
       {q.dependeDeVos.length > 0 && (
@@ -184,9 +185,16 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
 
   return (
     <Seccion titulo="Cómo viene la cursada" acciones={<Boton chico onClick={abrirNota}><Icono nombre="agregar" tam={16} /> Cargar nota</Boton>}>
+      {!cursada.estructura && !s.criterio && (
+        <div class="tarjeta definir">
+          <strong>Antes de las cuentas: ¿cómo se aprueba esta materia?</strong>
+          <p class="fila__detalle">Decime si cada nota tiene que llegar a un mínimo o si alcanza con el promedio.</p>
+          <Boton variante="primario" onClick={abrirUmbrales}>Definir cómo se aprueba</Boton>
+        </div>
+      )}
       {cursada.estructura ? (
         <VistaEstructura
-          calculo={calcular(cursada, s.umbrales)}
+          calculo={calcular(cursada, s.umbrales, cursada.criterio)}
           umbrales={s.umbrales}
           onNota={ponerNota}
           onEditar={editarNota}
@@ -239,6 +247,12 @@ function SeguimientoCursada({ cursada, regla, materiaId, abrirNota, editarNota, 
             {s.pendientes.length > 0 && <span class="marcador__detalle">Sin nota todavía: {s.pendientes.map(e => e.nombre).join(', ')}</span>}
           </div>
         </>
+      )}
+      {!cursada.estructura && cursada.criterio && (
+        <div class="tarjeta regla veredicto-propio">
+          <Condicion titulo="Para promocionar" r={veredictoCriterio(s, cursada.criterio).promocion} />
+          <Condicion titulo="Para regularizar" r={veredictoCriterio(s, cursada.criterio).regular} />
+        </div>
       )}
       <Boton class="boton--organizar" onClick={abrirEstructura}>
         <Icono nombre={cursada.estructura ? 'editar' : 'plan'} tam={16} /> {cursada.estructura ? 'Editar estructura' : 'Organizar mis notas por partes'}
@@ -294,7 +308,15 @@ const sinFaltan = (razones: string[]) => razones.filter(t => !t.startsWith('Te f
 export function Materia({ m, id }: { m: Modelo; id: string }) {
   const [panel, setPanel] = useState<Panel>(null);
   const [evaluacionEditada, setEvaluacionEditada] = useState<Evaluacion | undefined>(undefined);
+  const recienEmpezada = useRef(false);
   const item = m.items.find(i => i.id === id);
+  const vigente = item?.resumen.estado.cursadaVigente;
+  // Al empezar una materia se pregunta cómo se aprueba (se puede cerrar y hacerlo después)
+  useEffect(() => {
+    if (!recienEmpezada.current || item?.resumen.estado.estado !== 'cursando' || !vigente) return;
+    recienEmpezada.current = false;
+    if (!seguimientoCursada(vigente, reglaDe(id, vigente.ciclo)).criterio) setPanel('umbrales');
+  }, [vigente?.id, item?.resumen.estado.estado]);
   if (!item) {
     return (
       <div class="pagina">
@@ -313,7 +335,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
   const titulos: Record<Exclude<Panel, null>, string> = {
     cursada: 'Cargar cursada', empezar: 'Empezar a cursarla', final: 'Cargar final', aprobada: 'Marcar como aprobada', correccion: 'Corregir el estado',
     promocion: 'Promocioné', regularidad: 'Regularicé', libre: 'Quedé libre',
-    nota: evaluacionEditada ? 'Editar nota' : 'Cargar nota', umbrales: 'Ajustar las notas que se piden',
+    nota: evaluacionEditada ? 'Editar nota' : 'Cargar nota', umbrales: 'Cómo se aprueba',
     estructura: 'Estructura de la cursada', poner: evaluacionEditada?.nombre ?? 'Cargar nota',
   };
   const cursadaVigente = r.estado.cursadaVigente;
@@ -541,7 +563,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
 
       <Hoja abierta={panel !== null} titulo={panel ? titulos[panel] : ''} onCerrar={cerrar}>
         {panel === 'cursada' && <FormCursada m={m} materiaId={id} onListo={cerrar} />}
-        {panel === 'empezar' && <FormCursada m={m} materiaId={id} simple onListo={cerrar} />}
+        {panel === 'empezar' && <FormCursada m={m} materiaId={id} simple onListo={() => { recienEmpezada.current = true; cerrar(); }} />}
         {panel === 'nota' && cursadaVigente && (
           <FormEvaluacion m={m} materiaId={id} cursadaId={cursadaVigente.id} existentes={cursadaVigente.evaluaciones ?? []} inicial={evaluacionEditada} {...(cursadaVigente.estructura ? { partes: cursadaVigente.estructura.partes } : {})} onListo={cerrar} />
         )}
@@ -550,7 +572,7 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
         )}
         {panel === 'estructura' && cursadaVigente && <EditorEstructura materiaId={id} cursada={cursadaVigente} onListo={cerrar} />}
         {panel === 'umbrales' && cursadaVigente && (
-          <FormUmbrales materiaId={id} cursadaId={cursadaVigente.id} actual={seguimientoCursada(cursadaVigente, reglaDe(id, cursadaVigente.ciclo)).umbrales} propios={cursadaVigente.umbrales !== undefined} {...((cursadaVigente.estructura?.partes.length ?? 0) > 1 ? { minimoParte: cursadaVigente.estructura!.minimoParte ?? null } : {})} onListo={cerrar} />
+          <FormCriterio materiaId={id} cursada={cursadaVigente} s={seguimientoCursada(cursadaVigente, reglaDe(id, cursadaVigente.ciclo))} onListo={cerrar} />
         )}
         {panel === 'promocion' && <FormResultado m={m} materiaId={id} resultado="aprobada-directa" onListo={cerrar} />}
         {panel === 'regularidad' && <FormResultado m={m} materiaId={id} resultado="regular" onListo={cerrar} />}
