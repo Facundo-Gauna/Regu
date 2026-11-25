@@ -8,6 +8,7 @@ import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Bienvenida } from './pantallas/Bienvenida.tsx';
 import { Calendario } from './pantallas/Calendario.tsx';
 import { Cargar } from './pantallas/Cargar.tsx';
+import { Contanos } from './pantallas/Contanos.tsx';
 import { Finales } from './pantallas/Finales.tsx';
 import { Inicio } from './pantallas/Inicio.tsx';
 import { Materia } from './pantallas/Materia.tsx';
@@ -142,6 +143,7 @@ export function App() {
         {ruta.nombre === 'progreso' && <Progreso m={m} />}
         {ruta.nombre === 'ajustes' && <Ajustes m={m} />}
         {ruta.nombre === 'mas' && <Mas />}
+        {ruta.nombre === 'contanos' && <Contanos key={`${ruta.titulo}-${ruta.materiaId}`} m={m} ruta={ruta} />}
         {ruta.nombre === 'cargar' && <Cargar key={`${ruta.materiaId}-${ruta.parte}`} m={m} materiaId={ruta.materiaId} parte={ruta.parte} />}
       </main>
     </div>

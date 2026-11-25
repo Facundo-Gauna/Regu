@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import paquete from './package.json' with { type: 'json' };
 
 // base './' y rutas con hash: la app se puede servir desde cualquier subcarpeta (hosting estático).
 export default defineConfig({
   base: './',
+  define: { __VERSION__: JSON.stringify(paquete.version) },
   plugins: [
     preact(),
     VitePWA({

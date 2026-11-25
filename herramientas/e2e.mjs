@@ -39,6 +39,10 @@ const MIME = {
 const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
 let sinRed = false;
+// Simulación de la función de feedback: guarda lo que llega; nada sale de esta máquina
+let feedback = [];
+let feedbackFalla = false;
+let feedbackDemora = 0;
 let pedidosSinRed = [];
 let resultados = null;
 let parcial = null; // avance, por si el navegador se corta antes de terminar
@@ -52,6 +56,21 @@ const servidor = http.createServer((req, res) => {
   if (ruta === '/__sinred') {
     sinRed = url.searchParams.get('on') === '1';
     pedidosSinRed = [];
+    return void res.end('ok');
+  }
+  if (ruta === '/api/feedback' && req.method === 'POST') {
+    let cuerpo = '';
+    req.on('data', d => (cuerpo += d));
+    req.on('end', () => setTimeout(() => {
+      if (!feedbackFalla) feedback.push(cuerpo);
+      res.writeHead(feedbackFalla ? 502 : 201, { 'content-type': 'application/json' }).end(feedbackFalla ? '{"error":"simulado"}' : '{"ok":true}');
+    }, feedbackDemora));
+    return;
+  }
+  if (ruta === '/__feedback') return void res.end(JSON.stringify(feedback));
+  if (ruta === '/__feedbackmodo') {
+    feedbackFalla = url.searchParams.get('falla') === '1';
+    feedbackDemora = Number(url.searchParams.get('demora') ?? 0);
     return void res.end('ok');
   }
   if (ruta === '/__pedidos') return void res.end(JSON.stringify(pedidosSinRed));

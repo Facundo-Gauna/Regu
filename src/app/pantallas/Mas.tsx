@@ -4,6 +4,7 @@ import { Icono, type NombreIconoUi } from '../componentes.tsx';
 const OPCIONES: { href: string; icono: NombreIconoUi; titulo: string; detalle: string }[] = [
   { href: enlaces.calendario(), icono: 'calendario', titulo: 'Calendario', detalle: 'Cursado, turnos de final e inscripciones' },
   { href: enlaces.progreso(), icono: 'progreso', titulo: 'Progreso', detalle: 'Promedios, títulos, electivas y requisitos' },
+  { href: enlaces.contanos(), icono: 'editar', titulo: 'Contanos', detalle: 'Un problema, una regla mal o una idea' },
   { href: enlaces.ajustes(), icono: 'ajustes', titulo: 'Ajustes', detalle: 'Backup, tema, fecha y datos de referencia' },
 ];
 

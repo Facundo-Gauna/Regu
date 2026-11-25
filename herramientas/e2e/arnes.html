@@ -75,7 +75,7 @@
   async function escribir(el, valor, descripcion = 'el campo') {
     afirmar(el, `No se encontró ${descripcion}`);
     const W = ventana();
-    const proto = el instanceof W.HTMLSelectElement ? W.HTMLSelectElement.prototype : W.HTMLInputElement.prototype;
+    const proto = el instanceof W.HTMLSelectElement ? W.HTMLSelectElement.prototype : el instanceof W.HTMLTextAreaElement ? W.HTMLTextAreaElement.prototype : W.HTMLInputElement.prototype;
     Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, valor);
     el.dispatchEvent(new W.Event('input', { bubbles: true }));
     el.dispatchEvent(new W.Event('change', { bubbles: true }));
@@ -354,6 +354,77 @@
     await clic(dudas.querySelector('button[aria-label=Cerrar]'));
     await esperarHojaCerrada();
     afirmar(doc().activeElement === aviso, `al cerrar la hoja el foco no vuelve al botón (quedó en ${doc().activeElement?.tagName})`);
+  });
+
+  const enviados = async () => (await (await fetch('/__feedback')).json()).map(JSON.parse);
+  const cuadro = () => esperar(() => doc().querySelector('.contanos textarea'), 'el cuadro de Contanos');
+  const botonEnviar = () => doc().querySelector('.contanos button[type=submit]');
+  const opcion = t => hallar('.contanos .segmentado__opcion', t)?.querySelector('input');
+
+  await prueba('Contanos desde Más: se ve qué se manda, sin notas, y al enviar llega y se limpia el borrador', async () => {
+    irA('#/mas');
+    await clic(await esperar(() => hallar('a.fila--menu', 'Contanos'), 'Contanos en Más'));
+    await cuadro();
+    afirmar(opcion('Otra cosa').checked, 'el tipo por defecto debería ser «Otra cosa»');
+    afirmar(hallar('.contanos', 'dejá tu mail o WhatsApp en el mensaje'), 'falta el aviso de contacto');
+    afirmar(hallar('.contanos', 'le llega a quien hace Regu'), 'falta el aviso de privacidad');
+    await clic(botonEnviar(), 'Enviar vacío');
+    await esperar(() => hallar('.contanos', 'al menos 10 caracteres'), 'el error de mensaje corto');
+    afirmar((await enviados()).length === 0, 'no debería haber enviado nada');
+    await clic(opcion('Una idea'));
+    await escribir(await cuadro(), 'Estaría bueno ver los finales en el calendario', 'el mensaje');
+    await clic(doc().querySelector('.contanos summary'), 'ver qué se manda');
+    afirmar(texto(doc().querySelector('.contanos details')).includes('0.1.0'), 'la vista previa no muestra la versión');
+    await fetch('/__feedbackmodo?demora=800');
+    await clic(botonEnviar(), 'Enviar');
+    await esperar(() => botonEnviar()?.disabled, 'el botón deshabilitado mientras envía');
+    botonEnviar().click(); // doble toque
+    await esperar(() => hallar('.contanos', '¡Gracias! Lo vamos a leer.'), 'el agradecimiento');
+    await fetch('/__feedbackmodo');
+    const lista = await enviados();
+    afirmar(lista.length === 1, `llegaron ${lista.length} envíos`);
+    const claves = Object.keys(lista[0]).sort().join();
+    afirmar(claves === 'mensaje,sitio_web,tecnico,tipo', `claves: ${claves}`);
+    afirmar(lista[0].tipo === 'idea' && Object.keys(lista[0].tecnico).sort().join() === 'navegador,pantalla,tema,version', JSON.stringify(lista[0]));
+    afirmar(!/Análisis|Álgebra|Inglés/.test(JSON.stringify(lista[0])), 'se filtraron materias');
+    irA('#/');
+    await pausa(PAUSA_UI);
+    irA('#/contanos');
+    afirmar((await cuadro()).value === '', 'el borrador no se limpió');
+    // sin el tilde no van datos técnicos
+    await clic(doc().querySelector('.contanos .casilla input'), 'el tilde de datos técnicos');
+    await escribir(await cuadro(), 'Segundo mensaje sin datos técnicos', 'el mensaje');
+    await clic(botonEnviar(), 'Enviar');
+    await esperar(async () => (await enviados()).length === 2, 'el segundo envío');
+    afirmar(!('tecnico' in (await enviados())[1]), 'viajaron datos técnicos sin el tilde');
+  });
+
+  await prueba('Contanos: el borrador sobrevive a recargar; si falla aparecen Copiar y Compartir y el borrador queda', async () => {
+    irA('#/mas');
+    await pausa(PAUSA_UI);
+    irA('#/contanos');
+    await escribir(await cuadro(), 'Este mensaje no se tiene que perder', 'el mensaje');
+    await recargar();
+    afirmar((await cuadro()).value === 'Este mensaje no se tiene que perder', 'el borrador no sobrevivió a recargar');
+    await fetch('/__feedbackmodo?falla=1');
+    try {
+      const W = ventana();
+      Object.defineProperty(W.navigator, 'share', { configurable: true, value: async () => {} });
+      Object.defineProperty(W.navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('sin permiso')) } });
+      await clic(botonEnviar(), 'Enviar');
+      await esperar(() => hallar('.contanos', 'No se pudo enviar. Queda guardado'), 'el error');
+      afirmar(hallar('.contanos button', 'Compartir'), 'falta Compartir');
+      await clic(hallar('.contanos button', 'Copiar'), 'Copiar');
+      const copia = await esperar(() => doc().querySelector('.contanos textarea[readonly]'), 'el texto para copiar a mano');
+      afirmar(copia.value.includes('Este mensaje no se tiene que perder'), 'el texto para copiar no tiene el mensaje');
+      await recargar();
+      afirmar((await cuadro()).value === 'Este mensaje no se tiene que perder', 'el borrador se perdió tras el error');
+      await escribir(await cuadro(), '', 'vaciar el borrador');
+    } finally {
+      await fetch('/__feedbackmodo');
+      irA('#/materia/analisis-matematico-1'); // las pruebas siguientes parten de esta materia
+      await esperar(() => seccion('Finales'), 'volver a la materia');
+    }
   });
 
   await prueba('Validación: un final aprobado con nota 3 se rechaza y la hoja sigue abierta', async () => {
