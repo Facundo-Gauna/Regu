@@ -68,7 +68,11 @@ export function Contanos({ m, ruta }: { m: Modelo; ruta: Extract<Ruta, { nombre:
 
   const copiar = async () => {
     try {
-      await navigator.clipboard.writeText(textoParaCompartir(armar()));
+      // El navegador puede no contestar nunca (permiso sin resolver): sin límite, el botón no haría nada
+      await Promise.race([
+        navigator.clipboard.writeText(textoParaCompartir(armar())),
+        new Promise((_, rechazar) => setTimeout(() => rechazar(new Error('sin respuesta')), 1500)),
+      ]);
       setCopia('copiado');
     } catch {
       setCopia('a-mano');

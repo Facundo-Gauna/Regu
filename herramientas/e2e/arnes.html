@@ -422,7 +422,7 @@
     try {
       const W = ventana();
       Object.defineProperty(W.navigator, 'share', { configurable: true, value: async () => {} });
-      Object.defineProperty(W.navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('sin permiso')) } });
+      Object.defineProperty(W.navigator, 'clipboard', { configurable: true, value: { writeText: () => new W.Promise(() => {}) } }); // como Brave: ni resuelve ni falla
       await clic(botonEnviar(), 'Enviar');
       await esperar(() => hallar('.contanos', 'No se pudo enviar. Queda guardado'), 'el error');
       afirmar(hallar('.contanos button', 'Compartir'), 'falta Compartir');
