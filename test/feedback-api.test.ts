@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LIMITES, ETIQUETAS, armarIssue, celda, cerca, crearLimitador, manejar, validarEnvio, type Entorno } from '../api/feedback.ts';
+import { LIMITES, ETIQUETAS, POST, armarIssue, celda, cerca, crearLimitador, manejar, validarEnvio, type Entorno } from '../api/feedback.ts';
 import { MENSAJE_MAX, MENSAJE_MIN, TIPOS, validarMensaje } from '../src/vista/feedback.ts';
 
 const ORIGEN = 'https://regu.example';
@@ -107,4 +107,9 @@ test('cliente y servidor usan los mismos límites y tipos', () => {
   assert.equal(validarMensaje(largo), null);
   assert.ok(validarEnvio({ ...VALIDO, mensaje: largo }));
   assert.ok(Buffer.byteLength(JSON.stringify({ ...VALIDO, mensaje: '€'.repeat(2000) })) < LIMITES.cuerpoMax);
+});
+
+test('POST, que es lo que llama Vercel, está cableado: un pedido sin origen se rechaza sin salir a la red', async () => {
+  const r = await POST(new Request('https://regu.example/api/feedback', { method: 'POST', body: JSON.stringify(VALIDO) }));
+  assert.equal(r.status, 403);
 });

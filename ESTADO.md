@@ -19,7 +19,7 @@ Regu es una PWA personal, local y sin cuentas que le dice a un estudiante de Ing
 | Reglas de cátedra de 1.er año | Las 8 materias transcriptas de sus planificaciones 2026, con fuente, cita y dudas. Cinco se calculan («qué te falta», con asistencia y laboratorios aparte) y tres se muestran como texto | Tests y e2e |
 | Backup | Exportar e importar validado, que conserva las notas | Tests y e2e |
 
-Verificación al 24/11/2026: 168 tests, 41 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
+Verificación al 24/11/2026: 169 tests, 41 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
 
 ## Qué falta, en orden de prioridad
 
@@ -34,7 +34,7 @@ Verificación al 24/11/2026: 168 tests, 41 pruebas e2e, contrastes de la paleta 
 
 ## Puesta en marcha del feedback («Contanos»)
 
-El código está en la rama `feedback` ([diseño](docs/superpowers/specs/2026-11-24-feedback-design.md)). La función se verificó con pruebas y contra la documentación de Vercel, pero **todavía no corrió en Vercel ni creó un issue real**.
+El código está en la rama `feedback` ([diseño](docs/superpowers/specs/2026-11-24-feedback-design.md)), que cuelga de `notas-estructura`, que cuelga de `diseno-calido`: **mergear `feedback` en `main` publica las tres juntas**. La función está probada en Node, pero **todavía no corrió en Vercel ni creó un issue real**. La firma `export function POST` está tomada de la documentación de Vercel; que su `.ts` compile con el `tsconfig.json` del repo **no está confirmado**: en el primer despliegue de prueba, mirar primero el log de compilación de la función.
 
 1. En GitHub, crear el repo **privado** `Regu-feedback` (alcanza con un README) y las etiquetas `error`, `regla`, `idea` y `otro`.
 2. Crear un *fine-grained token* (Settings → Developer settings → Personal access tokens): acceso **solo** a `Regu-feedback`, permiso **Issues: Read and write**, vencimiento de un año. Anotar acá la fecha de vencimiento: ______.

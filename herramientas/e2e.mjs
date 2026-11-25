@@ -43,6 +43,7 @@ let sinRed = false;
 let feedback = [];
 let feedbackFalla = false;
 let feedbackDemora = 0;
+let feedbackEstado = 502;
 let pedidosSinRed = [];
 let resultados = null;
 let parcial = null; // avance, por si el navegador se corta antes de terminar
@@ -63,7 +64,7 @@ const servidor = http.createServer((req, res) => {
     req.on('data', d => (cuerpo += d));
     req.on('end', () => setTimeout(() => {
       if (!feedbackFalla) feedback.push(cuerpo);
-      res.writeHead(feedbackFalla ? 502 : 201, { 'content-type': 'application/json' }).end(feedbackFalla ? '{"error":"simulado"}' : '{"ok":true}');
+      res.writeHead(feedbackFalla ? feedbackEstado : 201, { 'content-type': 'application/json' }).end(feedbackFalla ? '{"error":"simulado"}' : '{"ok":true}');
     }, feedbackDemora));
     return;
   }
@@ -71,6 +72,7 @@ const servidor = http.createServer((req, res) => {
   if (ruta === '/__feedbackmodo') {
     feedbackFalla = url.searchParams.get('falla') === '1';
     feedbackDemora = Number(url.searchParams.get('demora') ?? 0);
+    feedbackEstado = Number(url.searchParams.get('estado') ?? 502);
     return void res.end('ok');
   }
   if (ruta === '/__pedidos') return void res.end(JSON.stringify(pedidosSinRed));

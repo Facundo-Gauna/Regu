@@ -426,6 +426,10 @@
       await clic(botonEnviar(), 'Enviar');
       await esperar(() => hallar('.contanos', 'No se pudo enviar. Queda guardado'), 'el error');
       afirmar(hallar('.contanos button', 'Compartir'), 'falta Compartir');
+      await fetch('/__feedbackmodo?falla=1&estado=429');
+      await clic(botonEnviar(), 'Enviar otra vez');
+      await esperar(() => hallar('.contanos', 'Mandaste varios seguidos. Probá en un rato.'), 'el aviso de tope');
+      afirmar(hallar('.contanos button', 'Copiar'), 'con el tope también tiene que estar Copiar');
       await clic(hallar('.contanos button', 'Copiar'), 'Copiar');
       const copia = await esperar(() => doc().querySelector('.contanos textarea[readonly]'), 'el texto para copiar a mano');
       afirmar(copia.value.includes('Este mensaje no se tiene que perder'), 'el texto para copiar no tiene el mensaje');

@@ -273,6 +273,8 @@ Los planes de las 13 carreras tienen variantes que el formato debe cubrir:
 
 **Recomendación: PWA local (sin backend).**
 
+> Nota del 24/11/2026: los datos siguen siendo locales, pero «Contanos» suma una función de Vercel para recibir comentarios ([diseño](superpowers/specs/2026-11-24-feedback-design.md)).
+
 - Una sola app web instalable en el celular (y que corre igual en la PC), 100 % offline.
 - **Un solo código** cubre celular, escritorio y web local.
 - Sin servidor, sin cuentas: coincide con "local y simple".

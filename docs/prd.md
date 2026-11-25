@@ -108,7 +108,7 @@ Prioridad: **P0** = MVP, **P1** = v0.2–v0.3, **P2** = posterior.
 
 | ID | Requisito | Prioridad |
 |---|---|---|
-| DAT-1 | Todo se guarda localmente (IndexedDB). Sin cuentas ni servidor | P0 |
+| DAT-1 | Todo se guarda localmente (IndexedDB). Sin cuentas; lo único con servidor es «Contanos», que manda solo lo que la persona escribe | P0 |
 | DAT-2 | Exportar e importar un backup JSON con versión de esquema | P0 |
 | DAT-3 | Pedir almacenamiento persistente (`navigator.storage.persist()`) | P0 |
 | DAT-4 | Recordatorio de backup cada N días (por defecto 14) | P1 |
