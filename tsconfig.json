@@ -15,5 +15,5 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src/motor", "src/datos", "src/vista", "test", "vite.config.ts"]
+  "include": ["api", "src/motor", "src/datos", "src/vista", "test", "vite.config.ts"]
 }
