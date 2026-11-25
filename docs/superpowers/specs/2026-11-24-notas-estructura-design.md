@@ -57,3 +57,11 @@ Textos, disposición fina y nombres internos, siguiendo `PRODUCT.md` y `DESIGN.m
 - Se compara con tolerancia de coma flotante y nunca se muestra redondeado un valor que no llega.
 - «Cargar nota» lista solo las materias en estado «cursando».
 - No se escribió un plan de implementación aparte: se pidió pasar directo a construir.
+
+## Agregado: cómo se aprueba y período (24/11/2026)
+- La cursada suma `criterio?: { promocion, regular, instancias? }`; cada condición admite mínimo en cada nota, promedio mínimo o ambos. Los colores salen de ahí.
+- Precedencia: lo definido por el alumno, la estructura (por promedio), la plantilla, la regla transcripta. Sin ninguna, no se calcula y se pregunta.
+- Con partes, el mínimo por parte se puede apagar (`estructura.sinMinimo`).
+- No cubre: materias sin promoción, reglas por puntos ni «N de M» instancias.
+- El período queda fijo cuando lo dicen el plan o los horarios; si se infirió, se elige. Las cursadas ya mal cargadas se avisan en la materia, no se cambian solas.
+- La práctica promocionada se ofrece solo en Física II, Seguridad Informática y DLT (planificaciones relevadas).

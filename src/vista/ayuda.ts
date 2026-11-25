@@ -30,7 +30,7 @@ export const AYUDAS: Record<Ruta['nombre'], Ayuda | null> = {
       { titulo: 'Primero, marcá que la cursás', texto: 'Con «Empezar a cursarla» aparece la sección «Cómo viene la cursada».' },
       { titulo: 'Cargar una nota', texto: 'Tocá «Cargar nota». Si todavía no te la dieron, dejala vacía.' },
       { titulo: 'Si tu cátedra pondera', texto: 'Con «Organizar mis notas por partes» armás partes (por ejemplo, RA) y porcentajes. Después tocás la casilla y elegís el número.' },
-      { titulo: 'Las notas que se piden', texto: 'Revisá cuánto se necesita para promocionar y regularizar, y cambialo con «Ajustar».' },
+      { titulo: 'Cómo se aprueba', texto: 'Decí si cada nota tiene que llegar a un mínimo o si alcanza con el promedio. Se cambia con «Ajustar».' },
       { titulo: 'Cuando sepas el resultado', texto: 'En «Tu camino» tocá «Regularicé», «Promocioné» (aprobás sin final) o «Quedé libre».' },
     ],
   },

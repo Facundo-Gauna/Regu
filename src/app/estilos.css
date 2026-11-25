@@ -902,7 +902,7 @@ a.fila:hover, .acceso:hover, .plantilla:hover { border-color: var(--borde-campo)
 
 /* ---------- Resultados y período ---------- */
 
-.periodo-fijo { display: flex; align-items: center; min-height: var(--toque); font-weight: 800; }
+.periodo-fijo { display: block; line-height: var(--toque); font-weight: 800; }
 .periodo-fijo::first-letter { text-transform: uppercase; }
 .segmentado--lista .segmentado__opciones { flex-direction: column; }
 .segmentado--lista .segmentado__opcion { padding: 10px 14px; border-radius: var(--radio-chico); }

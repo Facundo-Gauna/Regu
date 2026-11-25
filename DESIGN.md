@@ -32,8 +32,10 @@ Montserrat incluida en la app (funciona sin conexión). Títulos de sección en 
 ## Notas
 
 - El número que importa va en un «marcador» negro (igual en los dos temas) con una regla de 0 a 10 y marcas en las notas pedidas. La regla es un apoyo: los valores siempre van en texto.
-- «Notas que se piden» es un bloque propio, con cada valor grande y un botón «Ajustar»; el origen se dice y, si no está confirmado, se explica a un toque.
+- «Cómo se aprueba» es un bloque propio, con cada valor grande, qué se pide (cada nota, promedio o ambas) y un botón «Ajustar»; el origen se dice y, si no está confirmado, se explica a un toque.
 - Las notas se cambian con botones grandes (teclado de 1 a 10, o contador − / +).
+
+Si no se sabe cómo se aprueba una materia, no se calcula: se pregunta, en una tarjeta y al empezar a cursarla.
 
 ## Ayuda
 
