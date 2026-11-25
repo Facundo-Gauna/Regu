@@ -126,7 +126,7 @@ Prioridad: **P0** = MVP, **P1** = v0.2–v0.3, **P2** = posterior.
 | NF-5 | **Tests:** los escenarios de `idea.md` §14 son tests automáticos del motor |
 | NF-6 | **Mobile first:** diseño para 360 px de ancho; objetivos táctiles ≥ 44 px |
 | NF-7 | **Accesibilidad:** contraste AA; el estado no se comunica solo con color (también con ícono o texto) |
-| NF-8 | **Privacidad:** ningún dato sale del dispositivo |
+| NF-8 | **Privacidad:** ningún dato sale del dispositivo salvo lo que la persona escribe y envía desde «Contanos» (nunca notas ni materias cargadas) |
 | NF-9 | **Idioma:** español rioplatense; terminología de la UTN (aprobación directa, regular, aplazo, mesa, correlativa) |
 
 ## 6. Historias de usuario del MVP
@@ -200,7 +200,7 @@ MVP completo en lo funcional. Leyenda: ✅ hecho · ◐ parcial · ⬜ pendiente
 | DAT-1 a DAT-6 | ✅ Backup exportable/importable validado, almacenamiento persistente, recordatorio de backup, migraciones preparadas (solo existe la versión 1) |
 | NF-1, NF-2 | ✅ PWA que abre sin conexión (probado en Firefox). **No se probó en dispositivos Android ni iOS reales** |
 | NF-3, NF-5 | ✅ Evaluar el plan completo < 50 ms está en un test; los escenarios de `idea.md` §14 son tests |
-| NF-6, NF-7, NF-8 | ✅ Objetivos táctiles de 44 px, estado con ícono y texto, contrastes AA verificados por cálculo (claro y oscuro), nada sale del dispositivo |
+| NF-6, NF-7, NF-8 | ✅ Objetivos táctiles de 44 px, estado con ícono y texto, contrastes AA verificados por cálculo (claro y oscuro), solo sale lo que se manda desde «Contanos» |
 | Historias H1 a H8 | ✅ H8 probada de punta a punta en el navegador: exportar, borrar todo, importar |
 
 **Verificación:** 102 tests en Node y 27 pruebas e2e en Firefox (`npm run e2e`), repetidas con la app servida bajo una subcarpeta. Cubren: primer uso, marcar y recargar, el mapa del plan (un camino por cada materia relacionada), la barra lateral de escritorio pegada al scroll, el camino cursada → final → aprobada (promoción, regular y libre se ven en el momento), uso sin conexión sin tocar el servidor, cursadas y finales con validación, cierre de cursada desde Inicio, calendario 2027, fecha simulada visible en todas las pantallas, tema, exportar el backup (se lee el archivo generado) e importarlo de vuelta tras borrar todo, importaciones inválidas, modo ejemplo y borrado.

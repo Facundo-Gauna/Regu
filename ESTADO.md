@@ -19,7 +19,7 @@ Regu es una PWA personal, local y sin cuentas que le dice a un estudiante de Ing
 | Reglas de cátedra de 1.er año | Las 8 materias transcriptas de sus planificaciones 2026, con fuente, cita y dudas. Cinco se calculan («qué te falta», con asistencia y laboratorios aparte) y tres se muestran como texto | Tests y e2e |
 | Backup | Exportar e importar validado, que conserva las notas | Tests y e2e |
 
-Verificación al 24/11/2026: 153 tests, 38 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
+Verificación al 24/11/2026: 168 tests, 41 pruebas e2e, contrastes de la paleta recalculados en tema claro y oscuro. Se corre todo con `npm run check` y `npm run e2e`.
 
 ## Qué falta, en orden de prioridad
 
@@ -32,13 +32,28 @@ Verificación al 24/11/2026: 153 tests, 38 pruebas e2e, contrastes de la paleta 
 7. **Dependencias:** `npm audit` marca 1 aviso moderado en las herramientas de compilación (`glob` dentro de `workbox-build`, que trae `vite-plugin-pwa`) y **0 en producción**. El arreglo que propone npm (`--force`) baja `workbox-build` a una versión anterior con cambios incompatibles: no se aplicó. Revisar cuando `workbox-build` publique una versión corregida.
 8. **Más adelante:** simulación "qué pasa si", planificador de carrera, otras carreras, horarios con superposición, exportar a `.ics`.
 
+## Puesta en marcha del feedback («Contanos»)
+
+El código está en la rama `feedback` ([diseño](docs/superpowers/specs/2026-11-24-feedback-design.md)). La función se verificó con pruebas y contra la documentación de Vercel, pero **todavía no corrió en Vercel ni creó un issue real**.
+
+1. En GitHub, crear el repo **privado** `Regu-feedback` (alcanza con un README) y las etiquetas `error`, `regla`, `idea` y `otro`.
+2. Crear un *fine-grained token* (Settings → Developer settings → Personal access tokens): acceso **solo** a `Regu-feedback`, permiso **Issues: Read and write**, vencimiento de un año. Anotar acá la fecha de vencimiento: ______.
+3. En Vercel → proyecto Regu → Settings → Environment Variables (en **Production** y **Preview**):
+   - `GITHUB_TOKEN`: el token (marcarlo como *Sensitive*; con eso Vercel puede pedir cargarlo por entorno).
+   - `FEEDBACK_REPO`: `Facundo-Gauna/Regu-feedback`
+   - `ORIGENES_PERMITIDOS`: el origen de producción (`https://…`, sin barra final). Para probar una preview, sumar su origen separado por coma.
+   - Después de crear o cambiar variables hay que volver a desplegar.
+4. En `Regu-feedback`, activar las notificaciones (Watch → All activity).
+
+**Cómo probarlo:** mandar un mensaje desde Más → Contanos en el sitio desplegado y ver que aparece el issue. Si sale «No se pudo enviar», mirar los logs de la función en Vercel: 403 es el origen, 500 son las variables, 502 es el token o el repo.
+
 ## Decisiones que no hay que revertir sin avisar
 
 - **El ámbar `#F5A800` es solo para la marca y la acción principal.** Los estados, avisos y selecciones usan otros colores. "Cursando" es violeta.
 - **Nunca se promete un resultado.** «Qué te falta» dice si por las **notas** se cumple, no se cumple o todavía no se sabe, siempre «según la planificación 2026»; la asistencia, los laboratorios y demás se listan como «depende de vos» porque la app no los conoce. Una regla con dudas se muestra «A confirmar», y una que no se puede expresar sin interpretar se muestra como texto y no se calcula.
 - **Las electivas con datos sin confirmar no figuran como habilitadas.**
 - **El estado de una materia se calcula, no se guarda.** Lo único que se guarda son los hechos (cursadas, finales, notas, correcciones).
-- **Todo es local:** sin cuentas, sin servidor, nada sale del dispositivo.
+- **Los datos son locales:** sin cuentas. Nada sale del dispositivo salvo lo que vos mandás desde «Contanos».
 - **Las cursadas se fechan "hoy" con tope en el fin del cuatrimestre**, para que el cambio se vea en el momento.
 - **Regu no es una app oficial de la UTN.** No usa su logo ni su asterisco, y la fuente de verdad es siempre autogestión.
 - **No sondear los servidores de la facultad** (autogestión, campus) sin que el usuario lo pida expresamente.

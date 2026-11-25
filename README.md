@@ -9,7 +9,7 @@ Regu es una aplicación web personal para estudiantes de la **UTN Facultad Regio
 - ¿Cómo vengo en cada materia?
 - ¿Qué fechas tengo encima: turnos de final, inscripciones, cierres?
 
-Es **local y sin cuentas**: todos los datos quedan en tu dispositivo.
+Es **local y sin cuentas**: tus datos quedan en tu dispositivo.
 
 > **Proyecto independiente. No es una aplicación oficial de la UTN** ni de la Facultad Regional Villa María. Los cálculos siguen la Ordenanza 1549 y las planificaciones de cátedra, pero la fuente de verdad siempre es autogestión.
 
@@ -42,7 +42,7 @@ El MVP está **completo y probado**. Las reglas de aprobación están cargadas s
 
 ## Cómo está pensado
 
-- **Local primero.** Sin cuentas, sin servidor: los datos viven en IndexedDB y se respaldan en un archivo.
+- **Local primero.** Sin cuentas: los datos viven en IndexedDB y se respaldan en un archivo. Lo único con servidor es «Contanos» (`api/feedback.ts`), para mandar comentarios.
 - **Un motor puro.** El estado de una materia **se calcula** a partir de los hechos cargados (cursadas, finales, notas, correcciones) y de la fecha; nunca se guarda. Es una función de `(plan, calendario, datos, fecha)`, así que se prueba con cualquier fecha.
 - **Datos de referencia separados de los tuyos.** El plan y el calendario son archivos versionados que se validan al arrancar; tus datos los referencian por id.
 - **Honestidad con lo que no se sabe.** Lo que la facultad no publica (horas de electivas, correlativas de las electivas del plan 2023) queda marcado "por confirmar" y no se presenta como un hecho.
@@ -84,7 +84,7 @@ No se probó todavía en dispositivos Android ni iOS reales, ni en Chrome o Safa
 
 ## Deploy en Vercel
 
-Regu es una carpeta de archivos estáticos: no necesita servidor ni variables de entorno. **Todavía no está desplegada**, y los pasos de Vercel no se probaron desde acá.
+Regu es una carpeta de archivos estáticos y funciona sin servidor ni variables de entorno. La excepción es «Contanos», que necesita la función de Vercel y tres variables (ver [`ESTADO.md`](ESTADO.md)). **Todavía no está desplegada**, y los pasos de Vercel no se probaron desde acá.
 
 1. En Vercel: **Add New → Project** e importá `Facundo-Gauna/Regu`.
 2. El preset es **Vite** (se detecta solo): comando `npm run build`, carpeta de salida `dist`.
@@ -129,7 +129,7 @@ ESTADO.md         Estado del proyecto y lo que falta
 
 ## Privacidad
 
-Nada sale de tu dispositivo: no hay cuentas, servidor ni analíticas. Tus datos están en el almacenamiento del navegador; el backup en un archivo es lo que los recupera si el navegador los borra.
+Nada sale de tu dispositivo salvo lo que vos mandás desde «Contanos». No hay cuentas ni analíticas. Tus datos están en el almacenamiento del navegador; el backup en un archivo es lo que los recupera si el navegador los borra.
 
 ## Marca y créditos
 

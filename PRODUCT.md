@@ -26,7 +26,7 @@ Aplica las reglas reales de la facultad (correlativas, excepciones de la Ord. 15
 
 ## Capabilities and Constraints
 
-- PWA instalable, abre sin conexión. Todo es local: sin cuentas ni servidor; nada sale del dispositivo. El backup se exporta e importa a mano.
+- PWA instalable, abre sin conexión. Los datos son locales y sin cuentas. Nada sale del dispositivo salvo lo que vos mandás desde «Contanos». (Una función de Vercel lo recibe y lo guarda en un repo privado.) El backup se exporta e importa a mano.
 - El estado de cada materia se calcula a partir de los hechos cargados; se puede corregir a mano.
 - «Qué te falta» existe para las 8 materias de 1.er año, con reglas todavía sin confirmar; algunas no se pueden calcular y se muestran como texto.
 - Las electivas con datos sin confirmar no figuran como habilitadas.
@@ -50,7 +50,7 @@ Aplica las reglas reales de la facultad (correlativas, excepciones de la Ord. 15
 - Nunca prometer un resultado: la fuente de verdad es autogestión y la cátedra.
 - Decir qué está sin confirmar sin tapar con advertencias lo que importa.
 - Responder primero «qué puedo hacer ahora»; el detalle, a un toque.
-- Privacidad por diseño: todo queda en el dispositivo.
+- Privacidad por diseño: nada sale del dispositivo salvo lo que vos mandás desde «Contanos».
 
 ## Accessibility & Inclusion
 

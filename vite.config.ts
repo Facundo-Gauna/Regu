@@ -35,6 +35,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
         navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api\//], // la función de feedback no es una pantalla de la app
         cleanupOutdatedCaches: true,
       },
     }),

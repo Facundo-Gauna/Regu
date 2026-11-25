@@ -28,7 +28,7 @@ export function Bienvenida() {
       <ul class="bienvenida__puntos">
         <li><Icono nombre="candado-abierto" /> Qué podés cursar y qué podés rendir, según el plan y la Ordenanza 1549</li>
         <li><Icono nombre="calendario" /> Turnos de final, inscripciones y cierres con las 48 h hábiles</li>
-        <li><Icono nombre="descargar" /> Todo queda en tu celular: sin cuentas y sin conexión</li>
+        <li><Icono nombre="descargar" /> Tus datos quedan en tu celular: sin cuentas y sin conexión</li>
       </ul>
 
       <form class="tarjeta formulario" onSubmit={empezar}>

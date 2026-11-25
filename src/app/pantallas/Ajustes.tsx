@@ -159,7 +159,7 @@ export function Ajustes({ m }: { m: Modelo }) {
             </Aviso>
           )}
           <p class="seccion__texto">
-            Todo queda en este dispositivo, nada se envía. {s.prefs.ultimoBackup ? `Último backup: ${fechaCorta(fechaLocal(new Date(s.prefs.ultimoBackup)))}.` : 'Todavía no hiciste un backup.'}
+            Todo queda en este dispositivo; solo sale lo que vos mandás desde «Contanos». {s.prefs.ultimoBackup ? `Último backup: ${fechaCorta(fechaLocal(new Date(s.prefs.ultimoBackup)))}.` : 'Todavía no hiciste un backup.'}
           </p>
           <div class="botonera">
             <Boton variante="primario" onClick={exportar}><Icono nombre="descargar" /> Exportar backup</Boton>
