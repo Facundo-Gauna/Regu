@@ -644,7 +644,7 @@ details[open] > summary { margin-bottom: 4px; }
   border-radius: var(--radio);
   --punto: var(--bloqueada-fuerte);
 }
-.agenda__item--cursado { --punto: var(--azul-isi); }
+.agenda__item--cursado { --punto: var(--foco); }
 .agenda__item--turno { --punto: var(--texto); }
 .agenda__item--mesas-moviles { --punto: var(--texto-suave); }
 .agenda__item--inscripcion-final { --punto: var(--aprobada-fuerte); }
