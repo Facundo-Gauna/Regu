@@ -69,4 +69,5 @@ export const AYUDAS: Record<Ruta['nombre'], Ayuda | null> = {
   calendario: null,
   ajustes: null,
   mas: null,
+  contanos: null,
 };

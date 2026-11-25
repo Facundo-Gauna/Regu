@@ -36,7 +36,7 @@ const PESTAÑAS: { clave: ReturnType<typeof pestaña>; href: string; icono: Nomb
 ];
 
 const TITULOS: Record<Ruta['nombre'], string> = {
-  inicio: 'Inicio', materias: 'Materias', materia: 'Materia', plan: 'Plan', finales: 'Finales', calendario: 'Calendario', progreso: 'Progreso', ajustes: 'Ajustes', mas: 'Más', cargar: 'Cargar nota',
+  inicio: 'Inicio', materias: 'Materias', materia: 'Materia', plan: 'Plan', finales: 'Finales', calendario: 'Calendario', progreso: 'Progreso', ajustes: 'Ajustes', mas: 'Más', cargar: 'Cargar nota', contanos: 'Contanos',
 };
 
 export function App() {

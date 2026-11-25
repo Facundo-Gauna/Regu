@@ -12,6 +12,7 @@ export type Ruta =
   | { nombre: 'progreso' }
   | { nombre: 'ajustes' }
   | { nombre: 'cargar'; materiaId?: string; parte?: string }
+  | { nombre: 'contanos'; desde?: 'regla'; titulo?: string; materiaId?: string }
   | { nombre: 'mas' };
 
 const FILTROS_VALIDOS = new Set<string>(FILTROS.map(f => f.clave));
@@ -42,6 +43,12 @@ export function parseRuta(hash: string): Ruta {
     case 'calendario': return { nombre: 'calendario' };
     case 'progreso': return { nombre: 'progreso' };
     case 'ajustes': return { nombre: 'ajustes' };
+    case 'contanos': {
+      const t = params.get('t');
+      const m = params.get('m');
+      if (params.get('d') !== 'regla' || !t) return { nombre: 'contanos' };
+      return { nombre: 'contanos', desde: 'regla', titulo: t, ...(m ? { materiaId: m } : {}) };
+    }
     case 'mas': return { nombre: 'mas' };
     default: return { nombre: 'inicio' };
   }
@@ -57,6 +64,8 @@ export const enlaces = {
   progreso: () => '#/progreso',
   ajustes: () => '#/ajustes',
   mas: () => '#/mas',
+  contanos: (ctx?: { desde: 'regla'; titulo: string; materiaId?: string | undefined }) =>
+    ctx ? `#/contanos?d=regla&t=${encodeURIComponent(ctx.titulo)}${ctx.materiaId ? `&m=${encodeURIComponent(ctx.materiaId)}` : ''}` : '#/contanos',
   cargar: (materiaId?: string, parte?: string) =>
     materiaId ? `#/cargar?m=${encodeURIComponent(materiaId)}${parte ? `&p=${encodeURIComponent(parte)}` : ''}` : '#/cargar',
 };

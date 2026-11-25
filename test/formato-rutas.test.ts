@@ -62,3 +62,11 @@ test('ruta de carga rápida: sola, con materia y con parte', () => {
   assert.equal(enlaces.cargar('fisica-2', 'ra 1'), '#/cargar?m=fisica-2&p=ra%201');
   assert.equal(enlaces.cargar(), '#/cargar');
 });
+
+test('ruta de Contanos, con el contexto del aviso', () => {
+  const ctx = { desde: 'regla' as const, titulo: 'Dudas sobre esta regla & más', materiaId: 'am1' };
+  assert.deepEqual(parseRuta(enlaces.contanos(ctx)), { nombre: 'contanos', ...ctx });
+  assert.deepEqual(parseRuta(enlaces.contanos()), { nombre: 'contanos' });
+  assert.deepEqual(parseRuta('#/contanos?d=otra&t=x&m=am1'), { nombre: 'contanos' });
+  assert.equal(pestaña({ nombre: 'contanos' }), 'mas');
+});
