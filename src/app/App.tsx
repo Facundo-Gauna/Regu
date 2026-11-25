@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useState } from 'preact/hooks';
 import { fechaCorta } from '../vista/formato.ts';
 import { enlaces, parseRuta, pestaña, type Ruta } from '../vista/rutas.ts';
 import { Aviso, Boton, Icono, Logo, type NombreIconoUi } from './componentes.tsx';
@@ -44,8 +44,8 @@ export function App() {
   const ruta = useRuta();
   const m = useModelo();
 
-  // Tema
-  useEffect(() => {
+  // Tema. Antes de pintar, para que un tema guardado no parpadee en claro
+  useLayoutEffect(() => {
     const t = s.prefs.tema ?? 'auto';
     if (t === 'auto') delete document.documentElement.dataset['tema'];
     else document.documentElement.dataset['tema'] = t;
@@ -135,7 +135,7 @@ export function App() {
         )}
         {ruta.nombre === 'inicio' && <Inicio m={m} />}
         {ruta.nombre === 'materias' && <Materias m={m} filtro={ruta.filtro} />}
-        {ruta.nombre === 'materia' && <Materia m={m} id={ruta.id} />}
+        {ruta.nombre === 'materia' && <Materia key={ruta.id} m={m} id={ruta.id} />}
         {ruta.nombre === 'plan' && <Plan m={m} inicial={ruta.seleccion} />}
         {ruta.nombre === 'finales' && <Finales m={m} />}
         {ruta.nombre === 'calendario' && <Calendario m={m} />}

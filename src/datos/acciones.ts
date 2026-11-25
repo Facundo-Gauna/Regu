@@ -46,14 +46,29 @@ export function agregarCursada(datos: DatosUsuario, materiaId: Id, cursada: Omit
   });
 }
 
-/** Mueve una cursada al período correcto sin perder nada. Si ya hay otra ahí, no la pisa. */
+const sinDatos = (c: Cursada) => c.resultado === 'cursando' && !c.evaluaciones?.length && !c.estructura && !c.criterio && !c.umbrales;
+const enDestino = (cursadas: Cursada[], c: Cursada, cuatrimestre: Cursada['cuatrimestre']) => cursadas.find(x => x !== c && x.id === idCursada(c.ciclo, cuatrimestre));
+
+/** true si hay otra cursada en el período correcto y las dos tienen datos: ahí tiene que elegir la persona. */
+export function correccionBloqueada(cursadas: Cursada[], cursadaId: string, cuatrimestre: Cursada['cuatrimestre']): boolean {
+  const c = cursadas.find(x => x.id === cursadaId);
+  const otra = c && enDestino(cursadas, c, cuatrimestre);
+  return !!c && !!otra && !sinDatos(c) && !sinDatos(otra);
+}
+
+/** Mueve una cursada al período correcto sin perder nada. De dos repetidas, descarta la que esté vacía. */
 export function corregirPeriodo(datos: DatosUsuario, materiaId: Id, cursadaId: string, cuatrimestre: Cursada['cuatrimestre']): DatosUsuario {
   return editarMateria(datos, materiaId, m => {
     const c = m.cursadas.find(x => x.id === cursadaId);
     if (!c) return;
-    const id = idCursada(c.ciclo, cuatrimestre);
-    if (m.cursadas.some(x => x !== c && x.id === id)) return;
-    c.id = id;
+    if (correccionBloqueada(m.cursadas, cursadaId, cuatrimestre)) return;
+    const otra = enDestino(m.cursadas, c, cuatrimestre);
+    if (otra && sinDatos(c)) {
+      m.cursadas = m.cursadas.filter(x => x !== c);
+      return;
+    }
+    if (otra) m.cursadas = m.cursadas.filter(x => x !== otra);
+    c.id = idCursada(c.ciclo, cuatrimestre);
     c.cuatrimestre = cuatrimestre;
   });
 }

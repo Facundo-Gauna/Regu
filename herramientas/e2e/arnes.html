@@ -412,6 +412,27 @@
     await esperar(() => !doc().documentElement.dataset.tema, 'volver al automático');
   });
 
+  await prueba('Período mal cargado: se avisa, «Corregir» conserva las notas y dice cuál sobra', async () => {
+    irA('#/ajustes');
+    const cursadas = [
+      { id: '2026-1C', ciclo: 2026, cuatrimestre: '1C', resultado: 'cursando', evaluaciones: [{ id: 'n1', nombre: 'Parcial guardado', tipo: 'parcial', nota: 9 }] },
+      { id: '2026-2C', ciclo: 2026, cuatrimestre: '2C', resultado: 'cursando' },
+    ];
+    await enviarBackup(backup({ perfil, materias: [{ materiaId: 'algoritmos-estructuras-datos', cursadas, finales: [] }] }));
+    await clic(await esperar(() => hallar('button', 'Reemplazar mis datos'), 'reemplazar'));
+    await pausa(200);
+    irA('#/materia/algoritmos-estructuras-datos');
+    const avisos = () => todos('.aviso--alerta').filter(a => texto(a).includes('Esta materia es anual'));
+    await esperar(() => avisos().length === 2, `dos avisos (${avisos().length})`);
+    await clic(hallar('button', 'Corregir', avisos()[0]), 'Corregir');
+    await esperar(() => avisos().length === 1, 'queda un aviso');
+    await clic(hallar('button', 'Corregir', avisos()[0]), 'Corregir la que está vacía');
+    await esperar(() => avisos().length === 0, 'sin avisos');
+    afirmar(todos('.fila-simple', seccion('Cursadas')).length === 1, `quedaron dos cursadas: ${texto(seccion('Cursadas'))}`);
+    afirmar(texto(seccion('Cursadas')).includes('Anual 2026') || texto(seccion('Cursadas')).toLowerCase().includes('anual 2026'), `Cursadas: ${texto(seccion('Cursadas'))}`);
+    afirmar(hallar('.notas', 'Parcial guardado'), 'se perdió la nota');
+  });
+
   await prueba('Importar un backup válido reemplaza los datos', async () => {
     irA('#/ajustes');
     await enviarBackup(backup({ perfil, materias: [{ materiaId: 'fisica-1', cursadas: [{ id: '2026-2C', ciclo: 2026, cuatrimestre: '2C', resultado: 'regular', fechaResultado: '2026-11-27', evaluaciones: [{ id: 'imp1', nombre: 'Parcial importado', tipo: 'parcial', nota: 9 }] }], finales: [{ fecha: '2026-11-20', resultado: 'aprobado', nota: 7 }] }] }));
@@ -683,6 +704,19 @@
     await clic(hallar('dialog[open] button[type=submit]', 'Guardar referencias'));
     await esperarHojaCerrada();
     await esperar(() => !texto(sec().querySelector('.veredicto-propio')).includes('no llega'), 'con promedio ya no se exige cada nota');
+  });
+
+  await prueba('Empezar una materia para el año que viene no deja pendiente la pregunta en otra materia', async () => {
+    await cargar(`${BASE}?ejemplo=1#/ajustes`);
+    await escribir(await esperar(() => doc().querySelector('input[type=date]'), 'la fecha simulada'), '2026-10-15');
+    irA('#/materia/analisis-numerico');
+    await clic(await esperar(() => hallar('.siguiente button', 'Empezar a cursarla'), 'Empezar'));
+    await clic(await esperar(() => hallar('dialog[open] button[type=submit]', 'Empezar a cursarla'), 'confirmar'));
+    await esperarHojaCerrada();
+    irA('#/materia/fisica-2');
+    await esperar(() => texto(doc().querySelector('h1')) === 'Física II', 'Física II');
+    await pausa(400);
+    afirmar(!hoja(), `se abrió sola una hoja: ${texto(hoja()).slice(0, 80)}`);
   });
 
   await prueba('Carga rápida: fijar un acceso en Inicio y cargar una nota desde ahí', async () => {

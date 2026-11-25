@@ -375,11 +375,11 @@ export function Materia({ m, id }: { m: Modelo; id: string }) {
       </header>
 
       {periodosInvalidos(m.datos, m.plan).filter(x => x.materiaId === id).map(x => {
-        const ocupado = datos?.cursadas.some(c => c.id !== x.cursadaId && c.cuatrimestre === x.correcto && c.id.startsWith(x.cursadaId.slice(0, 4)));
+        const ocupado = A.correccionBloqueada(datos?.cursadas ?? [], x.cursadaId, x.correcto);
         return (
           <Aviso key={x.cursadaId} tipo="alerta" titulo={`Esta materia es ${NOMBRE_PERIODO[x.correcto] === 'anual' ? 'anual' : `de ${NOMBRE_PERIODO[x.correcto]}`}`}
             accion={ocupado ? undefined : <Boton chico onClick={() => actualizar(d => A.corregirPeriodo(d, id, x.cursadaId, x.correcto))}>Corregir</Boton>}>
-            Tenés una cursada {x.cursadaId.slice(0, 4)} cargada como {NOMBRE_PERIODO[x.actual]}.{ocupado ? ' Ya hay otra en el período correcto: borrá la que sobra en «Cursadas».' : ' Al corregirla se conservan las notas.'}
+            Tenés una cursada {x.cursadaId.slice(0, 4)} cargada como {NOMBRE_PERIODO[x.actual]}.{ocupado ? ' Ya hay otra en el período correcto, también con datos: borrá la que no sirva en «Cursadas».' : ' Al corregirla se conservan las notas.'}
           </Aviso>
         );
       })}
