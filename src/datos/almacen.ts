@@ -2,6 +2,7 @@
 // Lo guardado usa el mismo sobre que el backup (con schemaVersion), así que siempre se puede migrar al cargar.
 
 import type { DatosUsuario, Fecha } from '../motor/tipos.ts';
+import type { Tema } from '../vista/temas.ts';
 import { crearBackup, leerBackup, type BackupUsuario } from './backup.ts';
 
 /** Preferencias de la app. No forman parte del backup. */
@@ -12,8 +13,8 @@ export interface Preferencias {
   recordatorioBackupDias?: number;
   /** Fecha de "hoy" fijada a mano (para probar escenarios). null/ausente = fecha real. */
   fechaSimulada?: Fecha | null;
-  /** Tema visual: automático (según el sistema), claro u oscuro. */
-  tema?: 'auto' | 'claro' | 'oscuro';
+  /** Tema visual. «auto» sigue al sistema. */
+  tema?: Tema;
   /** Accesos de carga rápida fijados en Inicio: una materia y, si tiene estructura, una de sus partes. */
   accesos?: { materiaId: string; parte?: string }[];
 }

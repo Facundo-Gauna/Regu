@@ -394,6 +394,21 @@
     await esperar(() => !doc().documentElement.dataset.tema, 'volver al tema automático');
   });
 
+  await prueba('Temas nuevos: se aplican, se recuerdan al recargar y mandan sobre el oscuro del sistema', async () => {
+    irA('#/ajustes');
+    await clic(await esperar(() => hallar('.temas label', 'Violeta'), 'la opción Violeta'));
+    await esperar(() => doc().documentElement.dataset.tema === 'violeta', 'aplicar el tema');
+    await pausa(200);
+    await recargar();
+    await esperar(() => doc().documentElement.dataset.tema === 'violeta', 'recordar el tema');
+    const fondo = () => ventana().getComputedStyle(doc().body).backgroundColor;
+    afirmar(fondo() === 'rgb(22, 17, 31)', `fondo violeta: ${fondo()}`);
+    await clic(await esperar(() => hallar('.temas label', 'UTN'), 'UTN'));
+    await esperar(() => fondo() === 'rgb(255, 250, 236)', `fondo UTN (${fondo()})`);
+    await clic(hallar('.temas label', 'Automático'));
+    await esperar(() => !doc().documentElement.dataset.tema, 'volver al automático');
+  });
+
   await prueba('Importar un backup válido reemplaza los datos', async () => {
     irA('#/ajustes');
     await enviarBackup(backup({ perfil, materias: [{ materiaId: 'fisica-1', cursadas: [{ id: '2026-2C', ciclo: 2026, cuatrimestre: '2C', resultado: 'regular', fechaResultado: '2026-11-27', evaluaciones: [{ id: 'imp1', nombre: 'Parcial importado', tipo: 'parcial', nota: 9 }] }], finales: [{ fecha: '2026-11-20', resultado: 'aprobado', nota: 7 }] }] }));

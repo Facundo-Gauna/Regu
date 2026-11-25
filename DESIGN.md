@@ -10,6 +10,10 @@ Regu es una herramienta personal que se usa de a ratos en el celular. El tono es
 - Estados: verde aprobada, celeste regular, violeta cursando, azul habilitada, gris bloqueada, rojo recursar. Siempre con ícono y texto, nunca solo color.
 - Contraste: texto ≥ 4,5:1 y bordes de control ≥ 3:1.
 
+## Temas
+
+A pedido del usuario hay cuatro además de claro y oscuro: **UTN** (crema con encabezado amarillo), **Atardecer** (claro, vino y coral), **Violeta** y **Océano** (oscuros). Cada uno cambia los neutros y el «cromo» (encabezado, navegación, portada y marcador) mediante las fichas `--cromo-*` y `--accion`; los colores de estado se comparten entre los claros y entre los oscuros. En los temas de color, la regla del ámbar vale para su color de acento. «Automático» es el único que sigue al sistema.
+
 ## Tipografía
 
 Montserrat incluida en la app (funciona sin conexión). Títulos de sección en minúscula con inicial mayúscula, peso 800. No se agrega una segunda familia.

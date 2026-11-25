@@ -49,6 +49,9 @@ export function App() {
     const t = s.prefs.tema ?? 'auto';
     if (t === 'auto') delete document.documentElement.dataset['tema'];
     else document.documentElement.dataset['tema'] = t;
+    // La barra del sistema acompaña al encabezado del tema
+    const cromo = getComputedStyle(document.documentElement).getPropertyValue('--cromo').trim();
+    if (cromo) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', cromo);
   }, [s.prefs.tema]);
 
   // Cada pantalla arranca arriba y actualiza el título de la pestaña

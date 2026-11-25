@@ -4,7 +4,8 @@ import * as A from '../../datos/acciones.ts';
 import { crearBackup, leerBackupTexto, serializarBackup } from '../../datos/backup.ts';
 import { fechaLocal } from '../../datos/hoy.ts';
 import { fechaCorta } from '../../vista/formato.ts';
-import { Aviso, Boton, Campo, Icono, Seccion, Segmentado } from '../componentes.tsx';
+import { TEMAS } from '../../vista/temas.ts';
+import { Aviso, Boton, Campo, Icono, Seccion } from '../componentes.tsx';
 import { referencia, type Modelo } from '../modelo.ts';
 import { actualizar, borrarTodo, guardarPrefs, pedirProteccion, reemplazarDatos, salirModoEjemplo, useStore } from '../store.ts';
 
@@ -127,13 +128,19 @@ export function Ajustes({ m }: { m: Modelo }) {
       </Seccion>
 
       <Seccion titulo="Apariencia">
-        <Segmentado
-          nombre="tema"
-          etiqueta="Tema"
-          valor={s.prefs.tema ?? 'auto'}
-          onCambio={tema => guardarPrefs({ tema })}
-          opciones={[{ valor: 'auto', etiqueta: 'Automático' }, { valor: 'claro', etiqueta: 'Claro' }, { valor: 'oscuro', etiqueta: 'Oscuro' }]}
-        />
+        <fieldset class="temas">
+          <legend class="campo__etiqueta">Tema</legend>
+          {TEMAS.map(x => {
+            const activo = (s.prefs.tema ?? 'auto') === x.clave;
+            return (
+              <label key={x.clave} class={`segmentado__opcion${activo ? ' segmentado__opcion--activa' : ''}`}>
+                <input type="radio" name="tema" value={x.clave} checked={activo} onChange={() => guardarPrefs({ tema: x.clave })} />
+                <span class="temas__muestra" aria-hidden="true">{x.muestra.map((c, i) => <span key={i} style={{ background: c }} />)}</span>
+                <span>{x.nombre}</span>
+              </label>
+            );
+          })}
+        </fieldset>
       </Seccion>
 
       <Seccion titulo="Fecha de hoy">
