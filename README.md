@@ -84,7 +84,7 @@ No se probó todavía en dispositivos Android ni iOS reales, ni en Chrome o Safa
 
 ## Deploy en Vercel
 
-Regu es una carpeta de archivos estáticos y funciona sin servidor ni variables de entorno. La excepción es «Contanos», que necesita la función de Vercel y tres variables (ver [`ESTADO.md`](ESTADO.md)). **Todavía no está desplegada**, y los pasos de Vercel no se probaron desde acá.
+Regu es una carpeta de archivos estáticos y funciona sin servidor ni variables de entorno. La excepción es «Contanos», que necesita la función de Vercel y tres variables (ver [`ESTADO.md`](ESTADO.md)). Producción: https://regu-utn-frvm.vercel.app/. La función de «Contanos» todavía no se verificó en Vercel: tras el primer despliegue hay que mirar su log de compilación y mandar un mensaje de prueba.
 
 1. En Vercel: **Add New → Project** e importá `Facundo-Gauna/Regu`.
 2. El preset es **Vite** (se detecta solo): comando `npm run build`, carpeta de salida `dist`.
