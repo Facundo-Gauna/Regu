@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import type { DatosUsuario } from '../../motor/index.ts';
 import * as A from '../../datos/acciones.ts';
 import { crearBackup, leerBackupTexto, serializarBackup } from '../../datos/backup.ts';
@@ -6,6 +6,7 @@ import { fechaLocal } from '../../datos/hoy.ts';
 import { fechaCorta } from '../../vista/formato.ts';
 import { TEMAS } from '../../vista/temas.ts';
 import { Aviso, Boton, Campo, Icono, Seccion } from '../componentes.tsx';
+import { useInstalacion } from '../instalacion.ts';
 import { referencia, type Modelo } from '../modelo.ts';
 import { actualizar, borrarTodo, guardarPrefs, pedirProteccion, reemplazarDatos, salirModoEjemplo, useStore } from '../store.ts';
 
@@ -70,26 +71,13 @@ export function ImportarBackup({ onListo, reemplaza = true }: { onListo?: () => 
   );
 }
 
-type EventoInstalacion = Event & { prompt: () => Promise<void> };
-
 export function Ajustes({ m }: { m: Modelo }) {
   const s = useStore();
   const [confirmarBorrado, setConfirmarBorrado] = useState(false);
-  const [instalador, setInstalador] = useState<EventoInstalacion | null>(null);
+  const instalacion = useInstalacion();
   const [exportado, setExportado] = useState('');
   const ejemplo = s.modo === 'ejemplo';
 
-  useEffect(() => {
-    const alPedir = (e: Event) => {
-      e.preventDefault();
-      setInstalador(e as EventoInstalacion);
-    };
-    window.addEventListener('beforeinstallprompt', alPedir);
-    return () => window.removeEventListener('beforeinstallprompt', alPedir);
-  }, []);
-
-  const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  const esIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   const exportar = () => {
     const ahora = new Date();
@@ -188,10 +176,11 @@ export function Ajustes({ m }: { m: Modelo }) {
         </Seccion>
       )}
 
-      {!standalone && (instalador || esIos) && (
+      {instalacion && (
         <Seccion titulo="Instalar Regu">
-          {instalador && <Boton variante="primario" onClick={() => void instalador.prompt()}><Icono nombre="instalar" /> Instalar en este dispositivo</Boton>}
-          {esIos && <p class="seccion__texto">En iPhone o iPad: tocá <strong>Compartir</strong> y después <strong>Agregar a inicio</strong>. Se abre como una app, sin conexión.</p>}
+          {instalacion.guia.tipo === 'boton'
+            ? <Boton variante="primario" onClick={instalacion.instalar}><Icono nombre="instalar" /> Instalar en este dispositivo</Boton>
+            : <p class="seccion__texto">{instalacion.guia.pasos} Se abre como una app, sin conexión.</p>}
         </Seccion>
       )}
 

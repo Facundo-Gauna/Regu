@@ -3,6 +3,7 @@ import { registerSW } from 'virtual:pwa-register';
 import { App } from './App.tsx';
 import { iniciar, registrarActualizacion } from './store.ts';
 import './estilos.css';
+import './instalacion.ts';
 
 // ?ejemplo=1 abre la app con un estudiante de ejemplo, solo en memoria (no toca lo guardado).
 const ejemplo = new URLSearchParams(location.search).get('ejemplo') === '1';

@@ -7,6 +7,8 @@ import { crearBackup, leerBackup, type BackupUsuario } from './backup.ts';
 
 /** Preferencias de la app. No forman parte del backup. */
 export interface Preferencias {
+  /** La persona cerró la sugerencia de instalar la app. */
+  instalacionDescartada?: boolean;
   /** Fecha y hora ISO de la última exportación de backup. */
   ultimoBackup?: string;
   /** Cada cuántos días recordar el backup (por defecto 14). */

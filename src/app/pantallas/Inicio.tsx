@@ -8,13 +8,15 @@ import { Aviso, Barra, Boton, FilaMateria, Icono, Seccion } from '../componentes
 import { AccesosRapidos } from './Cargar.tsx';
 import { HojaMateria, type AccionRapida, type InicialCursada } from '../formularios.tsx';
 import type { Modelo } from '../modelo.ts';
-import { actualizar, useStore } from '../store.ts';
+import { actualizar, guardarPrefs, useStore } from '../store.ts';
+import { useInstalacion } from '../instalacion.ts';
 
 const DIAS_RECORDATORIO_BACKUP = 14;
 
 export function Inicio({ m }: { m: Modelo }) {
   const s = useStore();
   const v = useMemo(() => modeloInicio(m.resumen, m.datos, m.plan, m.cal, m.hoy), [m]);
+  const instalacion = useInstalacion();
   const [hoja, setHoja] = useState<{ id: string; accion: AccionRapida; inicial?: InicialCursada } | null>(null);
 
   // El recordatorio usa la fecha real, no la simulada: un backup viejo es viejo aunque se simule otro día.
@@ -48,6 +50,19 @@ export function Inicio({ m }: { m: Modelo }) {
       {v.vacio && (
         <Aviso tipo="info" titulo="Empecemos por lo que ya hiciste" accion={<a class="boton boton--primario boton--chico" href={enlaces.plan()}>Ir al plan</a>}>
           Marcá en el plan lo que aprobaste, regularizaste o estás cursando.
+        </Aviso>
+      )}
+
+      {instalacion?.movil && s.modo === 'normal' && !v.vacio && !s.prefs.instalacionDescartada && (
+        <Aviso
+          tipo="info"
+          titulo="Usá Regu como app"
+          accion={<div class="botonera">
+            {instalacion.guia.tipo === 'boton' && <Boton chico variante="primario" onClick={instalacion.instalar}>Instalar</Boton>}
+            <Boton chico variante="texto" onClick={() => guardarPrefs({ instalacionDescartada: true })}>No, gracias</Boton>
+          </div>}
+        >
+          Queda en tu pantalla de inicio, abre más rápido y funciona sin conexión. {instalacion.guia.tipo === 'pasos' && instalacion.guia.pasos}
         </Aviso>
       )}
 
